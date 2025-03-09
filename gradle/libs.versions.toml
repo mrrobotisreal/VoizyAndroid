@@ -1,0 +1,122 @@
+[versions]
+agp = "8.8.1"
+kotlin = "1.9.23"
+coreKtx = "1.15.0"
+junit = "4.13.2"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
+lifecycleRuntimeKtx = "2.8.7"
+activityCompose = "1.10.1"
+composeBom = "2025.02.00"
+
+# Network
+retrofit = "2.9.0"
+okhttp = "4.11.0"
+ktor = "2.3.7"
+
+# UI and Navigation
+navigation = "2.8.8"
+coil = "2.5.0"
+paging = "3.3.6"
+
+# Local Storage
+room = "2.6.1"
+datastore = "1.1.3"
+securityCrypto = "1.1.0-alpha06"
+
+# Architecture Components
+viewmodel = "2.8.7"
+coroutines = "1.7.3"
+hilt = "2.48"
+androidxHiltLifecycleViewmodel = "1.0.0-alpha03"
+androidxHiltCompiler = "1.0.0"
+androidxHiltNavigationCompose = "1.0.0"
+orbitMvi = "6.1.0"
+flowBinding = "1.2.0"
+arrow = "1.2.1"
+
+# Media Handling
+exoplayer = "2.19.1"
+camerax = "1.4.1"
+
+# Other Essentials
+firebaseBom = "33.10.0"
+workManager = "2.10.0"
+timber = "5.0.1"
+jwtDecode = "2.0.2"
+mockito = "5.8.0"
+
+[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
+
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+
+# Network
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
+ktor-client-websockets = { group = "io.ktor", name = "ktor-client-websockets", version.ref = "ktor" }
+
+# UI and Navigation
+navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
+androidxHiltNavigationCompose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidxHiltNavigationCompose" }
+
+# Local Storage
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
+
+# Architecture Components
+viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "viewmodel" }
+coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+daggerHilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+daggerHiltCompiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+androidxHiltLifecycleViewmodel = { group = "androidx.hilt", name = "hilt-lifecycle-viewmodel", version.ref = "androidxHiltLifecycleViewmodel" }
+androidxHiltCompiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "androidxHiltCompiler" }
+orbit-core = { group = "org.orbit-mvi", name = "orbit-core", version.ref = "orbitMvi" }
+orbit-viewmodel = { group = "org.orbit-mvi", name = "orbit-viewmodel", version.ref = "orbitMvi" }
+orbit-compose = { group = "org.orbit-mvi", name = "orbit-compose", version.ref = "orbitMvi" }
+flowbinding-android = { group = "io.github.reactivecircus.flowbinding", name = "flowbinding-android", version.ref = "flowBinding" }
+arrow-core = { group = "io.arrow-kt", name = "arrow-core", version.ref = "arrow" }
+
+# Media Handling
+exoplayer = { group = "com.google.android.exoplayer", name = "exoplayer", version.ref = "exoplayer" }
+camerax-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
+camerax-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
+camerax-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
+
+# Other Essentials
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
+timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+jwt-decode = { group = "com.auth0.android", name = "jwtdecode", version.ref = "jwtDecode" }
+
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+#kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
