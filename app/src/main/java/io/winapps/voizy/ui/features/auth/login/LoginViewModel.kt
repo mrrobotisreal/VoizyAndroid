@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.winapps.voizy.data.model.auth.LoginResponse
+import io.winapps.voizy.data.model.users.CreateAccountResponse
 import io.winapps.voizy.data.repository.AuthRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -14,6 +15,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val authRepository: AuthRepository
+//    private val usersRepository: UsersRepository
 ) : ViewModel() {
     var isRegistering by mutableStateOf(false)
         private set
@@ -31,6 +33,8 @@ class LoginViewModel @Inject constructor(
         private set
 
     var loginState by mutableStateOf<LoginState>(LoginState.Idle)
+
+    var createAccountState by mutableStateOf<CreateAccountState>(CreateAccountState.Idle)
 
     fun onUsernameChanged(newValue: String) {
         username = newValue
@@ -71,7 +75,17 @@ class LoginViewModel @Inject constructor(
     }
 
     fun onCreateAccount() {
-        // TODO: make call to create new account
+        viewModelScope.launch {
+            createAccountState = CreateAccountState.Loading
+
+            try {
+                val response = authRepository.createAccount(email, username, preferredName, password)
+
+                createAccountState = CreateAccountState.Success(response)
+            } catch (e: Exception) {
+                createAccountState = CreateAccountState.Error(e.message ?: "Unknown error")
+            }
+        }
     }
 }
 
@@ -80,4 +94,11 @@ sealed class LoginState {
     data object Loading : LoginState()
     data class Success(val response: LoginResponse) : LoginState()
     data class Error(val message: String) : LoginState()
+}
+
+sealed class CreateAccountState {
+    data object Idle : CreateAccountState()
+    data object Loading : CreateAccountState()
+    data class Success(val response: CreateAccountResponse) : CreateAccountState()
+    data class Error(val message: String) : CreateAccountState()
 }
