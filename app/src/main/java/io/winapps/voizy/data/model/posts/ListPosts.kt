@@ -23,3 +23,11 @@ data class ListPostsResponse(
     val totalPosts: Long,
     val totalPages: Long
 )
+
+data class CompletePost(
+    val post: ListPost,
+    val reactions: List<Reaction>? = emptyList(),
+    val hashtags: List<String>? = emptyList(),
+    val images: List<String>? = emptyList(),
+    val videos: List<String>? = emptyList()
+)

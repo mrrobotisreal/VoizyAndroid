@@ -25,9 +25,11 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,18 +42,31 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import io.winapps.voizy.R
+import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.ui.navigation.BottomNavBar
 import io.winapps.voizy.ui.theme.Ubuntu
 
 @Composable
 fun ProfileScreen() {
+    val postsViewModel = hiltViewModel<PostsViewModel>()
+    val sessionViewModel = hiltViewModel<SessionViewModel>()
     var selectedTab by remember { mutableStateOf(ProfileTab.POSTS) }
 
     // Sample stats for now
     val friendCount = 416
     val postCount = 23
     val photoCount = 57
+
+    LaunchedEffect(Unit) {
+        val userId = sessionViewModel.userId ?: -1
+        val apiKey = sessionViewModel.getApiKey().orEmpty()
+        postsViewModel.loadTotalPosts(
+            userId = userId,
+            apiKey = apiKey
+        )
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().background(Color(0xFFFDF4C9)),
@@ -75,7 +90,7 @@ fun ProfileScreen() {
                     painter = painterResource(id = R.drawable.test_profile_photo),
                     contentDescription = "Profile photo",
                     modifier = Modifier
-                        .size(80.dp)
+                        .size(100.dp)
                         .clip(CircleShape)
                         .border(2.dp, Color(0xFFF10E91), CircleShape),
                     contentScale = ContentScale.Crop
@@ -124,16 +139,22 @@ fun ProfileScreen() {
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.List,
-                    contentDescription = null
-                )
-                Spacer(Modifier.width(4.dp))
-                Text(
-                    text = "$postCount Posts",
-                    fontFamily = Ubuntu,
-                    fontWeight = FontWeight.Normal
-                )
+                if (postsViewModel.isLoadingTotalPosts) {
+                    CircularProgressIndicator(
+                        color = Color(0xFFF10E91)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.List,
+                        contentDescription = null
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = "${postsViewModel.totalPosts} Posts",
+                        fontFamily = Ubuntu,
+                        fontWeight = FontWeight.Normal
+                    )
+                }
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
