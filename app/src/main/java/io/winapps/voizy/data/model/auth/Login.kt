@@ -6,7 +6,7 @@ data class LoginRequest(
 )
 
 data class LoginResponse(
-    val userID: String,
+    val userID: Long,
     val username: String,
     val email: String,
     val apiKey: String,

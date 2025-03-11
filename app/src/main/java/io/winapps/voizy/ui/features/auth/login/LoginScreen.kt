@@ -31,6 +31,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import io.winapps.voizy.R
+import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.ui.theme.Charm
 import io.winapps.voizy.ui.theme.Ubuntu
 
@@ -38,7 +39,8 @@ import io.winapps.voizy.ui.theme.Ubuntu
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
-    loginViewModel: LoginViewModel = hiltViewModel()
+    loginViewModel: LoginViewModel = hiltViewModel(),
+    sessionViewModel: SessionViewModel = hiltViewModel()
 ) {
     val configuration = LocalConfiguration.current
     val horizontalPadding = if (configuration.screenWidthDp >= 600) 200.dp else 10.dp
@@ -170,6 +172,15 @@ fun LoginScreen(
                                     // do nothing
                                 }
                                 is LoginState.Success -> {
+                                    val response = loginState.response
+
+                                    sessionViewModel.setUserData(
+                                        userId = response.userID,
+                                        username = response.username,
+                                        apiKey = response.apiKey,
+                                        token = response.token
+                                    )
+
                                     onLoginSuccess()
                                 }
                                 is LoginState.Error -> {

@@ -10,6 +10,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import io.winapps.voizy.ui.features.auth.login.LoginScreen
 import io.winapps.voizy.ui.features.auth.splash.SplashScreen
+import io.winapps.voizy.ui.features.profile.ProfileScreen
 import io.winapps.voizy.ui.home.HomeScreen
 
 @Composable
@@ -39,7 +40,8 @@ fun VoizyApp(
                 )
             }
             else -> {
-                HomeScreen()
+//                HomeScreen()
+                ProfileScreen()
             }
         }
     }

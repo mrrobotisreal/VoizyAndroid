@@ -8,6 +8,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.winapps.voizy.data.local.SecureStorage
 import io.winapps.voizy.data.repository.AuthRepository
+import io.winapps.voizy.data.repository.PostsRepository
 import javax.inject.Singleton
 
 @Module
@@ -23,5 +24,11 @@ object AppModule {
     @Singleton
     fun provideAuthRepository(secureStorage: SecureStorage): AuthRepository {
         return AuthRepository(secureStorage)
+    }
+
+    @Provides
+    @Singleton
+    fun providePostsRepository(): PostsRepository {
+        return PostsRepository()
     }
 }
