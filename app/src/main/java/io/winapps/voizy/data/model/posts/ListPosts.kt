@@ -3,7 +3,10 @@ package io.winapps.voizy.data.model.posts
 data class ListPost(
     val postID: Long,
     val userID: Long,
+    val toUserID: Long,
     val originalPostID: Long?,
+    val impressions: Long,
+    val views: Long,
     val contentText: String,
     val createdAt: String?,
     val updatedAt: String?,

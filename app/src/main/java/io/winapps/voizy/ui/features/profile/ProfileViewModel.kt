@@ -47,40 +47,6 @@ class PostsViewModel @Inject constructor(
     var totalPostsErrorMessage by mutableStateOf<String?>(null)
         private set
 
-    var isLoadingPostDetails by mutableStateOf(false)
-        private set
-
-    var postDetailsErrorMessage by mutableStateOf<String?>(null)
-        private set
-
-    var isLoadingPostMedia by mutableStateOf(false)
-        private set
-
-    var postMediaErrorMessage by mutableStateOf<String?>(null)
-        private set
-
-    fun loadPosts(userId: Long, apiKey: String, limit: Long = 20, page: Long = 1) {
-        viewModelScope.launch {
-            isLoading = true
-            errorMessage = null
-
-            try {
-                val response = postsRepository.listPosts(
-                    apiKey = apiKey,
-                    userIdHeader = userId.toString(),
-                    userId = userId,
-                    limit = limit,
-                    page = page
-                )
-                posts = response.posts
-            } catch (e: Exception) {
-                errorMessage = e.message
-            } finally {
-                isLoading = false
-            }
-        }
-    }
-
     fun loadCompletePosts(userId: Long, apiKey: String, limit: Long = 20, page: Long = 1) {
         viewModelScope.launch {
             isLoading = true
@@ -98,16 +64,6 @@ class PostsViewModel @Inject constructor(
 
                 val finalList = mutableListOf<CompletePost>()
                 for (post in rawPosts) {
-//                    val details = postsRepository.getPostDetails(
-//                            apiKey = apiKey,
-//                            userIdHeader = userId.toString(),
-//                            postId = post.postID
-//                        )
-//                    val media = postsRepository.getPostMedia(
-//                            apiKey = apiKey,
-//                            userIdHeader = userId.toString(),
-//                            postId = post.postID
-//                        )
                     val detailDeferred = async {
                         postsRepository.getPostDetails(
                             apiKey = apiKey,
@@ -160,44 +116,6 @@ class PostsViewModel @Inject constructor(
                 totalPostsErrorMessage = e.message
             } finally {
                 isLoadingTotalPosts = false
-            }
-        }
-    }
-
-    fun loadPostDetails(userId: Long, postId: Long, apiKey: String) {
-        viewModelScope.launch {
-            isLoadingPostDetails = true
-            postDetailsErrorMessage = null
-
-            try {
-                val response = postsRepository.getPostDetails(
-                    apiKey = apiKey,
-                    userIdHeader = userId.toString(),
-                    postId = postId
-                )
-            } catch (e: Exception) {
-                postDetailsErrorMessage = e.message
-            } finally {
-                isLoadingPostDetails = false
-            }
-        }
-    }
-
-    fun loadPostMedia(userId: Long, postId: Long, apiKey: String) {
-        viewModelScope.launch {
-            isLoadingPostMedia = true
-            postMediaErrorMessage = null
-
-            try {
-                val response = postsRepository.getPostMedia(
-                    apiKey = apiKey,
-                    userIdHeader = userId.toString(),
-                    postId = postId
-                )
-            } catch (e: Exception) {
-                postMediaErrorMessage = e.message
-            } finally {
-                isLoadingPostMedia = false
             }
         }
     }
