@@ -11,15 +11,13 @@ import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.data.model.posts.CompletePost
 import io.winapps.voizy.data.model.posts.ListPost
 import io.winapps.voizy.data.repository.PostsRepository
+import io.winapps.voizy.data.repository.UsersRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 enum class ProfileTab {
     POSTS, PHOTOS, ABOUT, FRIENDS
-}
-
-class ProfileViewModel {
 }
 
 @HiltViewModel
@@ -116,6 +114,40 @@ class PostsViewModel @Inject constructor(
                 totalPostsErrorMessage = e.message
             } finally {
                 isLoadingTotalPosts = false
+            }
+        }
+    }
+}
+
+@HiltViewModel
+class FriendsViewModel @Inject constructor(
+    private val usersRepository: UsersRepository
+) : ViewModel() {
+    var totalFriends by mutableLongStateOf(0)
+        private set
+
+    var isLoadingTotalFriends by mutableStateOf(false)
+        private set
+
+    var totalFriendsErrorMessage by mutableStateOf<String?>(null)
+        private set
+
+    fun loadTotalFriends(userId: Long, apiKey: String) {
+        viewModelScope.launch {
+            isLoadingTotalFriends = true
+            totalFriendsErrorMessage = null
+
+            try {
+                val response = usersRepository.getTotalFriends(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    userId = userId
+                )
+                totalFriends = response.totalFriends
+            } catch (e: Exception) {
+                totalFriendsErrorMessage = e.message
+            } finally {
+                isLoadingTotalFriends = false
             }
         }
     }

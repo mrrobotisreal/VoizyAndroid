@@ -8,6 +8,7 @@ espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
 composeBom = "2025.02.00"
+accompanist = "0.31.5-beta"
 
 # Network
 retrofit = "2.9.0"
@@ -77,6 +78,8 @@ navigation-compose = { group = "androidx.navigation", name = "navigation-compose
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
 androidxHiltNavigationCompose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidxHiltNavigationCompose" }
+accompanist-pager = { group = "com.google.accompanist", name = "accompanist-pager", version.ref = "accompanist" }
+accompanist-pager-indicators = { group = "com.google.accompanist", name = "accompanist-pager-indicators", version.ref = "accompanist" }
 
 # Local Storage
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }

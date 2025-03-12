@@ -1,5 +1,6 @@
 package io.winapps.voizy.ui.features.profile
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,7 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,8 +41,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import io.winapps.voizy.R
@@ -50,6 +52,13 @@ import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.data.model.posts.CompletePost
 import io.winapps.voizy.data.model.posts.ListPost
 import io.winapps.voizy.ui.theme.Ubuntu
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
+import com.google.accompanist.pager.HorizontalPagerIndicator
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import coil.size.Scale
+import coil.size.Size
 
 @Composable
 fun PostsContent(
@@ -209,43 +218,23 @@ fun PostItem(
 
             val images = post.images ?: emptyList()
             if (images.isNotEmpty()) {
-//                val pagerState = rememberPagerState()
-//                HorizontalPager(
-//                    pageCount = images.size,
-//                    state = pagerState,
+                PostImagesCarousel(
+                    imageUrls = images,
+                    heightDp = 250.dp
+                )
+//                Box(
 //                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .height(250.dp)
-//                ) { page ->
-//                    val imageUrl = images[page]
-//
-//                    Box(
-//                        modifier = Modifier
-//                            .fillMaxSize()
-//                            .background(Color.LightGray)
-//                    ) {
-//                        // AsyncImage
-//                        Image(
-//                            painter = painterResource(id = R.drawable.default_cover2),
-//                            contentDescription = "Cover photo",
-//                            modifier = Modifier.fillMaxSize(),
-//                            contentScale = ContentScale.Crop
-//                        )
-//                    }
+//                        .fillMaxSize()
+//                        .background(Color.LightGray)
+//                ) {
+//                    // AsyncImage
+//                    Image(
+//                        painter = painterResource(id = R.drawable.default_cover2),
+//                        contentDescription = "Cover photo",
+//                        modifier = Modifier.fillMaxSize(),
+//                        contentScale = ContentScale.Crop
+//                    )
 //                }
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.LightGray)
-                ) {
-                    // AsyncImage
-                    Image(
-                        painter = painterResource(id = R.drawable.default_cover2),
-                        contentDescription = "Cover photo",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                }
             }
 
             Row(
@@ -322,5 +311,53 @@ fun PostItem(
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun PostImagesCarousel(
+    imageUrls: List<String>,
+    modifier: Modifier = Modifier,
+    heightDp: Dp = 250.dp
+) {
+    if (imageUrls.isEmpty()) return
+
+    val pagerState = rememberPagerState()
+
+    Column(modifier = modifier) {
+        HorizontalPager(
+            count = imageUrls.size,
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(heightDp)
+        ) { page ->
+            val url = imageUrls[page]
+            Box(modifier = Modifier.fillMaxSize()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(url)
+                        .crossfade(true)
+                        .scale(Scale.FILL)
+                        .size(Size.ORIGINAL)
+                        .build(),
+                    contentDescription = "Image",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.LightGray),
+                    contentScale = ContentScale.Crop
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        HorizontalPagerIndicator(
+            pagerState = pagerState,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }

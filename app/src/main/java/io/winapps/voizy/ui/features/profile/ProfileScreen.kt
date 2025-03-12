@@ -51,17 +51,20 @@ import io.winapps.voizy.ui.theme.Ubuntu
 @Composable
 fun ProfileScreen() {
     val postsViewModel = hiltViewModel<PostsViewModel>()
+    val friendsViewModel = hiltViewModel<FriendsViewModel>()
     val sessionViewModel = hiltViewModel<SessionViewModel>()
     var selectedTab by remember { mutableStateOf(ProfileTab.POSTS) }
 
     // Sample stats for now
-    val friendCount = 416
-    val postCount = 23
     val photoCount = 57
 
     LaunchedEffect(Unit) {
         val userId = sessionViewModel.userId ?: -1
         val apiKey = sessionViewModel.getApiKey().orEmpty()
+        friendsViewModel.loadTotalFriends(
+            userId = userId,
+            apiKey = apiKey
+        )
         postsViewModel.loadTotalPosts(
             userId = userId,
             apiKey = apiKey
@@ -132,7 +135,7 @@ fun ProfileScreen() {
                 )
                 Spacer(Modifier.width(4.dp))
                 Text(
-                    text = "$friendCount Friends",
+                    text = "${friendsViewModel.totalFriends} Friends",
                     fontFamily = Ubuntu,
                     fontWeight = FontWeight.Normal
                 )

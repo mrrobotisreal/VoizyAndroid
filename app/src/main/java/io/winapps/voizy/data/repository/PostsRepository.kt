@@ -1,6 +1,5 @@
 package io.winapps.voizy.data.repository
 
-import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.data.model.posts.GetPostDetailsResponse
 import io.winapps.voizy.data.model.posts.GetPostMediaResponse
 import io.winapps.voizy.data.model.posts.GetTotalPostsResponse
