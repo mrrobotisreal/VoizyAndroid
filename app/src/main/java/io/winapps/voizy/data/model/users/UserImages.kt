@@ -2,7 +2,9 @@ package io.winapps.voizy.data.model.users
 
 data class UserImage(
     val userId: Long,
-    val imageUrl: String
+    val imageURL: String,
+    val isProfilePic: Boolean,
+    val uploadedAt: String?
 )
 
 data class GetTotalUserImagesResponse(

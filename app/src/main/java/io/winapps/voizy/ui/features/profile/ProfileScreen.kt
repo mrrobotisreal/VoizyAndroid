@@ -31,8 +31,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +44,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import io.winapps.voizy.R
 import io.winapps.voizy.SessionViewModel
@@ -52,11 +55,12 @@ import io.winapps.voizy.ui.theme.Ubuntu
 fun ProfileScreen() {
     val postsViewModel = hiltViewModel<PostsViewModel>()
     val friendsViewModel = hiltViewModel<FriendsViewModel>()
+    val photosViewModel = hiltViewModel<PhotosViewModel>()
     val sessionViewModel = hiltViewModel<SessionViewModel>()
     var selectedTab by remember { mutableStateOf(ProfileTab.POSTS) }
-
-    // Sample stats for now
-    val photoCount = 57
+    val (isFullScreenImageOpen, setFullScreenImageOpen) = rememberSaveable { mutableStateOf(false) }
+    val (currentImageIndex, setCurrentImageIndex) = rememberSaveable { mutableIntStateOf(0) }
+    val images = photosViewModel.userImages
 
     LaunchedEffect(Unit) {
         val userId = sessionViewModel.userId ?: -1
@@ -68,6 +72,16 @@ fun ProfileScreen() {
         postsViewModel.loadTotalPosts(
             userId = userId,
             apiKey = apiKey
+        )
+        photosViewModel.loadTotalImages(
+            userId = userId,
+            apiKey = apiKey
+        )
+        photosViewModel.loadUserImages(
+            userId = userId,
+            apiKey = apiKey,
+            limit = 40,
+            page = 1,
         )
     }
 
@@ -129,16 +143,22 @@ fun ProfileScreen() {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = null
-                )
-                Spacer(Modifier.width(4.dp))
-                Text(
-                    text = "${friendsViewModel.totalFriends} Friends",
-                    fontFamily = Ubuntu,
-                    fontWeight = FontWeight.Normal
-                )
+                if (friendsViewModel.isLoadingTotalFriends) {
+                    CircularProgressIndicator(
+                        color = Color(0xFFF10E91)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = "${friendsViewModel.totalFriends} Friends",
+                        fontFamily = Ubuntu,
+                        fontWeight = FontWeight.Normal
+                    )
+                }
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -161,16 +181,22 @@ fun ProfileScreen() {
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.AccountBox,
-                    contentDescription = null
-                )
-                Spacer(Modifier.width(4.dp))
-                Text(
-                    text = "$photoCount Photos",
-                    fontFamily = Ubuntu,
-                    fontWeight = FontWeight.Normal
-                )
+                if (photosViewModel.isLoadingTotalImages) {
+                    CircularProgressIndicator(
+                        color = Color(0xFFF10E91)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.AccountBox,
+                        contentDescription = null
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = "${photosViewModel.totalImages} Photos",
+                        fontFamily = Ubuntu,
+                        fontWeight = FontWeight.Normal
+                    )
+                }
             }
         }
 
@@ -184,12 +210,32 @@ fun ProfileScreen() {
         ) {
             when (selectedTab) {
                 ProfileTab.POSTS -> PostsContent()
-                ProfileTab.PHOTOS -> PhotosContent()
+                ProfileTab.PHOTOS -> PhotosContent(
+                    images = images,
+                    setFullScreenImageOpen = setFullScreenImageOpen,
+                    setCurrentImageIndex = setCurrentImageIndex
+                )
                 ProfileTab.ABOUT -> AboutContent()
                 ProfileTab.FRIENDS -> FriendsContent()
             }
         }
 
         BottomNavBar()
+    }
+
+    if (isFullScreenImageOpen) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .zIndex(9999f)
+        ) {
+            FullScreenImageViewer(
+                images = images,
+                startIndex = currentImageIndex,
+                onClose = {
+                    setFullScreenImageOpen(false)
+                }
+            )
+        }
     }
 }

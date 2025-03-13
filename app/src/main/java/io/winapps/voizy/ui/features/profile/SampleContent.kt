@@ -9,15 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun PhotosContent() {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp)
-    ) {
-        Text("Photos go here...")
-    }
-}
-
-@Composable
 fun AboutContent() {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Email: [user's email]")
@@ -28,12 +19,5 @@ fun AboutContent() {
         Text("City of Residence: ...")
         Text("Place of Work: ...")
         // etc...
-    }
-}
-
-@Composable
-fun FriendsContent() {
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Friends list or suggestions go here...")
     }
 }

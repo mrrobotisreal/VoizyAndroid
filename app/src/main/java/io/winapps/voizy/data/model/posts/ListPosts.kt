@@ -5,6 +5,10 @@ data class ListPost(
     val userID: Long,
     val toUserID: Long,
     val originalPostID: Long?,
+    val firstName: String?,
+    val lastName: String?,
+    val preferredName: String,
+    val username: String,
     val impressions: Long,
     val views: Long,
     val contentText: String,
@@ -29,6 +33,7 @@ data class ListPostsResponse(
 
 data class CompletePost(
     val post: ListPost,
+    val profilePicURL: String?,
     val reactions: List<Reaction>? = emptyList(),
     val hashtags: List<String>? = emptyList(),
     val images: List<String>? = emptyList(),

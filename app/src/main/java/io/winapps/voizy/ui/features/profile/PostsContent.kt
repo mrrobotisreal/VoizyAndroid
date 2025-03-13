@@ -1,5 +1,7 @@
 package io.winapps.voizy.ui.features.profile
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,13 +20,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -50,15 +52,17 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import io.winapps.voizy.R
 import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.data.model.posts.CompletePost
-import io.winapps.voizy.data.model.posts.ListPost
 import io.winapps.voizy.ui.theme.Ubuntu
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.pager.HorizontalPagerIndicator
 import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Scale
 import coil.size.Size
+import io.winapps.voizy.util.getTimeAgo
 
 @Composable
 fun PostsContent(
@@ -110,12 +114,18 @@ fun PostsContent(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun PostItem(
     post: CompletePost,
     onProfileClick: () -> Unit = {}
 ) {
-    val timeAgo = "3m ago"
+    val displayName = if (!post.post.firstName.isNullOrBlank() && !post.post.lastName.isNullOrBlank()) {
+        "${post.post.firstName} ${post.post.lastName} (${post.post.username})"
+    } else {
+        "${post.post.preferredName} (${post.post.username})"
+    }
+    val timeAgo = if (post.post.createdAt != null) getTimeAgo(post.post.createdAt) else "Unknown time"
     val locationName = post.post.locationName
     val contentText = post.post.contentText
     val reactionCount = if (post.reactions != null) post.reactions.size else 0
@@ -142,16 +152,48 @@ fun PostItem(
                         .background(Color.Gray)
                         .clickable { onProfileClick() }
                 ) {
-                    // AsyncImage()
-                    Image(
-                        painter = painterResource(id = R.drawable.test_profile_photo),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .border(2.dp, Color(0xFFF10E91), CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
+                    if (!post.profilePicURL.isNullOrEmpty()) {
+                        val painter = rememberAsyncImagePainter(
+                            model = post.profilePicURL
+                        )
+                        Image(
+                            painter = painter,
+                            contentDescription = "User image",
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .border(2.dp, Color(0xFFF10E91), CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+
+                        if (painter.state is AsyncImagePainter.State.Loading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.align(Alignment.Center),
+                                color = Color(0xFFF10E91)
+                            )
+                        }
+//                        AsyncImage(
+//                            model = post.profilePicURL,
+//                            contentDescription = "Poster profile pic",
+//                            modifier = Modifier.clip(CircleShape),
+//                            contentScale = ContentScale.Crop
+//                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Empty poster profile pic",
+                            modifier = Modifier.clip(CircleShape).align(Alignment.Center)
+                        )
+                    }
+//                    Image(
+//                        painter = painterResource(id = R.drawable.test_profile_photo),
+//                        contentDescription = null,
+//                        modifier = Modifier
+//                            .size(40.dp)
+//                            .clip(CircleShape)
+//                            .border(2.dp, Color(0xFFF10E91), CircleShape),
+//                        contentScale = ContentScale.Crop
+//                    )
                 }
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -160,7 +202,7 @@ fun PostItem(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "Mitchell Wintrow",
+                        text = displayName,
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontFamily = Ubuntu,
                             fontWeight = FontWeight.Bold
