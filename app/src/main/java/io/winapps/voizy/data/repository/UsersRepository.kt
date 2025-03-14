@@ -4,6 +4,7 @@ import io.winapps.voizy.data.local.SecureStorage
 import io.winapps.voizy.data.model.users.CreateAccountRequest
 import io.winapps.voizy.data.model.users.CreateAccountResponse
 import io.winapps.voizy.data.model.users.GetProfilePicResponse
+import io.winapps.voizy.data.model.users.GetProfileResponse
 import io.winapps.voizy.data.model.users.GetTotalFriendsResponse
 import io.winapps.voizy.data.model.users.GetTotalUserImagesResponse
 import io.winapps.voizy.data.model.users.ListFriendshipsResponse
@@ -24,6 +25,14 @@ class UsersRepository @Inject constructor(
         secureStorage.saveToken(response.token)
 
         return response
+    }
+
+    suspend fun getProfileInfo(apiKey: String, userIdHeader: String, userId: Long): GetProfileResponse {
+        return usersService.getProfileInfo(
+            apiKey = apiKey,
+            userIdHeader = userIdHeader,
+            userId = userId,
+        )
     }
 
     suspend fun getTotalFriends(apiKey: String, userIdHeader: String, userId: Long): GetTotalFriendsResponse {

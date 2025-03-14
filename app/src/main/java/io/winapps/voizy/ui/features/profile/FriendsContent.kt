@@ -1,7 +1,9 @@
 package io.winapps.voizy.ui.features.profile
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,8 +16,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -30,6 +36,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
 import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.data.model.users.Friend
 import io.winapps.voizy.ui.theme.Ubuntu
@@ -75,53 +83,86 @@ fun FriendRow(
 
     val displayUsername = "${friend.friendUsername}"
 
-    Row(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(8.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .padding(4.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(3.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
-        Box(
+        Row(
             modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(Color.Gray)
+                .fillMaxWidth()
+                .clickable { onClick() }
+                .padding(8.dp)
         ) {
-            if (!friend.profilePicURL.isNullOrEmpty()) {
-                AsyncImage(
-                    model = friend.profilePicURL,
-                    contentDescription = "Friend profile pic",
-                    modifier = Modifier.clip(CircleShape),
-                    contentScale = ContentScale.Crop
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFFFD5ED))
+                    .border(2.dp, Color(0xFFF10E91), CircleShape)
+            ) {
+                if (!friend.profilePicURL.isNullOrEmpty()) {
+                    val painter = rememberAsyncImagePainter(
+                        model = friend.profilePicURL
+                    )
+                    Image(
+                        painter = painter,
+                        contentDescription = "User image",
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .border(2.dp, Color(0xFFF10E91), CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    if (painter.state is AsyncImagePainter.State.Loading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center),
+                            color = Color(0xFFF10E91)
+                        )
+                    }
+//                AsyncImage(
+//                    model = friend.profilePicURL,
+//                    contentDescription = "Friend profile pic",
+//                    modifier = Modifier.clip(CircleShape),
+//                    contentScale = ContentScale.Crop
+//                )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Empty friend profile pic",
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .align(Alignment.Center),
+                        tint = Color(0xFFF10E91)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Column {
+                Text(
+                    text = displayName,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = Ubuntu,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = Color.Black
                 )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = "Empty friend profile pic",
-                    modifier = Modifier.clip(CircleShape).align(Alignment.Center)
+                Text(
+                    text = displayUsername,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = Ubuntu,
+                        fontWeight = FontWeight.Normal
+                    ),
+                    color = Color.DarkGray
                 )
             }
-        }
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        Column {
-            Text(
-                text = displayName,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = Ubuntu,
-                    fontWeight = FontWeight.Bold
-                ),
-                color = Color.Black
-            )
-            Text(
-                text = displayUsername,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontFamily = Ubuntu,
-                    fontWeight = FontWeight.Normal
-                ),
-                color = Color.DarkGray
-            )
         }
     }
 }

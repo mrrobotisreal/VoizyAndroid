@@ -4,8 +4,12 @@ import io.winapps.voizy.data.model.posts.GetPostDetailsResponse
 import io.winapps.voizy.data.model.posts.GetPostMediaResponse
 import io.winapps.voizy.data.model.posts.GetTotalPostsResponse
 import io.winapps.voizy.data.model.posts.ListPostsResponse
+import io.winapps.voizy.data.model.posts.PutPostReactionRequest
+import io.winapps.voizy.data.model.posts.PutPostReactionResponse
+import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.PUT
 import retrofit2.http.Query
 
 interface PostsService {
@@ -38,4 +42,12 @@ interface PostsService {
         @Header("X-User-ID") userIdHeader: String,
         @Query("id") postId: Long
     ): GetPostMediaResponse
+
+    @PUT("/posts/reactions/put")
+    suspend fun putPostReaction(
+        @Header("X-API-Key") apiKey: String,
+        @Header("X-User-ID") userIdHeader: String,
+        @Header("Authorization") token: String,
+        @Body putPostReactionRequest: PutPostReactionRequest
+    ): PutPostReactionResponse
 }

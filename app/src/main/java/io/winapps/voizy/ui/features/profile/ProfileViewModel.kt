@@ -1,5 +1,6 @@
 package io.winapps.voizy.ui.features.profile
 
+import android.location.Location
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -10,6 +11,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.data.model.posts.CompletePost
 import io.winapps.voizy.data.model.posts.ListPost
+import io.winapps.voizy.data.model.posts.PutPostReactionRequest
+import io.winapps.voizy.data.model.posts.ReactionType
 import io.winapps.voizy.data.model.users.Friend
 import io.winapps.voizy.data.model.users.UserImage
 import io.winapps.voizy.data.repository.PostsRepository
@@ -27,6 +30,34 @@ class PostsViewModel @Inject constructor(
     private val postsRepository: PostsRepository,
     private val usersRepository: UsersRepository
 ) : ViewModel() {
+    var postText by mutableStateOf("")
+        private set
+
+    var isCreatingNewPost by mutableStateOf(false)
+        private set
+
+    var isSubmittingPost by mutableStateOf(false)
+        private set
+
+    var isLoadingProfilePicURL by mutableStateOf(false)
+        private set
+
+    var profilePicURL by mutableStateOf<String?>(null)
+        private set
+
+    var isLoadingProfileInfo by mutableStateOf(false)
+        private set
+
+    var displayName by mutableStateOf<String?>(null)
+        private set
+
+    var selectedLocation by mutableStateOf<Location?>(null) // might need to update this to my custom Location object
+        private set
+
+    // var selectedImages
+
+    // var hashtags by mutableStateOf<List<String>>(emptyList())
+
     var completePosts by mutableStateOf(emptyList<CompletePost>())
         private set
 
@@ -47,6 +78,20 @@ class PostsViewModel @Inject constructor(
 
     var totalPostsErrorMessage by mutableStateOf<String?>(null)
         private set
+
+    fun onPostTextChanged(newValue: String) {
+        postText = newValue
+    }
+
+    fun onOpenCreatePost() {
+        isCreatingNewPost = true
+    }
+
+    fun onCloseCreatePost() {
+        isCreatingNewPost = false
+    }
+
+    fun submitPost() {}
 
     fun loadCompletePosts(userId: Long, apiKey: String, limit: Long = 20, page: Long = 1) {
         viewModelScope.launch {
@@ -127,6 +172,67 @@ class PostsViewModel @Inject constructor(
                 totalPostsErrorMessage = e.message
             } finally {
                 isLoadingTotalPosts = false
+            }
+        }
+    }
+
+    fun putPostReaction(postId: Long, userId: Long, apiKey: String, token: String, reactionType: ReactionType) {
+        viewModelScope.launch {
+            try {
+                val response = postsRepository.putPostReaction(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    token = "Bearer $token",
+                    putPostReactionRequest = PutPostReactionRequest(
+                        postID = postId,
+                        userID = userId,
+                        reactionType = reactionType.toString(),
+                    )
+                )
+            } catch (e: Exception) {
+                //
+            }
+        }
+    }
+
+    fun loadProfilePic(userId: Long, apiKey: String) {
+        viewModelScope.launch {
+            isLoadingProfilePicURL = true
+
+            try {
+                val response = usersRepository.getProfilePic(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    userId = userId
+                )
+                profilePicURL = response.profilePicURL
+            } catch (e: Exception) {
+                //
+            } finally {
+                isLoadingProfilePicURL = false
+            }
+        }
+    }
+
+    fun loadProfileInfo(userId: Long, apiKey: String, username: String, preferredName: String) {
+        viewModelScope.launch {
+            isLoadingProfileInfo = true
+
+            try {
+                val response = usersRepository.getProfileInfo(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    userId = userId
+                )
+                displayName = if (!response.firstName.isNullOrBlank() && !response.lastName.isNullOrBlank()) {
+                    "${response.firstName} ${response.lastName} (${response.username})"
+                } else {
+                    "${response.preferredName} (${response.username})"
+                }
+            } catch (e: Exception) {
+                //
+            } finally {
+                isLoadingProfileInfo = false
             }
         }
     }

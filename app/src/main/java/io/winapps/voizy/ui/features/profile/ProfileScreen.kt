@@ -1,5 +1,7 @@
 package io.winapps.voizy.ui.features.profile
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,9 +13,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
@@ -39,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -51,6 +56,7 @@ import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.ui.navigation.BottomNavBar
 import io.winapps.voizy.ui.theme.Ubuntu
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ProfileScreen() {
     val postsViewModel = hiltViewModel<PostsViewModel>()
@@ -60,6 +66,7 @@ fun ProfileScreen() {
     var selectedTab by remember { mutableStateOf(ProfileTab.POSTS) }
     val (isFullScreenImageOpen, setFullScreenImageOpen) = rememberSaveable { mutableStateOf(false) }
     val (currentImageIndex, setCurrentImageIndex) = rememberSaveable { mutableIntStateOf(0) }
+    val isCreatingNewPost = postsViewModel.isCreatingNewPost
     val images = photosViewModel.userImages
 
     LaunchedEffect(Unit) {
@@ -89,7 +96,7 @@ fun ProfileScreen() {
         modifier = Modifier.fillMaxSize().background(Color(0xFFFDF4C9)),
     ) {
         Box(
-            modifier = Modifier.fillMaxWidth().height(200.dp),
+            modifier = Modifier.fillMaxWidth().height(180.dp),
         ) {
             Image(
                 painter = painterResource(id = R.drawable.default_cover2),
@@ -237,5 +244,13 @@ fun ProfileScreen() {
                 }
             )
         }
+    }
+
+    if (isCreatingNewPost) {
+        CreatePostDialog(
+            onClose = { postsViewModel.onCloseCreatePost() },
+            postsViewModel = postsViewModel,
+            sessionViewModel = sessionViewModel
+        )
     }
 }

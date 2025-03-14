@@ -35,7 +35,6 @@ fun HelpDialog(
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.4f))
             .clickable(
-                // By default, do nothing on outside clicks if you prefer
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
             ) {}
@@ -63,7 +62,9 @@ fun HelpDialog(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "This is where you get help, so you came to the right place!",
+                    text = "If you're having trouble logging in then you can navigate to https://voizy.me/help to reset your password or see what other options are available to you.\n\n" +
+                    "If you're having trouble creating a new account, make sure that you've correctly spelled your email address and that your username and password conform to the requirements, " +
+                    "but if you're still having issues you can also reach out to the link above.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.DarkGray,
                     fontFamily = Ubuntu,

@@ -3,6 +3,7 @@ package io.winapps.voizy.data.remote.users
 import io.winapps.voizy.data.model.users.CreateAccountRequest
 import io.winapps.voizy.data.model.users.CreateAccountResponse
 import io.winapps.voizy.data.model.users.GetProfilePicResponse
+import io.winapps.voizy.data.model.users.GetProfileResponse
 import io.winapps.voizy.data.model.users.GetTotalFriendsResponse
 import io.winapps.voizy.data.model.users.GetTotalUserImagesResponse
 import io.winapps.voizy.data.model.users.ListFriendshipsResponse
@@ -16,6 +17,13 @@ import retrofit2.http.Query
 interface UsersService {
     @POST("/users/create")
     suspend fun createAccount(@Body createAccountRequest: CreateAccountRequest): CreateAccountResponse
+
+    @GET("/users/profile/get")
+    suspend fun getProfileInfo(
+        @Header("X-API-Key") apiKey: String,
+        @Header("X-User-ID") userIdHeader: String,
+        @Query("id") userId: Long,
+    ): GetProfileResponse
 
     @GET("/users/friends/get/total")
     suspend fun getTotalFriends(

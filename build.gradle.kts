@@ -7,6 +7,12 @@ plugins {
     alias(libs.plugins.kotlin.kapt) apply false
 }
 
+buildscript {
+    dependencies {
+        classpath(libs.secrets.gradle.plugin)
+    }
+}
+
 tasks.register<Delete>("clean") {
     delete(rootProject.buildDir)
 }

@@ -32,8 +32,18 @@ class SessionViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            delay(1000L)
-            didFinishSplash = true
+            val storedUserId = secureStorage.getUserId()
+            val storedApiKey = secureStorage.getApiKey()
+            val storedToken = secureStorage.getToken()
+
+            if (storedUserId != null && storedApiKey != null && storedToken != null) {
+                userId = storedUserId
+                didFinishSplash = true
+                isLoggedIn = true
+            } else {
+                delay(1000L)
+                didFinishSplash = true
+            }
         }
     }
 
@@ -48,12 +58,17 @@ class SessionViewModel @Inject constructor(
     fun setUserData(userId: Long, username: String, apiKey: String, token: String) {
         this.userId = userId
         this.username = username
+        secureStorage.saveUserId(userId)
         secureStorage.saveApiKey(apiKey)
         secureStorage.saveToken(token)
     }
 
     fun setUserProfileData(preferredName: String) {
         this.preferredName = preferredName
+    }
+
+    fun getStoredUserId(): Long? {
+        return secureStorage.getUserId()
     }
 
     fun getApiKey(): String? {

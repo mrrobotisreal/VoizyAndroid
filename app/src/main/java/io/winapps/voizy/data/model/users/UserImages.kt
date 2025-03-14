@@ -4,6 +4,7 @@ data class UserImage(
     val userId: Long,
     val imageURL: String,
     val isProfilePic: Boolean,
+    val isCoverPic: Boolean,
     val uploadedAt: String?
 )
 

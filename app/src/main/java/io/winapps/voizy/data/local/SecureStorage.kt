@@ -17,6 +17,12 @@ class SecureStorage(context: Context) {
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
+    fun saveUserId(userId: Long) {
+        prefs.edit()
+            .putLong("userId", userId)
+            .apply()
+    }
+
     fun saveApiKey(apiKey: String) {
         prefs.edit()
             .putString("apiKey", apiKey)
@@ -27,6 +33,11 @@ class SecureStorage(context: Context) {
         prefs.edit()
             .putString("token", token)
             .apply()
+    }
+
+    fun getUserId(): Long? {
+        val stored = prefs.getLong("userId", -1L)
+        return if (stored == -1L) null else stored
     }
 
     fun getApiKey(): String? {

@@ -4,6 +4,8 @@ import io.winapps.voizy.data.model.posts.GetPostDetailsResponse
 import io.winapps.voizy.data.model.posts.GetPostMediaResponse
 import io.winapps.voizy.data.model.posts.GetTotalPostsResponse
 import io.winapps.voizy.data.model.posts.ListPostsResponse
+import io.winapps.voizy.data.model.posts.PutPostReactionRequest
+import io.winapps.voizy.data.model.posts.PutPostReactionResponse
 import io.winapps.voizy.data.remote.posts.PostsApi
 import io.winapps.voizy.data.remote.posts.PostsService
 import javax.inject.Inject
@@ -43,6 +45,15 @@ class PostsRepository @Inject constructor(
             apiKey = apiKey,
             userIdHeader = userIdHeader,
             postId = postId
+        )
+    }
+
+    suspend fun putPostReaction(apiKey: String, userIdHeader: String, token: String, putPostReactionRequest: PutPostReactionRequest): PutPostReactionResponse {
+        return service.putPostReaction(
+            apiKey = apiKey,
+            userIdHeader = userIdHeader,
+            token = token,
+            putPostReactionRequest = putPostReactionRequest,
         )
     }
 }
