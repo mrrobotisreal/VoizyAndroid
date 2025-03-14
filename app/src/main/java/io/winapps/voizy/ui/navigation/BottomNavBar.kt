@@ -9,6 +9,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Feed
+import androidx.compose.material.icons.filled.Feed
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.MoreVert
@@ -38,11 +41,11 @@ fun BottomNavBar() {
     ) {
         // 6 icons: Home, Feed, Groups, Notifications, Profile, More
         NavIconButton(Icons.Default.Home, "Home")
-        NavIconButton(Icons.Default.List, "Feed")
-        NavIconButton(Icons.Default.Person, "Groups")
-        NavIconButton(Icons.Default.Notifications, "Notifications")
+        NavIconButton(Icons.AutoMirrored.Filled.Feed, "Feed")
+        NavIconButton(Icons.Filled.Groups, "Groups")
+        NavIconButton(Icons.Filled.Notifications, "Notifications")
         NavIconButton(Icons.Default.Person, "Profile")
-        NavIconButton(Icons.Default.MoreVert, "More")
+        NavIconButton(Icons.Filled.MoreVert, "More")
     }
 }
 

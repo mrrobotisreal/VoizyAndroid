@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhotoAlbum
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Poll
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.Button
@@ -367,7 +368,7 @@ fun MainPostFormUI(
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.PhotoAlbum,
+                            imageVector = Icons.Filled.PhotoLibrary,
                             contentDescription = null,
                             tint = Color(0xFFFFD5ED)
                         )

@@ -26,6 +26,110 @@ enum class ProfileTab {
 }
 
 @HiltViewModel
+class ProfileViewModel @Inject constructor(
+    private val usersRepository: UsersRepository
+) : ViewModel() {
+    var isLoadingProfilePicURL by mutableStateOf(false)
+        private set
+
+    var profilePicURL by mutableStateOf<String?>(null)
+        private set
+
+    var isLoadingCoverPic by mutableStateOf(false)
+        private set
+
+    var coverPicURL by mutableStateOf<String?>(null)
+        private set
+
+    var isLoadingProfileInfo by mutableStateOf(false)
+        private set
+
+    var firstName by mutableStateOf<String?>(null)
+        private set
+
+    var lastName by mutableStateOf<String?>(null)
+        private set
+
+    var preferredName by mutableStateOf("")
+        private set
+
+    var birthDate by mutableStateOf<String?>(null)
+        private set
+
+    var cityOfResidence by mutableStateOf<String?>(null)
+        private set
+
+    var placeOfWork by mutableStateOf<String?>(null)
+        private set
+
+    var dateJoined by mutableStateOf<String?>(null)
+        private set
+
+    fun loadProfilePic(userId: Long, apiKey: String) {
+        viewModelScope.launch {
+            isLoadingProfilePicURL = true
+
+            try {
+                val response = usersRepository.getProfilePic(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    userId = userId
+                )
+                profilePicURL = response.profilePicURL
+            } catch (e: Exception) {
+                //
+            } finally {
+                isLoadingProfilePicURL = false
+            }
+        }
+    }
+
+    fun loadCoverPic(userId: Long, apiKey: String) {
+        viewModelScope.launch {
+            isLoadingCoverPic = true
+
+            try {
+                val response = usersRepository.getCoverPic(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    userId = userId
+                )
+                coverPicURL = response.coverPicURL
+            } catch (e: Exception) {
+                //
+            } finally {
+                isLoadingCoverPic = false
+            }
+        }
+    }
+
+    fun loadProfileInfo(userId: Long, apiKey: String) {
+        viewModelScope.launch {
+            isLoadingProfileInfo = true
+
+            try {
+                val response = usersRepository.getProfileInfo(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    userId = userId
+                )
+                firstName = response.firstName
+                lastName = response.lastName
+                preferredName = response.preferredName
+                birthDate = response.birthDate
+                cityOfResidence = response.cityOfResidence
+                placeOfWork = response.placeOfWork
+                dateJoined = response.dateJoined
+            } catch (e: Exception) {
+                //
+            } finally {
+                isLoadingProfileInfo = false
+            }
+        }
+    }
+}
+
+@HiltViewModel
 class PostsViewModel @Inject constructor(
     private val postsRepository: PostsRepository,
     private val usersRepository: UsersRepository

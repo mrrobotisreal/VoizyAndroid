@@ -3,6 +3,7 @@ package io.winapps.voizy.data.repository
 import io.winapps.voizy.data.local.SecureStorage
 import io.winapps.voizy.data.model.users.CreateAccountRequest
 import io.winapps.voizy.data.model.users.CreateAccountResponse
+import io.winapps.voizy.data.model.users.GetCoverPicResponse
 import io.winapps.voizy.data.model.users.GetProfilePicResponse
 import io.winapps.voizy.data.model.users.GetProfileResponse
 import io.winapps.voizy.data.model.users.GetTotalFriendsResponse
@@ -66,6 +67,14 @@ class UsersRepository @Inject constructor(
             apiKey = apiKey,
             userIdHeader = userIdHeader,
             userId = userId,
+        )
+    }
+
+    suspend fun getCoverPic(apiKey: String, userIdHeader: String, userId: Long): GetCoverPicResponse {
+        return usersService.getCoverPic(
+            apiKey = apiKey,
+            userIdHeader = userIdHeader,
+            userId = userId
         )
     }
 

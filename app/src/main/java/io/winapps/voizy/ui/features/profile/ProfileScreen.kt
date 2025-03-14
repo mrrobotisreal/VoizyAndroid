@@ -22,11 +22,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -51,6 +54,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
 import io.winapps.voizy.R
 import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.ui.navigation.BottomNavBar
@@ -59,6 +64,7 @@ import io.winapps.voizy.ui.theme.Ubuntu
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ProfileScreen() {
+    val profileViewModel = hiltViewModel<ProfileViewModel>()
     val postsViewModel = hiltViewModel<PostsViewModel>()
     val friendsViewModel = hiltViewModel<FriendsViewModel>()
     val photosViewModel = hiltViewModel<PhotosViewModel>()
@@ -72,6 +78,14 @@ fun ProfileScreen() {
     LaunchedEffect(Unit) {
         val userId = sessionViewModel.userId ?: -1
         val apiKey = sessionViewModel.getApiKey().orEmpty()
+        profileViewModel.loadCoverPic(
+            userId = userId,
+            apiKey = apiKey
+        )
+        profileViewModel.loadProfilePic(
+            userId = userId,
+            apiKey = apiKey
+        )
         friendsViewModel.loadTotalFriends(
             userId = userId,
             apiKey = apiKey
@@ -98,27 +112,80 @@ fun ProfileScreen() {
         Box(
             modifier = Modifier.fillMaxWidth().height(180.dp),
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.default_cover2),
-                contentDescription = "Cover photo",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
+            if (!profileViewModel.coverPicURL.isNullOrEmpty()) {
+                val painter = rememberAsyncImagePainter(
+                    model = profileViewModel.coverPicURL
+                )
+                Image(
+                    painter = painter,
+                    contentDescription = "Cover photo",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+
+                if (painter.state is AsyncImagePainter.State.Loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Color(0xFFF10E91)
+                    )
+                }
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.default_cover_pic),
+                    contentDescription = "Cover photo",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
 
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .offset(x = 16.dp, y = 40.dp)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.test_profile_photo),
-                    contentDescription = "Profile photo",
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .border(2.dp, Color(0xFFF10E91), CircleShape),
-                    contentScale = ContentScale.Crop
-                )
+                if (!profileViewModel.profilePicURL.isNullOrEmpty()) {
+                    val painter = rememberAsyncImagePainter(
+                        model = profileViewModel.profilePicURL
+                    )
+                    Image(
+                        painter = painter,
+                        contentDescription = "Profile photo",
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFFFD5ED))
+                            .border(2.dp, Color(0xFFF10E91), CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    if (painter.state is AsyncImagePainter.State.Loading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center),
+                            color = Color(0xFFF10E91)
+                        )
+                    }
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Empty poster profile pic",
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape)
+                            .align(Alignment.Center)
+                            .background(Color(0xFFFFD5ED))
+                            .border(2.dp, Color(0xFFF10E91), CircleShape),
+                        tint = Color(0xFFF10E91)
+                    )
+                }
+//                Image(
+//                    painter = painterResource(id = R.drawable.test_profile_photo),
+//                    contentDescription = "Profile photo",
+//                    modifier = Modifier
+//                        .size(100.dp)
+//                        .clip(CircleShape)
+//                        .border(2.dp, Color(0xFFF10E91), CircleShape),
+//                    contentScale = ContentScale.Crop
+//                )
             }
 
             Button(
@@ -134,8 +201,11 @@ fun ProfileScreen() {
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFFFD5ED)
                 )
+
+                Spacer(modifier = Modifier.width(4.dp))
+
                 Icon(
-                    imageVector = Icons.Default.Edit,
+                    imageVector = Icons.Filled.EditNote,
                     contentDescription = null,
                 )
             }
@@ -175,7 +245,7 @@ fun ProfileScreen() {
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.List,
+                        imageVector = Icons.AutoMirrored.Filled.Comment,
                         contentDescription = null
                     )
                     Spacer(Modifier.width(4.dp))
@@ -194,7 +264,7 @@ fun ProfileScreen() {
                     )
                 } else {
                     Icon(
-                        imageVector = Icons.Default.AccountBox,
+                        imageVector = Icons.Filled.PhotoLibrary,
                         contentDescription = null
                     )
                     Spacer(Modifier.width(4.dp))

@@ -2,6 +2,7 @@ package io.winapps.voizy.data.remote.users
 
 import io.winapps.voizy.data.model.users.CreateAccountRequest
 import io.winapps.voizy.data.model.users.CreateAccountResponse
+import io.winapps.voizy.data.model.users.GetCoverPicResponse
 import io.winapps.voizy.data.model.users.GetProfilePicResponse
 import io.winapps.voizy.data.model.users.GetProfileResponse
 import io.winapps.voizy.data.model.users.GetTotalFriendsResponse
@@ -54,6 +55,13 @@ interface UsersService {
         @Header("X-User-ID") userIdHeader: String,
         @Query("id") userId: Long,
     ): GetProfilePicResponse
+
+    @GET("/users/images/get/coverPic")
+    suspend fun getCoverPic(
+        @Header("X-API-Key") apiKey: String,
+        @Header("X-User-ID") userIdHeader: String,
+        @Query("id") userId: Long,
+    ): GetCoverPicResponse
 
     @GET("/users/images/list")
     suspend fun listImages(

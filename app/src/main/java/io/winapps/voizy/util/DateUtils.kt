@@ -4,6 +4,8 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import java.time.Duration
 import java.time.Instant
+import java.time.ZoneOffset
+import java.util.Locale
 
 class DateUtils {
 }
@@ -27,4 +29,26 @@ fun getTimeAgo(createdAt: String): String {
         seconds < 29030400 -> "${seconds / 2419200} months ago"
         else -> "${seconds / 29030400} years ago"
     }
+}
+
+fun getOrdinalSuffix(day: Int): String {
+    if (day in 11..13) return "th"
+    return when (day % 10) {
+        1 -> "st"
+        2 -> "nd"
+        3 -> "rd"
+        else -> "th"
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun getFormattedDateString(date: String): String {
+    val instant = Instant.parse(date)
+    val localDate = instant.atZone(ZoneOffset.UTC).toLocalDate()
+    val day = localDate.dayOfMonth
+    val suffix = getOrdinalSuffix(day)
+    val month = localDate.month.getDisplayName(java.time.format.TextStyle.FULL, Locale.ENGLISH)
+    val year = localDate.year
+
+    return "$month $day$suffix, $year"
 }

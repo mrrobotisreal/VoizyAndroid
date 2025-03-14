@@ -244,12 +244,6 @@ fun PostItem(
                                 color = Color(0xFFF10E91)
                             )
                         }
-//                        AsyncImage(
-//                            model = post.profilePicURL,
-//                            contentDescription = "Poster profile pic",
-//                            modifier = Modifier.clip(CircleShape),
-//                            contentScale = ContentScale.Crop
-//                        )
                     } else {
                         Icon(
                             imageVector = Icons.Default.Person,
@@ -260,15 +254,6 @@ fun PostItem(
                             tint = Color(0xFFF10E91)
                         )
                     }
-//                    Image(
-//                        painter = painterResource(id = R.drawable.test_profile_photo),
-//                        contentDescription = null,
-//                        modifier = Modifier
-//                            .size(40.dp)
-//                            .clip(CircleShape)
-//                            .border(2.dp, Color(0xFFF10E91), CircleShape),
-//                        contentScale = ContentScale.Crop
-//                    )
                 }
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -339,19 +324,6 @@ fun PostItem(
                     imageUrls = images,
                     heightDp = 250.dp
                 )
-//                Box(
-//                    modifier = Modifier
-//                        .fillMaxSize()
-//                        .background(Color.LightGray)
-//                ) {
-//                    // AsyncImage
-//                    Image(
-//                        painter = painterResource(id = R.drawable.default_cover2),
-//                        contentDescription = "Cover photo",
-//                        modifier = Modifier.fillMaxSize(),
-//                        contentScale = ContentScale.Crop
-//                    )
-//                }
             }
 
             PostItemWithReactions(
@@ -359,80 +331,6 @@ fun PostItem(
                 commentCount = commentCount,
                 onReaction = onReaction
             )
-
-//            Row(
-//                modifier = Modifier.fillMaxWidth(),
-//                horizontalArrangement = Arrangement.SpaceBetween,
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                Row(
-//                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    IconButton(
-//                        onClick = {},
-//                        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91)),
-//                        modifier = Modifier.size(40.dp)
-//                    ) {
-//                        Icon(
-//                            imageVector = Icons.Default.Favorite,
-//                            contentDescription = null,
-//                            tint = Color(0xFFFFD5ED)
-//                        )
-//                    }
-//                    if (reactionCount > 0) {
-//                        Text(
-//                            text = reactionCount.toString(),
-//                            style = MaterialTheme.typography.bodySmall.copy(
-//                                fontFamily = Ubuntu,
-//                                fontWeight = FontWeight.Normal
-//                            ),
-//                            color = Color.DarkGray
-//                        )
-//                    }
-//                }
-//
-//                Row(
-//                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    IconButton(
-//                        onClick = {},
-//                        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91)),
-//                        modifier = Modifier.size(40.dp)
-//                    ) {
-//                        Icon(
-//                            imageVector = Icons.AutoMirrored.Filled.List,
-//                            contentDescription = null,
-//                            tint = Color(0xFFFFD5ED)
-//                        )
-//                    }
-//                    if (commentCount > 0) {
-//                        Text(
-//                            text = commentCount.toString(),
-//                            style = MaterialTheme.typography.bodySmall.copy(
-//                                fontFamily = Ubuntu,
-//                                fontWeight = FontWeight.Normal
-//                            ),
-//                            color = Color.DarkGray
-//                        )
-//                    }
-//                }
-//
-//                Row(
-//                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    IconButton(
-//                        onClick = {},
-//                        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91)),
-//                        modifier = Modifier.size(40.dp)
-//                    ) {
-//                        Icon(
-//                            imageVector = Icons.Default.Share,
-//                            contentDescription = null,
-//                            tint = Color(0xFFFFD5ED)
-//                        )
-//                    }
-//                }
-//            }
         }
     }
 }
