@@ -2,8 +2,12 @@ package io.winapps.voizy.data.remote.posts
 
 import io.winapps.voizy.data.model.posts.GetPostDetailsResponse
 import io.winapps.voizy.data.model.posts.GetPostMediaResponse
+import io.winapps.voizy.data.model.posts.GetTotalCommentsResponse
 import io.winapps.voizy.data.model.posts.GetTotalPostsResponse
+import io.winapps.voizy.data.model.posts.ListCommentsResponse
 import io.winapps.voizy.data.model.posts.ListPostsResponse
+import io.winapps.voizy.data.model.posts.PutPostCommentRequest
+import io.winapps.voizy.data.model.posts.PutPostCommentResponse
 import io.winapps.voizy.data.model.posts.PutPostReactionRequest
 import io.winapps.voizy.data.model.posts.PutPostReactionResponse
 import retrofit2.http.Body
@@ -50,4 +54,28 @@ interface PostsService {
         @Header("Authorization") token: String,
         @Body putPostReactionRequest: PutPostReactionRequest
     ): PutPostReactionResponse
+
+    @GET("/posts/comments/get/total")
+    suspend fun getTotalComments(
+        @Header("X-API-Key") apiKey: String,
+        @Header("X-User-ID") userIdHeader: String,
+        @Query("id") postId: Long
+    ): GetTotalCommentsResponse
+
+    @GET("/posts/comments/list")
+    suspend fun listComments(
+        @Header("X-API-Key") apiKey: String,
+        @Header("X-User-ID") userIdHeader: String,
+        @Query("id") postId: Long,
+        @Query("limit") limit: Long,
+        @Query("page") page: Long
+    ): ListCommentsResponse
+
+    @PUT("/posts/comments/put")
+    suspend fun putPostComment(
+        @Header("X-API-Key") apiKey: String,
+        @Header("X-User-ID") userIdHeader: String,
+        @Header("Authorization") token: String,
+        @Body putPostCommentRequest: PutPostCommentRequest
+    ): PutPostCommentResponse
 }

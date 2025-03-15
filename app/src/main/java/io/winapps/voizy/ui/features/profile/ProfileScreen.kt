@@ -5,6 +5,8 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +23,7 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.filled.List
@@ -32,13 +35,20 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -74,6 +84,8 @@ fun ProfileScreen() {
     val (currentImageIndex, setCurrentImageIndex) = rememberSaveable { mutableIntStateOf(0) }
     val isCreatingNewPost = postsViewModel.isCreatingNewPost
     val images = photosViewModel.userImages
+    var isViewingComments by remember { mutableStateOf(false) }
+    var selectedPostIDForComments by remember { mutableLongStateOf(0) }
 
     LaunchedEffect(Unit) {
         val userId = sessionViewModel.userId ?: -1
@@ -286,7 +298,12 @@ fun ProfileScreen() {
             modifier = Modifier.weight(1f)
         ) {
             when (selectedTab) {
-                ProfileTab.POSTS -> PostsContent()
+                ProfileTab.POSTS -> PostsContent(
+                    onSelectViewPostComments = { postID ->
+                        selectedPostIDForComments = postID
+                        isViewingComments = true
+                    }
+                )
                 ProfileTab.PHOTOS -> PhotosContent(
                     images = images,
                     setFullScreenImageOpen = setFullScreenImageOpen,
@@ -322,5 +339,102 @@ fun ProfileScreen() {
             postsViewModel = postsViewModel,
             sessionViewModel = sessionViewModel
         )
+    }
+
+    if (isViewingComments) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.4f))
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) {}
+        ) {
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                elevation = CardDefaults.cardElevation(7.dp),
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(4.dp)
+                    .systemBarsPadding()
+                    .imePadding()
+                    .fillMaxWidth()
+                    .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFDF4C9))
+            ) {
+                Comments(
+                    postID = selectedPostIDForComments,
+                    onClose = {
+                        isViewingComments = false
+                        selectedPostIDForComments = 0
+                    }
+                )
+
+                OutlinedTextField(
+                    value = postsViewModel.commentText,
+                    onValueChange = { postsViewModel.onChangeCommentText(it) },
+                    label = { Text("Comment your thoughts here...", fontFamily = Ubuntu, fontWeight = FontWeight.Normal) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        focusedTextColor = Color.Black,
+                        focusedLabelColor = Color.DarkGray,
+                        unfocusedContainerColor = Color.White,
+                        unfocusedTextColor = Color.Black,
+                        unfocusedLabelColor = Color.DarkGray
+                    )
+                )
+
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(4.dp).fillMaxWidth()
+                ) {
+                    TextButton(
+                        onClick = {
+                            isViewingComments = false
+                            selectedPostIDForComments = 0
+                        }
+                    ) {
+                        Text(
+                            text = "Close",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontFamily = Ubuntu,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = Color(0xFFF10E91)
+                        )
+                    }
+
+                    if (postsViewModel.isPuttingNewComment) {
+                        CircularProgressIndicator(
+                            color = Color(0xFFF10E91)
+                        )
+                    } else {
+                        Button(
+                            onClick = {
+                                postsViewModel.putPostComment(
+                                    userId = sessionViewModel.userId ?: 0,
+                                    apiKey = sessionViewModel.getApiKey() ?: "",
+                                    token = sessionViewModel.getToken() ?: "",
+                                    postId = selectedPostIDForComments,
+                                )
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                        ) {
+                            Text(
+                                text = "Comment",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontFamily = Ubuntu,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = Color(0xFFFFD5ED)
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }

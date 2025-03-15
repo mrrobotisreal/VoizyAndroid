@@ -1,6 +1,7 @@
 package io.winapps.voizy.ui.features.profile
 
 import android.location.Location
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -9,8 +10,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.winapps.voizy.SessionViewModel
+import io.winapps.voizy.data.model.posts.Comment
 import io.winapps.voizy.data.model.posts.CompletePost
 import io.winapps.voizy.data.model.posts.ListPost
+import io.winapps.voizy.data.model.posts.PutPostCommentRequest
 import io.winapps.voizy.data.model.posts.PutPostReactionRequest
 import io.winapps.voizy.data.model.posts.ReactionType
 import io.winapps.voizy.data.model.users.Friend
@@ -158,7 +161,8 @@ class PostsViewModel @Inject constructor(
     var selectedLocation by mutableStateOf<Location?>(null) // might need to update this to my custom Location object
         private set
 
-    // var selectedImages
+     var selectedImages by mutableStateOf<List<Uri>>(emptyList())
+         private set
 
     // var hashtags by mutableStateOf<List<String>>(emptyList())
 
@@ -183,6 +187,18 @@ class PostsViewModel @Inject constructor(
     var totalPostsErrorMessage by mutableStateOf<String?>(null)
         private set
 
+    var comments by mutableStateOf(emptyList<Comment>())
+        private set
+
+    var isLoadingComments by mutableStateOf(false)
+        private set
+
+    var commentText by mutableStateOf("")
+        private set
+
+    var isPuttingNewComment by mutableStateOf(false)
+        private set
+
     fun onPostTextChanged(newValue: String) {
         postText = newValue
     }
@@ -193,6 +209,8 @@ class PostsViewModel @Inject constructor(
 
     fun onCloseCreatePost() {
         isCreatingNewPost = false
+        postText = ""
+        selectedImages = emptyList()
     }
 
     fun submitPost() {}
@@ -243,6 +261,7 @@ class PostsViewModel @Inject constructor(
                     val complete = CompletePost(
                         post = post,
                         profilePicURL = profilePicURL,
+                        totalComments = post.totalComments,
                         reactions = details.reactions,
                         hashtags = details.hashtags,
                         images = media.images.orEmpty(),
@@ -340,6 +359,114 @@ class PostsViewModel @Inject constructor(
             }
         }
     }
+
+    fun addImage(uri: Uri) {
+        if (selectedImages.size < 10) {
+            selectedImages = selectedImages + uri
+        }
+    }
+
+    fun addImages(uris: List<Uri>) {
+        val total = selectedImages.size + uris.size
+        val slice = if (total > 10) uris.take(10 - selectedImages.size) else uris
+        selectedImages = selectedImages + slice
+    }
+
+    fun loadPostComments(userId: Long, apiKey: String, postId: Long, limit: Long = 20, page: Long = 1) {
+        viewModelScope.launch {
+            isLoadingComments = true
+
+            try {
+                val response = postsRepository.listComments(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    postId = postId,
+                    limit = limit,
+                    page = page,
+                )
+                comments = response.comments
+            } catch (e: Exception) {
+                //
+            } finally {
+                isLoadingComments = false
+            }
+        }
+    }
+
+    fun onChangeCommentText(newValue: String) {
+        commentText = newValue
+    }
+
+    fun putPostComment(userId: Long, apiKey: String, token: String, postId: Long) {
+        if (commentText.isEmpty() || commentText.isBlank()) {
+            return
+        }
+
+        viewModelScope.launch {
+            isPuttingNewComment = true
+
+            try {
+                val response = postsRepository.putPostComment(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    token = "Bearer $token",
+                    putPostCommentRequest = PutPostCommentRequest(
+                        postID = postId,
+                        userID = userId,
+                        contentText = commentText
+                    )
+                )
+                if (response.success) {
+                    loadPostComments(
+                        userId = userId,
+                        apiKey = apiKey,
+                        postId = postId,
+                        limit = 20,
+                        page = 1,
+                    )
+                }
+            } catch (e: Exception) {
+                //
+            } finally {
+                isPuttingNewComment = false
+                commentText = ""
+            }
+        }
+    }
+
+//    fun createPost(userId: Long, apiKey: String, token: String) {
+//        viewModelScope.launch {
+//            isSubmittingPost = true
+//
+//            try {
+//                val response = postsRepository.createPost(
+//                    apiKey = apiKey,
+//                    userIdHeader = userId.toString(),
+//                    token = "Bearer $token",
+//                    createPostRequest: CreatePostRequest(
+//                        userID = userId,
+//                        toUserID = -1,
+//                        originalPostID = null,
+//                        contentText = postText,
+//                        locationName = "",
+//                        locationLat = null,
+//                        locationLong = null,
+//                        images = emptyList<String>(),
+//                        hashtags = emptyList<String>(),
+//                        isPoll = false,
+//                        pollQuestion = null,
+//                        pollDurationType = null,
+//                        pollDurationLength = null,
+//                        pollOptions = emptyList<String>()
+//                    ),
+//                )
+//            } catch (e: Exception) {
+//                //
+//            } finally {
+//                isSubmittingPost = false
+//            }
+//        }
+//    }
 }
 
 @HiltViewModel

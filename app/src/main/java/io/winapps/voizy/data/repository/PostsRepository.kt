@@ -2,8 +2,12 @@ package io.winapps.voizy.data.repository
 
 import io.winapps.voizy.data.model.posts.GetPostDetailsResponse
 import io.winapps.voizy.data.model.posts.GetPostMediaResponse
+import io.winapps.voizy.data.model.posts.GetTotalCommentsResponse
 import io.winapps.voizy.data.model.posts.GetTotalPostsResponse
+import io.winapps.voizy.data.model.posts.ListCommentsResponse
 import io.winapps.voizy.data.model.posts.ListPostsResponse
+import io.winapps.voizy.data.model.posts.PutPostCommentRequest
+import io.winapps.voizy.data.model.posts.PutPostCommentResponse
 import io.winapps.voizy.data.model.posts.PutPostReactionRequest
 import io.winapps.voizy.data.model.posts.PutPostReactionResponse
 import io.winapps.voizy.data.remote.posts.PostsApi
@@ -54,6 +58,33 @@ class PostsRepository @Inject constructor(
             userIdHeader = userIdHeader,
             token = token,
             putPostReactionRequest = putPostReactionRequest,
+        )
+    }
+
+    suspend fun getTotalComments(apiKey: String, userIdHeader: String, postId: Long): GetTotalCommentsResponse {
+        return service.getTotalComments(
+            apiKey = apiKey,
+            userIdHeader = userIdHeader,
+            postId = postId
+        )
+    }
+
+    suspend fun listComments(apiKey: String, userIdHeader: String, postId: Long, limit: Long, page: Long): ListCommentsResponse {
+        return service.listComments(
+            apiKey = apiKey,
+            userIdHeader = userIdHeader,
+            postId = postId,
+            limit = limit,
+            page = page,
+        )
+    }
+
+    suspend fun putPostComment(apiKey: String, userIdHeader: String, token: String, putPostCommentRequest: PutPostCommentRequest): PutPostCommentResponse {
+        return service.putPostComment(
+            apiKey = apiKey,
+            userIdHeader = userIdHeader,
+            token = token,
+            putPostCommentRequest = putPostCommentRequest,
         )
     }
 }

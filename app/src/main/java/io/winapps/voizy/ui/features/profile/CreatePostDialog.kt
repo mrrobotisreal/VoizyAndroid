@@ -1,6 +1,10 @@
 package io.winapps.voizy.ui.features.profile
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -43,8 +47,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,6 +67,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
@@ -71,6 +80,22 @@ import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.rememberPagerState
 import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.ui.theme.Ubuntu
+import java.io.File
+
+fun createImageFileUri(context: Context): Uri? {
+    val filename = "temp_photo_${System.currentTimeMillis()}.jpg"
+    val tempFile = File(context.cacheDir, filename)
+    return try {
+        FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            tempFile
+        )
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
 
 @Composable
 fun CreatePostDialog(
@@ -83,17 +108,19 @@ fun CreatePostDialog(
     val token = sessionViewModel.getToken().orEmpty()
     val username = sessionViewModel.username.orEmpty()
     val preferredName = sessionViewModel.preferredName.orEmpty()
+    val selectedImages = postsViewModel.selectedImages
     var isSelectingLocation by remember { mutableStateOf(false) }
     var locationName by remember { mutableStateOf("") }
     var locationLat by remember { mutableStateOf<Double?>(null) }
     var locationLong by remember { mutableStateOf<Double?>(null) }
-    var selectedImages by remember { mutableStateOf<List<Uri>>(emptyList()) }
 
     val pickImagesLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents(),
         onResult = { uris ->
             val newList = if (uris.size > 10) uris.take(10) else uris
-            selectedImages = newList
+            postsViewModel.addImages(
+                uris = newList
+            )
         }
     )
 
@@ -139,11 +166,12 @@ fun CreatePostDialog(
                     sessionViewModel = sessionViewModel,
                     locationName = locationName,
                     onAddLocationClick = {
-//                        locationLat = postsViewModel.currentLat
-//                        locationLong = postsViewModel.currentLong
                         isSelectingLocation = true
                     },
                     selectedImages = selectedImages,
+                    onPhotoCaptured = { uri ->
+                        postsViewModel.addImage(uri)
+                    },
                     onPhotosAlbumClick = {
                         pickImagesLauncher.launch("image/*")
                     }
@@ -173,6 +201,7 @@ fun MainPostFormUI(
     locationName: String,
     onAddLocationClick: () -> Unit,
     selectedImages: List<Uri>,
+    onPhotoCaptured: (Uri) -> Unit,
     onPhotosAlbumClick: () -> Unit
 ) {
     Column(
@@ -312,55 +341,44 @@ fun MainPostFormUI(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                if (postsViewModel.postText.isNotEmpty()) {
-                    Text(
-                        text = postsViewModel.postText,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontFamily = Ubuntu,
-                            fontWeight = FontWeight.Normal
-                        ),
-                        color = Color.Black
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                } else {
-                    Box(
-                        modifier = Modifier.weight(1F)
-                    ) {
-                        Text(
-                            text = "What's on your mind?",
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                fontFamily = Ubuntu,
-                                fontWeight = FontWeight.Normal
-                            ),
-                            color = Color.Black
+                Box(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    OutlinedTextField(
+                        value = postsViewModel.postText,
+                        onValueChange = { postsViewModel.onPostTextChanged(it) },
+                        label = { Text("What's on your mind?", fontFamily = Ubuntu, fontWeight = FontWeight.Normal) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            focusedTextColor = Color.Black,
+                            focusedLabelColor = Color.DarkGray,
+                            unfocusedContainerColor = Color.White,
+                            unfocusedTextColor = Color.Black,
+                            unfocusedLabelColor = Color.DarkGray
                         )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
+                    )
                 }
 
-                        if (selectedImages.isNotEmpty()) {
-                            CreatePostImagesCarousel(
-                                imageUrls = selectedImages,
-                                heightDp = 250.dp
-                            )
-                        }
+                Spacer(modifier = Modifier.height(8.dp))
+
+                if (selectedImages.isNotEmpty()) {
+                    CreatePostImagesCarousel(
+                        imageUrls = selectedImages,
+                        heightDp = 250.dp
+                    )
+                }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(
-                        onClick = {},
-                        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91)),
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.CameraAlt,
-                            contentDescription = null,
-                            tint = Color(0xFFFFD5ED)
-                        )
-                    }
+                    CameraIconWithPermission(
+                        onPhotoCaptured = { uri ->
+                            onPhotoCaptured(uri)
+                        }
+                    )
 
                     IconButton(
                         onClick = { onPhotosAlbumClick() },
@@ -441,6 +459,61 @@ fun MainPostFormUI(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun CameraIconWithPermission(
+    onPhotoCaptured: (Uri) -> Unit
+) {
+    val context = LocalContext.current
+
+    var cameraPermissionGranted by remember { mutableStateOf(false) }
+
+    var tempUri by remember { mutableStateOf<Uri?>(null) }
+
+    val takePictureLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempUri != null) {
+            onPhotoCaptured(tempUri!!)
+        }
+    }
+
+    val requestCameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        cameraPermissionGranted = granted
+        if (granted && tempUri != null) {
+            takePictureLauncher.launch(tempUri!!)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        val hasPerm = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+        cameraPermissionGranted = hasPerm
+    }
+
+    IconButton(
+        onClick = {
+            val uri = createImageFileUri(context)
+            if (uri == null) return@IconButton
+
+            tempUri = uri
+            if (cameraPermissionGranted) {
+                takePictureLauncher.launch(uri)
+            } else {
+                requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        },
+        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91)),
+        modifier = Modifier.size(40.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Filled.CameraAlt,
+            contentDescription = null,
+            tint = Color(0xFFFFD5ED)
+        )
     }
 }
 
