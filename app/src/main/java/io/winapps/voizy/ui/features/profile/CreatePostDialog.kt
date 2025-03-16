@@ -103,6 +103,7 @@ fun CreatePostDialog(
     postsViewModel: PostsViewModel,
     sessionViewModel: SessionViewModel
 ) {
+    val context = LocalContext.current
     val userId = sessionViewModel.userId ?: -1
     val apiKey = sessionViewModel.getApiKey().orEmpty()
     val token = sessionViewModel.getToken().orEmpty()
@@ -162,6 +163,18 @@ fun CreatePostDialog(
             if (!isSelectingLocation) {
                 MainPostFormUI(
                     onClose = { onClose() },
+                    onSubmitPost = {
+                        val locName = if (locationName.isBlank() || locationName.isEmpty()) null else locationName
+                        postsViewModel.submitPost(
+                            context = context,
+                            apiKey = apiKey,
+                            userId = userId,
+                            token = token,
+                            locationName = locName,
+                            locationLat = locationLat,
+                            locationLong = locationLong
+                        )
+                    },
                     postsViewModel = postsViewModel,
                     sessionViewModel = sessionViewModel,
                     locationName = locationName,
@@ -180,6 +193,9 @@ fun CreatePostDialog(
                 LocationPickerUI(
                     onBack = {
                         isSelectingLocation = false
+                        locationName = ""
+                        locationLat = null
+                        locationLong = null
                     },
                     onAdd = { newName, newLat, newLong ->
                         locationName = newName
@@ -191,11 +207,20 @@ fun CreatePostDialog(
             }
         }
     }
+
+    if (postsViewModel.showCreatePostSuccessToast) {
+        Toast.makeText(LocalContext.current, "Successfully created post!", Toast.LENGTH_SHORT).show()
+        postsViewModel.loadTotalPosts(userId, apiKey)
+        postsViewModel.loadCompletePosts(userId, apiKey, 30, 1)
+        postsViewModel.endShowCreatePostSuccessToast()
+        onClose()
+    }
 }
 
 @Composable
 fun MainPostFormUI(
     onClose: () -> Unit,
+    onSubmitPost: () -> Unit,
     postsViewModel: PostsViewModel,
     sessionViewModel: SessionViewModel,
     locationName: String,
@@ -452,7 +477,7 @@ fun MainPostFormUI(
                 )
             } else {
                 Button(
-                    onClick = { postsViewModel.submitPost() },
+                    onClick = { onSubmitPost() },
                     colors = buttonColors(containerColor = Color(0xFFF10E91))
                 ) {
                     Text("Create", fontFamily = Ubuntu, fontWeight = FontWeight.Bold)

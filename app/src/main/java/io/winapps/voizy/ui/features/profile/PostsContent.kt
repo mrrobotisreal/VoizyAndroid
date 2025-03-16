@@ -468,6 +468,7 @@ fun PostItemWithReactions(
                 }
             }
             if (reactionCount > 0) {
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = reactionCount.toString(),
                     style = MaterialTheme.typography.bodySmall.copy(
@@ -544,10 +545,11 @@ fun ReactionIconButton(
     val displayEmoji = currentReaction?.emoji() ?: "❤️"
 
     if (currentReaction == null) {
-        IconButton(
-            onClick = {},
-            colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91)),
-            modifier = Modifier.size(40.dp)
+        Box(
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(Color(0xFFF10E91))
+                .size(40.dp)
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onTap = {
@@ -562,13 +564,15 @@ fun ReactionIconButton(
             Icon(
                 imageVector = Icons.Filled.Favorite,
                 contentDescription = null,
-                tint = Color(0xFFFFD5ED)
+                tint = Color(0xFFFFD5ED),
+                modifier = Modifier.align(Alignment.Center)
             )
         }
-        Spacer(modifier = Modifier.width(4.dp))
     } else {
         Box(
             modifier = Modifier
+                .clip(CircleShape)
+                .background(Color(0xFFF10E91))
                 .size(40.dp)
                 .pointerInput(Unit) {
                     detectTapGestures(
@@ -584,7 +588,8 @@ fun ReactionIconButton(
             Text(
                 text = displayEmoji,
                 style = MaterialTheme.typography.bodyLarge,
-                fontSize = 28.sp
+                fontSize = 24.sp,
+                modifier = Modifier.align(Alignment.Center)
             )
         }
     }
@@ -621,6 +626,14 @@ fun ReactionPopUpRow(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Close",
+                    tint = Color(0xFFF10E91),
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable { onOutsideClick() }
+                )
                 val allReactions = listOf(
                     ReactionType.LIKE,
                     ReactionType.LOVE,
@@ -655,7 +668,7 @@ fun Comments(
     val sessionViewModel = hiltViewModel<SessionViewModel>()
     val apiKey = sessionViewModel.getApiKey() ?: ""
     val userId = sessionViewModel.userId ?: -1
-    val comments = postsViewModel.comments
+    val comments = postsViewModel.comments ?: emptyList<Comment>()
 
     LaunchedEffect(Unit) {
         postsViewModel.loadPostComments(
@@ -667,34 +680,11 @@ fun Comments(
         )
     }
 
-    Box {
-        TextButton(
-            onClick = {
-                onClose()
-            }
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Close,
-                contentDescription = "Close",
-                tint = Color(0xFFF10E91)
+    LazyColumn {
+        items(comments) { comment ->
+            CommentRow(
+                comment = comment
             )
-
-            Text(
-                text = "Close",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontFamily = Ubuntu,
-                    fontWeight = FontWeight.Normal
-                ),
-                color = Color(0xFFF10E91)
-            )
-        }
-
-        LazyColumn {
-            items(comments) { comment ->
-                CommentRow(
-                    comment = comment
-                )
-            }
         }
     }
 }

@@ -44,6 +44,8 @@ fun AboutContent() {
         InterestsCard()
         Spacer(modifier = Modifier.height(10.dp))
         EducationCard()
+        Spacer(modifier = Modifier.height(10.dp))
+        SocialLinksTable()
     }
 }
 
@@ -93,11 +95,12 @@ fun ProfileInfoCard() {
             ) {
                 Text(
                     text = "Profile Info",
-                    style = MaterialTheme.typography.headlineMedium.copy(
+                    style = MaterialTheme.typography.headlineSmall.copy(
                         fontFamily = Ubuntu,
                         fontWeight = FontWeight.Bold
                     ),
-                    color = Color.Black
+                    color = Color.Black,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
                 Row {
                     Column {
@@ -321,11 +324,12 @@ fun InterestsCard() {
         ) {
             Text(
                 text = "Interests",
-                style = MaterialTheme.typography.headlineMedium.copy(
+                style = MaterialTheme.typography.headlineSmall.copy(
                     fontFamily = Ubuntu,
                     fontWeight = FontWeight.Bold
                 ),
-                color = Color.Black
+                color = Color.Black,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Row {
                 Column {
@@ -362,11 +366,12 @@ fun EducationCard() {
         ) {
             Text(
                 text = "Education",
-                style = MaterialTheme.typography.headlineMedium.copy(
+                style = MaterialTheme.typography.headlineSmall.copy(
                     fontFamily = Ubuntu,
                     fontWeight = FontWeight.Bold
                 ),
-                color = Color.Black
+                color = Color.Black,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Row {
                 Column {
@@ -375,6 +380,48 @@ fun EducationCard() {
                     ) {
                         Text(
                             text = "No education has been added yet...",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontFamily = Ubuntu,
+                                fontWeight = FontWeight.Normal
+                            ),
+                            color = Color.DarkGray
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SocialLinksTable() {
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation(4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Text(
+                text = "Social Links",
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontFamily = Ubuntu,
+                    fontWeight = FontWeight.Bold
+                ),
+                color = Color.Black,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+            Row {
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "No social links have been added yet...",
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontFamily = Ubuntu,
                                 fontWeight = FontWeight.Normal

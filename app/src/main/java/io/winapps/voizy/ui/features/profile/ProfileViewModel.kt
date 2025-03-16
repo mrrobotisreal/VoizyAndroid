@@ -1,27 +1,43 @@
 package io.winapps.voizy.ui.features.profile
 
+import android.app.Application
+import android.content.Context
 import android.location.Location
 import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.data.model.posts.Comment
 import io.winapps.voizy.data.model.posts.CompletePost
+import io.winapps.voizy.data.model.posts.CreatePostRequest
+import io.winapps.voizy.data.model.posts.GetBatchPresignedPutUrlRequest
 import io.winapps.voizy.data.model.posts.ListPost
+import io.winapps.voizy.data.model.posts.PresignedFile
 import io.winapps.voizy.data.model.posts.PutPostCommentRequest
+import io.winapps.voizy.data.model.posts.PutPostMediaRequest
 import io.winapps.voizy.data.model.posts.PutPostReactionRequest
 import io.winapps.voizy.data.model.posts.ReactionType
+import io.winapps.voizy.data.model.posts.UpdatePostRequest
 import io.winapps.voizy.data.model.users.Friend
 import io.winapps.voizy.data.model.users.UserImage
 import io.winapps.voizy.data.repository.PostsRepository
 import io.winapps.voizy.data.repository.UsersRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import okio.IOException
 import javax.inject.Inject
 
 enum class ProfileTab {
@@ -146,6 +162,9 @@ class PostsViewModel @Inject constructor(
     var isSubmittingPost by mutableStateOf(false)
         private set
 
+    var showCreatePostSuccessToast by mutableStateOf(false)
+        private set
+
     var isLoadingProfilePicURL by mutableStateOf(false)
         private set
 
@@ -187,7 +206,7 @@ class PostsViewModel @Inject constructor(
     var totalPostsErrorMessage by mutableStateOf<String?>(null)
         private set
 
-    var comments by mutableStateOf(emptyList<Comment>())
+    var comments by mutableStateOf<List<Comment>?>(emptyList())
         private set
 
     var isLoadingComments by mutableStateOf(false)
@@ -212,8 +231,6 @@ class PostsViewModel @Inject constructor(
         postText = ""
         selectedImages = emptyList()
     }
-
-    fun submitPost() {}
 
     fun loadCompletePosts(userId: Long, apiKey: String, limit: Long = 20, page: Long = 1) {
         viewModelScope.launch {
@@ -384,7 +401,7 @@ class PostsViewModel @Inject constructor(
                     limit = limit,
                     page = page,
                 )
-                comments = response.comments
+                comments = response.comments ?: emptyList()
             } catch (e: Exception) {
                 //
             } finally {
@@ -434,39 +451,126 @@ class PostsViewModel @Inject constructor(
         }
     }
 
-//    fun createPost(userId: Long, apiKey: String, token: String) {
-//        viewModelScope.launch {
-//            isSubmittingPost = true
-//
-//            try {
-//                val response = postsRepository.createPost(
-//                    apiKey = apiKey,
-//                    userIdHeader = userId.toString(),
-//                    token = "Bearer $token",
-//                    createPostRequest: CreatePostRequest(
-//                        userID = userId,
-//                        toUserID = -1,
-//                        originalPostID = null,
-//                        contentText = postText,
-//                        locationName = "",
-//                        locationLat = null,
-//                        locationLong = null,
-//                        images = emptyList<String>(),
-//                        hashtags = emptyList<String>(),
-//                        isPoll = false,
-//                        pollQuestion = null,
-//                        pollDurationType = null,
-//                        pollDurationLength = null,
-//                        pollOptions = emptyList<String>()
-//                    ),
-//                )
-//            } catch (e: Exception) {
-//                //
-//            } finally {
-//                isSubmittingPost = false
-//            }
-//        }
-//    }
+    fun submitPost(context: Context, userId: Long, apiKey: String, token: String, locationName: String?, locationLat: Double?, locationLong: Double?) {
+        viewModelScope.launch {
+            isSubmittingPost = true
+
+            try {
+                val response = postsRepository.createPost(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    token = "Bearer $token",
+                    createPostRequest = CreatePostRequest(
+                        userID = userId,
+                        toUserID = -1,
+                        originalPostID = null,
+                        contentText = postText,
+                        locationName = locationName,
+                        locationLat = locationLat,
+                        locationLong = locationLong,
+                        images = emptyList<String>(),
+                        hashtags = emptyList<String>(),
+                        isPoll = false,
+                        pollQuestion = null,
+                        pollDurationType = null,
+                        pollDurationLength = null,
+                        pollOptions = emptyList<String>()
+                    )
+                )
+                if (response.success && selectedImages.isNotEmpty()) {
+                    val postID: Long = response.postID!!
+                    val fileNames: List<String> = List(selectedImages.size) { index ->
+                        "image${index + 1}.jpg"
+                    }
+                    val imagesResponse = postsRepository.getBatchPresignedPutUrls(
+                        apiKey = apiKey,
+                        userIdHeader = userId.toString(),
+                        token = "Bearer $token",
+                        getBatchPresignedPutUrlRequest = GetBatchPresignedPutUrlRequest(
+                            postID = postID,
+                            userID = userId,
+                            fileNames = fileNames,
+                        )
+                    )
+
+                    uploadImagesToS3(
+                        context,
+                        selectedImages,
+                        imagesResponse.images,
+                    )
+
+                    val images: List<String> = List(imagesResponse.images.size) { index ->
+                        imagesResponse.images[index].finalURL
+                    }
+                    for (img in images) {
+                        Log.d(null, "IMAGEEEEEEEEEEEEEEEE $img")
+                    }
+                    postsRepository.putPostMedia(
+                        apiKey = apiKey,
+                        userIdHeader = userId.toString(),
+                        token = "Bearer $token",
+                        putPostMediaRequest = PutPostMediaRequest(
+                            postID = postID,
+                            images = images
+                        )
+                    )
+                }
+                if (response.success) {
+                    showCreatePostSuccessToast = true
+                }
+            } catch (e: Exception) {
+                Log.d(e.message, "Create post exception: ${e.message}")
+            } finally {
+                isSubmittingPost = false
+            }
+        }
+    }
+
+    private suspend fun uploadImagesToS3(
+        context: Context,
+        selectedImages: List<Uri>,
+        presignedFiles: List<PresignedFile>,
+    ) {
+        val count = minOf(selectedImages.size, presignedFiles.size)
+        for (i in 0 until count) {
+            val localUri = selectedImages[i]
+            val presignedUrl = presignedFiles[i].presignedURL
+            putImageToPresignedUrl(context, localUri, presignedUrl)
+        }
+    }
+
+    suspend fun putImageToPresignedUrl(
+        context: Context,
+        localUri: Uri,
+        presignedUrl: String
+    ) {
+        withContext(Dispatchers.IO) {
+            val contentResolver = context.contentResolver
+            val inputStream = contentResolver.openInputStream(localUri) ?: return@withContext
+
+            val bytes = inputStream.readBytes()
+            inputStream.close()
+
+            val mimeType = "image/jpeg"
+
+            val requestBody = bytes.toRequestBody(mimeType.toMediaTypeOrNull())
+            val request = Request.Builder()
+                .url(presignedUrl)
+                .put(requestBody)
+                .build()
+
+            val client = OkHttpClient()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    throw IOException("Failed to upload to S3. HTTP ${response.code}")
+                }
+            }
+        }
+    }
+
+    fun endShowCreatePostSuccessToast() {
+        showCreatePostSuccessToast = false
+    }
 }
 
 @HiltViewModel
@@ -474,6 +578,7 @@ class FriendsViewModel @Inject constructor(
     private val usersRepository: UsersRepository
 ) : ViewModel() {
     var friends by mutableStateOf(emptyList<Friend>())
+        private set
 
     var isLoading by mutableStateOf(false)
         private set
@@ -488,6 +593,9 @@ class FriendsViewModel @Inject constructor(
         private set
 
     var totalFriendsErrorMessage by mutableStateOf<String?>(null)
+        private set
+
+    var searchText by mutableStateOf("")
         private set
 
     fun loadFriends(userId: Long, apiKey: String, limit: Long = 50, page: Long = 1) {
@@ -530,6 +638,10 @@ class FriendsViewModel @Inject constructor(
                 isLoadingTotalFriends = false
             }
         }
+    }
+
+    fun onChangeSearchText(newValue: String) {
+        searchText = newValue
     }
 }
 

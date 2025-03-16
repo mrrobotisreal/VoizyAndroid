@@ -17,7 +17,7 @@ data class Comment(
 )
 
 data class ListCommentsResponse(
-    val comments: List<Comment> = emptyList(),
+    val comments: List<Comment>? = emptyList(),
     val limit: Long,
     val page: Long,
     val totalComments: Long,

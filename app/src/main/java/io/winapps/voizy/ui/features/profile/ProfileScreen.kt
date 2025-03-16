@@ -363,6 +363,23 @@ fun ProfileScreen() {
                     .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFFDF4C9))
             ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.CenterHorizontally)
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = "Comments",
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontFamily = Ubuntu,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = Color.Black,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
                 Comments(
                     postID = selectedPostIDForComments,
                     onClose = {
@@ -374,8 +391,8 @@ fun ProfileScreen() {
                 OutlinedTextField(
                     value = postsViewModel.commentText,
                     onValueChange = { postsViewModel.onChangeCommentText(it) },
-                    label = { Text("Comment your thoughts here...", fontFamily = Ubuntu, fontWeight = FontWeight.Normal) },
-                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("What are your thoughts?", fontFamily = Ubuntu, fontWeight = FontWeight.Normal) },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.White,
                         focusedTextColor = Color.Black,
