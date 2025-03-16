@@ -140,21 +140,6 @@ fun PostsContent(
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-//        OutlinedTextField(
-//            value = postsViewModel.postText,
-//            onValueChange = { postsViewModel.onPostTextChanged(it) },
-//            label = { Text("What's on your mind?", fontFamily = Ubuntu, fontWeight = FontWeight.Normal) },
-//            modifier = Modifier.fillMaxWidth(),
-//            colors = TextFieldDefaults.colors(
-//                focusedContainerColor = Color.White,
-//                focusedTextColor = Color.Black,
-//                focusedLabelColor = Color.DarkGray,
-//                unfocusedContainerColor = Color.White,
-//                unfocusedTextColor = Color.Black,
-//                unfocusedLabelColor = Color.DarkGray
-//            )
-//        )
-
             when {
                 isLoading -> {
                     CircularProgressIndicator(

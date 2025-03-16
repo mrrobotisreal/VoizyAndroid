@@ -4,7 +4,9 @@ import android.app.Application
 import android.content.Context
 import android.location.Location
 import android.net.Uri
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -26,9 +28,13 @@ import io.winapps.voizy.data.model.posts.PutPostReactionRequest
 import io.winapps.voizy.data.model.posts.ReactionType
 import io.winapps.voizy.data.model.posts.UpdatePostRequest
 import io.winapps.voizy.data.model.users.Friend
+import io.winapps.voizy.data.model.users.GetBatchUserImagesPresignedPutUrlsRequest
+import io.winapps.voizy.data.model.users.PresignedUserImageFile
+import io.winapps.voizy.data.model.users.PutUserImagesRequest
 import io.winapps.voizy.data.model.users.UserImage
 import io.winapps.voizy.data.repository.PostsRepository
 import io.winapps.voizy.data.repository.UsersRepository
+import io.winapps.voizy.util.getInstantNowString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -666,6 +672,18 @@ class PhotosViewModel @Inject constructor(
     var totalImagesErrorMessage by mutableStateOf<String?>(null)
         private set
 
+    var selectedImages by mutableStateOf<List<Uri>>(emptyList())
+        private set
+
+    var isAddingImages by mutableStateOf(false)
+        private set
+
+    var isPuttingNewImages by mutableStateOf(false)
+        private set
+
+    var showPutUserImagesSuccessToast by mutableStateOf(false)
+        private set
+
     fun loadUserImages(userId: Long, apiKey: String, limit: Long = 40, page: Long = 1) {
         viewModelScope.launch {
             isLoading = true
@@ -706,5 +724,119 @@ class PhotosViewModel @Inject constructor(
                 isLoadingTotalImages = false
             }
         }
+    }
+
+    fun onOpenAddImages() {
+        isAddingImages = true
+    }
+
+    fun onCloseAddImages() {
+        isAddingImages = false
+    }
+
+    fun addImage(uri: Uri) {
+        if (selectedImages.size < 10) {
+            selectedImages = selectedImages + uri
+        }
+    }
+
+    fun addImages(uris: List<Uri>) {
+        val total = selectedImages.size + uris.size
+        val slice = if (total > 10) uris.take(10 - selectedImages.size) else uris
+        selectedImages = selectedImages + slice
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun putUserImages(context: Context, apiKey: String, userId: Long, token: String) {
+        viewModelScope.launch {
+            isPuttingNewImages = true
+
+            try {
+                val nowString = getInstantNowString()
+                val fileNames: List<String> = List(selectedImages.size) { index ->
+                    "on${nowString}_image${index + 1}.jpg"
+                }
+                val imagesResponse = usersRepository.getBatchUserImagesPresignedPutUrls(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    token = "Bearer $token",
+                    getBatchUserImagesPresignedPutUrlsRequest = GetBatchUserImagesPresignedPutUrlsRequest(
+                        userID = userId,
+                        fileNames = fileNames
+                    )
+                )
+                uploadImagesToS3(
+                    context,
+                    selectedImages,
+                    imagesResponse.images,
+                )
+
+                val images: List<String> = List(imagesResponse.images.size) { index ->
+                    imagesResponse.images[index].finalURL
+                }
+                val putResponse = usersRepository.putUserImages(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    token = "Bearer $token",
+                    putUserImagesRequest = PutUserImagesRequest(
+                        userID = userId,
+                        images = images
+                    )
+                )
+                if (putResponse.success) {
+                    showPutUserImagesSuccessToast = true
+                }
+            } catch (e: Exception) {
+                Log.e(e.message, "PutUserImages error! ${e.message}")
+            } finally {
+                isPuttingNewImages = false
+            }
+        }
+    }
+
+    private suspend fun uploadImagesToS3(
+        context: Context,
+        selectedImages: List<Uri>,
+        presignedFiles: List<PresignedUserImageFile>,
+    ) {
+        val count = minOf(selectedImages.size, presignedFiles.size)
+        for (i in 0 until count) {
+            val localUri = selectedImages[i]
+            val presignedUrl = presignedFiles[i].presignedURL
+            putImageToPresignedUrl(context, localUri, presignedUrl)
+        }
+    }
+
+    suspend fun putImageToPresignedUrl(
+        context: Context,
+        localUri: Uri,
+        presignedUrl: String
+    ) {
+        withContext(Dispatchers.IO) {
+            val contentResolver = context.contentResolver
+            val inputStream = contentResolver.openInputStream(localUri) ?: return@withContext
+
+            val bytes = inputStream.readBytes()
+            inputStream.close()
+
+            val mimeType = "image/jpeg"
+
+            val requestBody = bytes.toRequestBody(mimeType.toMediaTypeOrNull())
+            val request = Request.Builder()
+                .url(presignedUrl)
+                .put(requestBody)
+                .build()
+
+            val client = OkHttpClient()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    throw IOException("Failed to upload to S3. HTTP ${response.code}")
+                }
+            }
+        }
+    }
+
+    fun endShowPutUserImagesSuccessToast() {
+        showPutUserImagesSuccessToast = false
     }
 }

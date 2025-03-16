@@ -1,6 +1,7 @@
 package io.winapps.voizy.ui.features.profile
 
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,6 +29,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.AddToPhotos
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.List
@@ -59,6 +62,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -74,11 +78,15 @@ import io.winapps.voizy.ui.theme.Ubuntu
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ProfileScreen() {
+    val context = LocalContext.current
     val profileViewModel = hiltViewModel<ProfileViewModel>()
     val postsViewModel = hiltViewModel<PostsViewModel>()
     val friendsViewModel = hiltViewModel<FriendsViewModel>()
     val photosViewModel = hiltViewModel<PhotosViewModel>()
     val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val userId = sessionViewModel.userId ?: 0
+    val apiKey = sessionViewModel.getApiKey() ?: ""
+    val token = sessionViewModel.getToken() ?: ""
     var selectedTab by remember { mutableStateOf(ProfileTab.POSTS) }
     val (isFullScreenImageOpen, setFullScreenImageOpen) = rememberSaveable { mutableStateOf(false) }
     val (currentImageIndex, setCurrentImageIndex) = rememberSaveable { mutableIntStateOf(0) }
@@ -453,5 +461,167 @@ fun ProfileScreen() {
                 }
             }
         }
+    }
+
+    if (photosViewModel.isAddingImages) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.4f))
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) {}
+        ) {
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                elevation = CardDefaults.cardElevation(7.dp),
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(4.dp)
+                    .systemBarsPadding()
+                    .imePadding()
+                    .fillMaxWidth()
+                    .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFDF4C9))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.CenterHorizontally)
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = "Add Profile Images",
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontFamily = Ubuntu,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = Color.Black,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(1.dp),
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .weight(1F)
+                        .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Column {
+                        if (photosViewModel.selectedImages.isNotEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(8.dp)
+                            ) {
+                                AddImagesCarousel(
+                                    imageUrls = photosViewModel.selectedImages,
+                                    heightDp = 400.dp
+                                )
+                            }
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f)
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(8.dp)
+                            ) {
+                                Text(
+                                    text = "No images added yet",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontFamily = Ubuntu,
+                                        fontWeight = FontWeight.Normal
+                                    ),
+                                    color = Color.Black,
+                                    modifier = Modifier.align(Alignment.Center)
+                                )
+                            }
+                        }
+
+                        CameraButtonWithPermission(
+                            onPhotoCaptured = { uri ->
+                                photosViewModel.addImage(uri)
+                            }
+                        )
+                        PhotosButtonWithPermission(
+                            onPhotosSelected = { uris ->
+                                photosViewModel.addImages(uris)
+                            }
+                        )
+                    }
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(4.dp).fillMaxWidth()
+                ) {
+                    TextButton(
+                        onClick = {
+                            photosViewModel.onCloseAddImages()
+                        }
+                    ) {
+                        Text(
+                            text = "Close",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontFamily = Ubuntu,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = Color(0xFFF10E91)
+                        )
+                    }
+
+                    if (photosViewModel.isPuttingNewImages) {
+                        CircularProgressIndicator(
+                            color = Color(0xFFF10E91)
+                        )
+                    } else {
+                        Button(
+                            onClick = {
+                                if (photosViewModel.selectedImages.isEmpty()) {
+                                    return@Button
+                                }
+                                photosViewModel.putUserImages(
+                                    context = context,
+                                    userId = sessionViewModel.userId ?: 0,
+                                    apiKey = sessionViewModel.getApiKey() ?: "",
+                                    token = sessionViewModel.getToken() ?: ""
+                                )
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                        ) {
+                            Text(
+                                text = "Add Images",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontFamily = Ubuntu,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = Color(0xFFFFD5ED)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (photosViewModel.showPutUserImagesSuccessToast) {
+        Toast.makeText(context, "Successfully uploaded images!", Toast.LENGTH_SHORT).show()
+        photosViewModel.loadTotalImages(userId = userId, apiKey = apiKey)
+        photosViewModel.loadUserImages(
+            userId = userId,
+            apiKey = apiKey,
+            limit = 50,
+            page = 1,
+        )
+        photosViewModel.onCloseAddImages()
+        photosViewModel.endShowPutUserImagesSuccessToast()
     }
 }

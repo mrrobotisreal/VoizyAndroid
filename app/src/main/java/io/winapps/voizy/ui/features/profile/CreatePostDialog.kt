@@ -34,7 +34,6 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PhotoAlbum
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Poll
 import androidx.compose.material.icons.filled.Tag
@@ -50,7 +49,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -388,7 +386,7 @@ fun MainPostFormUI(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 if (selectedImages.isNotEmpty()) {
-                    CreatePostImagesCarousel(
+                    AddImagesCarousel(
                         imageUrls = selectedImages,
                         heightDp = 250.dp
                     )
@@ -544,7 +542,7 @@ fun CameraIconWithPermission(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CreatePostImagesCarousel(
+fun AddImagesCarousel(
     imageUrls: List<Uri>,
     modifier: Modifier = Modifier,
     heightDp: Dp = 250.dp

@@ -3,6 +3,8 @@ package io.winapps.voizy.data.repository
 import io.winapps.voizy.data.local.SecureStorage
 import io.winapps.voizy.data.model.users.CreateAccountRequest
 import io.winapps.voizy.data.model.users.CreateAccountResponse
+import io.winapps.voizy.data.model.users.GetBatchUserImagesPresignedPutUrlsRequest
+import io.winapps.voizy.data.model.users.GetBatchUserImagesPresignedPutUrlsResponse
 import io.winapps.voizy.data.model.users.GetCoverPicResponse
 import io.winapps.voizy.data.model.users.GetProfilePicResponse
 import io.winapps.voizy.data.model.users.GetProfileResponse
@@ -10,6 +12,8 @@ import io.winapps.voizy.data.model.users.GetTotalFriendsResponse
 import io.winapps.voizy.data.model.users.GetTotalUserImagesResponse
 import io.winapps.voizy.data.model.users.ListFriendshipsResponse
 import io.winapps.voizy.data.model.users.ListUserImagesResponse
+import io.winapps.voizy.data.model.users.PutUserImagesRequest
+import io.winapps.voizy.data.model.users.PutUserImagesResponse
 import io.winapps.voizy.data.remote.users.UsersApi
 import io.winapps.voizy.data.remote.users.UsersService
 import javax.inject.Inject
@@ -85,6 +89,29 @@ class UsersRepository @Inject constructor(
             userId = userId,
             limit = limit,
             page = page,
+        )
+    }
+
+    suspend fun getBatchUserImagesPresignedPutUrls(
+        apiKey: String,
+        userIdHeader: String,
+        token: String,
+        getBatchUserImagesPresignedPutUrlsRequest: GetBatchUserImagesPresignedPutUrlsRequest,
+    ): GetBatchUserImagesPresignedPutUrlsResponse {
+        return usersService.getBatchUserImagesPresignedUrls(
+            apiKey = apiKey,
+            userIdHeader = userIdHeader,
+            token = token,
+            getBatchUserImagesPresignedPutUrlsRequest = getBatchUserImagesPresignedPutUrlsRequest,
+        )
+    }
+
+    suspend fun putUserImages(apiKey: String, userIdHeader: String, token: String, putUserImagesRequest: PutUserImagesRequest): PutUserImagesResponse {
+        return usersService.putUserImages(
+            apiKey = apiKey,
+            userIdHeader = userIdHeader,
+            token = token,
+            putUserImagesRequest = putUserImagesRequest,
         )
     }
 }

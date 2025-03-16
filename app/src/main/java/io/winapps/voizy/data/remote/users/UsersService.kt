@@ -2,6 +2,8 @@ package io.winapps.voizy.data.remote.users
 
 import io.winapps.voizy.data.model.users.CreateAccountRequest
 import io.winapps.voizy.data.model.users.CreateAccountResponse
+import io.winapps.voizy.data.model.users.GetBatchUserImagesPresignedPutUrlsRequest
+import io.winapps.voizy.data.model.users.GetBatchUserImagesPresignedPutUrlsResponse
 import io.winapps.voizy.data.model.users.GetCoverPicResponse
 import io.winapps.voizy.data.model.users.GetProfilePicResponse
 import io.winapps.voizy.data.model.users.GetProfileResponse
@@ -9,10 +11,13 @@ import io.winapps.voizy.data.model.users.GetTotalFriendsResponse
 import io.winapps.voizy.data.model.users.GetTotalUserImagesResponse
 import io.winapps.voizy.data.model.users.ListFriendshipsResponse
 import io.winapps.voizy.data.model.users.ListUserImagesResponse
+import io.winapps.voizy.data.model.users.PutUserImagesRequest
+import io.winapps.voizy.data.model.users.PutUserImagesResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Query
 
 interface UsersService {
@@ -71,4 +76,20 @@ interface UsersService {
         @Query("limit") limit: Long,
         @Query("page") page: Long,
     ): ListUserImagesResponse
+
+    @POST("/users/images/batch/get/presigned")
+    suspend fun getBatchUserImagesPresignedUrls(
+        @Header("X-API-Key") apiKey: String,
+        @Header("X-User-ID") userIdHeader: String,
+        @Header("Authorization") token: String,
+        @Body getBatchUserImagesPresignedPutUrlsRequest: GetBatchUserImagesPresignedPutUrlsRequest
+    ): GetBatchUserImagesPresignedPutUrlsResponse
+
+    @PUT("/users/images/put")
+    suspend fun putUserImages(
+        @Header("X-API-Key") apiKey: String,
+        @Header("X-User-ID") userIdHeader: String,
+        @Header("Authorization") token: String,
+        @Body putUserImagesRequest: PutUserImagesRequest
+    ): PutUserImagesResponse
 }

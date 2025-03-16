@@ -31,6 +31,11 @@ fun getTimeAgo(createdAt: String): String {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
+fun getInstantNowString(): String {
+    return Instant.now().toString()
+}
+
 fun getOrdinalSuffix(day: Int): String {
     if (day in 11..13) return "th"
     return when (day % 10) {
