@@ -13,6 +13,10 @@ import io.winapps.voizy.data.model.users.ListFriendshipsResponse
 import io.winapps.voizy.data.model.users.ListUserImagesResponse
 import io.winapps.voizy.data.model.users.PutUserImagesRequest
 import io.winapps.voizy.data.model.users.PutUserImagesResponse
+import io.winapps.voizy.data.model.users.UpdateCoverPicRequest
+import io.winapps.voizy.data.model.users.UpdateCoverPicResponse
+import io.winapps.voizy.data.model.users.UpdateProfilePicRequest
+import io.winapps.voizy.data.model.users.UpdateProfilePicResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -92,4 +96,20 @@ interface UsersService {
         @Header("Authorization") token: String,
         @Body putUserImagesRequest: PutUserImagesRequest
     ): PutUserImagesResponse
+
+    @PUT("/users/images/profilePic/update")
+    suspend fun updateProfilePic(
+        @Header("X-API-Key") apiKey: String,
+        @Header("X-User-ID") userIdHeader: String,
+        @Header("Authorization") token: String,
+        @Body updateProfilePicRequest: UpdateProfilePicRequest
+    ): UpdateProfilePicResponse
+
+    @PUT("/users/images/coverPic/update")
+    suspend fun updateCoverPic(
+        @Header("X-API-Key") apiKey: String,
+        @Header("X-User-ID") userIdHeader: String,
+        @Header("Authorization") token: String,
+        @Body updateCoverPicRequest: UpdateCoverPicRequest
+    ): UpdateCoverPicResponse
 }

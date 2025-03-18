@@ -3,6 +3,7 @@ package io.winapps.voizy.ui.features.profile
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -10,14 +11,17 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -27,6 +31,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddToPhotos
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PersonPin
+import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -39,6 +46,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -56,6 +64,7 @@ import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.data.model.users.UserImage
 import io.winapps.voizy.ui.theme.Ubuntu
 
@@ -159,15 +168,31 @@ fun FullScreenImageViewer(
     startIndex: Int,
     onClose: () -> Unit
 ) {
+    val context = LocalContext.current
+    val photosViewModel = hiltViewModel<PhotosViewModel>()
+    val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val profileViewModel = hiltViewModel<ProfileViewModel>()
+    val userId = sessionViewModel.userId ?: 0
+    val apiKey = sessionViewModel.getApiKey() ?: ""
+    val token = sessionViewModel.getToken() ?: ""
+    var currentImageId by remember { mutableLongStateOf(0) }
     val pagerState = rememberPagerState(
         initialPage = startIndex
     )
     var isUiVisible by remember { mutableStateOf(true) }
-
-    Box(
-        modifier = Modifier
+    val modifier = if (isUiVisible) {
+        Modifier
             .fillMaxSize()
             .background(Color.Black)
+            .systemBarsPadding()
+    } else {
+        Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    }
+
+    Box(
+        modifier = modifier
     ) {
         HorizontalPager(
             count = images.size,
@@ -183,6 +208,7 @@ fun FullScreenImageViewer(
                 }
         ) { page ->
             val image = images[page]
+            currentImageId = image.imageID
             val painter = rememberAsyncImagePainter(
                 model = image.imageURL
             )
@@ -215,7 +241,103 @@ fun FullScreenImageViewer(
                     tint = Color.White
                 )
             }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(8.dp)
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.Bottom,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (photosViewModel.isUpdatingProfilePic) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                            color = Color(0xFFF10E91)
+                        )
+                    } else {
+                        Button(
+                            onClick = {
+                                photosViewModel.updateProfilePic(
+                                    userId = userId,
+                                    imageId = currentImageId,
+                                    apiKey = apiKey,
+                                    token = token
+                                )
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    horizontal = 8.dp, vertical = 2.dp
+                                ),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                        ) {
+                            Text(
+                                text = "Set as Profile Pic",
+                                fontFamily = Ubuntu,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFFD5ED)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(
+                                imageVector = Icons.Filled.PersonPin,
+                                contentDescription = "Set as Profile Pic button",
+                            )
+                        }
+                    }
+
+                    if (photosViewModel.isUpdatingCoverPic) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                            color = Color(0xFFF10E91)
+                        )
+                    } else {
+                        Button(
+                            onClick = {
+                                photosViewModel.updateCoverPic(
+                                    userId = userId,
+                                    imageId = currentImageId,
+                                    apiKey = apiKey,
+                                    token = token
+                                )
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    horizontal = 8.dp, vertical = 2.dp
+                                ),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                        ) {
+                            Text(
+                                text = "Set as Cover Pic",
+                                fontFamily = Ubuntu,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFFD5ED)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(
+                                imageVector = Icons.Filled.Photo,
+                                contentDescription = "Set as Cover Pic button",
+                            )
+                        }
+                    }
+                }
+            }
         }
+    }
+
+    if (photosViewModel.showUpdateProfilePicSuccessToast) {
+        Toast.makeText(context, "Successfully updated profile picture!", Toast.LENGTH_SHORT).show()
+        profileViewModel.loadProfilePic(userId, apiKey)
+        photosViewModel.endShowUpdateProfilePicSuccessToast()
+    }
+
+    if (photosViewModel.showUpdateCoverPicSuccessToast) {
+        Toast.makeText(context, "Successfully updated cover picture!", Toast.LENGTH_SHORT).show()
+        profileViewModel.loadCoverPic(userId, apiKey)
+        photosViewModel.endShowUpdateCoverPicSuccessToast()
     }
 }
 

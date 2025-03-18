@@ -14,6 +14,10 @@ import io.winapps.voizy.data.model.users.ListFriendshipsResponse
 import io.winapps.voizy.data.model.users.ListUserImagesResponse
 import io.winapps.voizy.data.model.users.PutUserImagesRequest
 import io.winapps.voizy.data.model.users.PutUserImagesResponse
+import io.winapps.voizy.data.model.users.UpdateCoverPicRequest
+import io.winapps.voizy.data.model.users.UpdateCoverPicResponse
+import io.winapps.voizy.data.model.users.UpdateProfilePicRequest
+import io.winapps.voizy.data.model.users.UpdateProfilePicResponse
 import io.winapps.voizy.data.remote.users.UsersApi
 import io.winapps.voizy.data.remote.users.UsersService
 import javax.inject.Inject
@@ -112,6 +116,24 @@ class UsersRepository @Inject constructor(
             userIdHeader = userIdHeader,
             token = token,
             putUserImagesRequest = putUserImagesRequest,
+        )
+    }
+
+    suspend fun updateProfilePic(apiKey: String, userIdHeader: String, token: String, updateProfilePicRequest: UpdateProfilePicRequest): UpdateProfilePicResponse {
+        return usersService.updateProfilePic(
+            apiKey = apiKey,
+            userIdHeader = userIdHeader,
+            token = token,
+            updateProfilePicRequest = updateProfilePicRequest,
+        )
+    }
+
+    suspend fun updateCoverPic(apiKey: String, userIdHeader: String, token: String, updateCoverPicRequest: UpdateCoverPicRequest): UpdateCoverPicResponse {
+        return usersService.updateCoverPic(
+            apiKey = apiKey,
+            userIdHeader = userIdHeader,
+            token = token,
+            updateCoverPicRequest = updateCoverPicRequest,
         )
     }
 }

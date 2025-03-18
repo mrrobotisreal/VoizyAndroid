@@ -31,6 +31,8 @@ import io.winapps.voizy.data.model.users.Friend
 import io.winapps.voizy.data.model.users.GetBatchUserImagesPresignedPutUrlsRequest
 import io.winapps.voizy.data.model.users.PresignedUserImageFile
 import io.winapps.voizy.data.model.users.PutUserImagesRequest
+import io.winapps.voizy.data.model.users.UpdateCoverPicRequest
+import io.winapps.voizy.data.model.users.UpdateProfilePicRequest
 import io.winapps.voizy.data.model.users.UserImage
 import io.winapps.voizy.data.repository.PostsRepository
 import io.winapps.voizy.data.repository.UsersRepository
@@ -684,6 +686,18 @@ class PhotosViewModel @Inject constructor(
     var showPutUserImagesSuccessToast by mutableStateOf(false)
         private set
 
+    var isUpdatingProfilePic by mutableStateOf(false)
+        private set
+
+    var showUpdateProfilePicSuccessToast by mutableStateOf(false)
+        private set
+
+    var isUpdatingCoverPic by mutableStateOf(false)
+        private set
+
+    var showUpdateCoverPicSuccessToast by mutableStateOf(false)
+        private set
+
     fun loadUserImages(userId: Long, apiKey: String, limit: Long = 40, page: Long = 1) {
         viewModelScope.launch {
             isLoading = true
@@ -836,7 +850,65 @@ class PhotosViewModel @Inject constructor(
         }
     }
 
+    fun updateProfilePic(userId: Long, imageId: Long, apiKey: String, token: String) {
+        viewModelScope.launch {
+            isUpdatingProfilePic = true
+
+            try {
+                val response = usersRepository.updateProfilePic(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    token = "Bearer $token",
+                    updateProfilePicRequest = UpdateProfilePicRequest(
+                        userID = userId,
+                        imageID = imageId
+                    )
+                )
+                if (response.success) {
+                    showUpdateProfilePicSuccessToast = true
+                }
+            } catch (e: Exception) {
+                //
+            } finally {
+                isUpdatingProfilePic = false
+            }
+        }
+    }
+
+    fun updateCoverPic(userId: Long, imageId: Long, apiKey: String, token: String) {
+        viewModelScope.launch {
+            isUpdatingCoverPic = true
+
+            try {
+                val response = usersRepository.updateCoverPic(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    token = "Bearer $token",
+                    updateCoverPicRequest = UpdateCoverPicRequest(
+                        userID = userId,
+                        imageID = imageId
+                    )
+                )
+                if (response.success) {
+                    showUpdateCoverPicSuccessToast = true
+                }
+            } catch (e: Exception) {
+                //
+            } finally {
+                isUpdatingCoverPic = false
+            }
+        }
+    }
+
     fun endShowPutUserImagesSuccessToast() {
         showPutUserImagesSuccessToast = false
+    }
+
+    fun endShowUpdateProfilePicSuccessToast() {
+        showUpdateProfilePicSuccessToast = false
+    }
+
+    fun endShowUpdateCoverPicSuccessToast() {
+        showUpdateCoverPicSuccessToast = false
     }
 }

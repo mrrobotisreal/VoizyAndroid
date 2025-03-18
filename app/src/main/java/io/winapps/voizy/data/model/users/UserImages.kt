@@ -1,7 +1,8 @@
 package io.winapps.voizy.data.model.users
 
 data class UserImage(
-    val userId: Long,
+    val userID: Long,
+    val imageID: Long,
     val imageURL: String,
     val isProfilePic: Boolean,
     val isCoverPic: Boolean,
@@ -18,4 +19,24 @@ data class ListUserImagesResponse(
     val page: Long,
     val totalImages: Long,
     val totalPages: Long
+)
+
+data class UpdateProfilePicRequest(
+    val userID: Long,
+    val imageID: Long
+)
+
+data class UpdateProfilePicResponse(
+    val success: Boolean,
+    val message: String?
+)
+
+data class UpdateCoverPicRequest(
+    val userID: Long,
+    val imageID: Long
+)
+
+data class UpdateCoverPicResponse(
+    val success: Boolean,
+    val message: String?
 )
