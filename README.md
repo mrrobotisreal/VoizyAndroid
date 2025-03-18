@@ -23,7 +23,7 @@
 
 ## Contact info
 
-**Developed by:** <span style="color: orange;">Mitchell Wintrow</span>
+**Developed by:** <span style="color: yellow;">Mitchell Wintrow</span>
 
 **Email**: owner@winapps.io, mitchellwintrow@gmail.com
 
