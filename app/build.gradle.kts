@@ -96,6 +96,10 @@ dependencies {
 
     // DataStore (for preferences)
     implementation(libs.datastore.preferences)
+//    implementation(libs.exoplayer)
+//    implementation(libs.exoplayer.ui)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
 
     // Testing
     testImplementation(libs.junit)

@@ -13,6 +13,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.winapps.voizy.SessionViewModel
@@ -39,6 +42,7 @@ import io.winapps.voizy.data.repository.UsersRepository
 import io.winapps.voizy.util.getInstantNowString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -910,5 +914,57 @@ class PhotosViewModel @Inject constructor(
 
     fun endShowUpdateCoverPicSuccessToast() {
         showUpdateCoverPicSuccessToast = false
+    }
+}
+
+@HiltViewModel
+class PlayerViewModel @Inject constructor() : ViewModel() {
+    private var _exoPlayer: ExoPlayer? = null
+    var isPlaying by mutableStateOf(false)
+        private set
+
+    var currentPosition by mutableLongStateOf(0L)
+        private set
+
+    var duration by mutableLongStateOf(0L)
+        private set
+
+    fun getExoPlayer(context: Context): ExoPlayer {
+        if (_exoPlayer == null) {
+            _exoPlayer = ExoPlayer.Builder(context).build().apply {
+                val mediaItem = MediaItem.fromUri("https://voizy-app.s3.us-west-2.amazonaws.com/default/music/ES_Push+and+Pull+-+TAGE.mp3")
+                setMediaItem(mediaItem)
+                prepare()
+                playWhenReady = true
+
+                addListener(object : Player.Listener {
+                    override fun onIsPlayingChanged(playing: Boolean) {
+                        this@PlayerViewModel.isPlaying = playing
+                    }
+                })
+            }
+
+            // Start position tracking
+            viewModelScope.launch {
+                while (true) {
+                    if (isPlaying) {
+                        _exoPlayer?.let {
+                            currentPosition = it.currentPosition
+                            if (duration <= 0 && it.duration > 0) {
+                                duration = it.duration
+                            }
+                        }
+                    }
+                    delay(500)
+                }
+            }
+        }
+        return _exoPlayer!!
+    }
+
+    override fun onCleared() {
+        _exoPlayer?.release()
+        _exoPlayer = null
+        super.onCleared()
     }
 }

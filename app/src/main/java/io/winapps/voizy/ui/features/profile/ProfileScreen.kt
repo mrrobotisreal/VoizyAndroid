@@ -1,7 +1,9 @@
 package io.winapps.voizy.ui.features.profile
 
 import android.os.Build
+import android.view.LayoutInflater
 import android.widget.Toast
+import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,26 +24,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.AddToPhotos
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.EditNote
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -59,15 +57,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.ui.DefaultTimeBar
+import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import io.winapps.voizy.R
@@ -75,6 +77,7 @@ import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.ui.navigation.BottomNavBar
 import io.winapps.voizy.ui.theme.Ubuntu
 
+@OptIn(UnstableApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ProfileScreen() {
@@ -84,6 +87,7 @@ fun ProfileScreen() {
     val friendsViewModel = hiltViewModel<FriendsViewModel>()
     val photosViewModel = hiltViewModel<PhotosViewModel>()
     val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val playerViewModel = hiltViewModel<PlayerViewModel>()
     val userId = sessionViewModel.userId ?: 0
     val apiKey = sessionViewModel.getApiKey() ?: ""
     val token = sessionViewModel.getToken() ?: ""
@@ -94,6 +98,10 @@ fun ProfileScreen() {
     val images = photosViewModel.userImages
     var isViewingComments by remember { mutableStateOf(false) }
     var selectedPostIDForComments by remember { mutableLongStateOf(0) }
+    val exoPlayer = remember { playerViewModel.getExoPlayer(context) }
+    val isPlaying = playerViewModel.isPlaying
+    val currentPosition = playerViewModel.currentPosition
+    val duration = playerViewModel.duration
 
     LaunchedEffect(Unit) {
         val userId = sessionViewModel.userId ?: -1
@@ -197,37 +205,80 @@ fun ProfileScreen() {
                         tint = Color(0xFFF10E91)
                     )
                 }
-//                Image(
-//                    painter = painterResource(id = R.drawable.test_profile_photo),
-//                    contentDescription = "Profile photo",
-//                    modifier = Modifier
-//                        .size(100.dp)
-//                        .clip(CircleShape)
-//                        .border(2.dp, Color(0xFFF10E91), CircleShape),
-//                    contentScale = ContentScale.Crop
-//                )
             }
 
-            Button(
-                onClick = { /* TODO: edit profile */ },
+            Row(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .offset(x = (-16).dp, y = 40.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                    .offset(x = (-6).dp, y = 40.dp)
+                    .padding(4.dp)
             ) {
-                Text(
-                    text = "Edit profile",
-                    fontFamily = Ubuntu,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFFFD5ED)
-                )
+                IconButton(
+                    onClick = {
+                        if (isPlaying) {
+                            exoPlayer.pause()
+                        } else {
+                            exoPlayer.play()
+                        }
+                    },
+                    modifier = Modifier.size(42.dp).clip(CircleShape),
+                    colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91))
+                ) {
+                    Icon(
+                        imageVector = if (isPlaying) {
+                            Icons.Filled.Pause
+                        } else {
+                            Icons.Filled.PlayArrow
+                        },
+                        contentDescription = if (isPlaying) "Pause" else "Play",
+                        modifier = Modifier.size(40.dp),
+                        tint = Color(0xFFFFD5ED)
+                    )
+                }
+                AndroidView(
+                    factory = { ctx ->
+                        val view = LayoutInflater.from(ctx).inflate(R.layout.custom_media3_player_view, null) as PlayerView
+                        val timeBar = view.findViewById<DefaultTimeBar>(R.id.exo_progress)
 
-                Spacer(modifier = Modifier.width(4.dp))
+                        timeBar.setPlayedColor(ContextCompat.getColor(ctx, R.color.pale_yellow))
+                        timeBar.setBufferedColor(ContextCompat.getColor(ctx, R.color.pale_magenta))
+                        timeBar.setUnplayedColor(ContextCompat.getColor(ctx, R.color.dark_gray))
+                        timeBar.setScrubberColor(ContextCompat.getColor(ctx, R.color.vibrant_yellow))
 
-                Icon(
-                    imageVector = Icons.Filled.EditNote,
-                    contentDescription = null,
+                        view.player = exoPlayer
+                        view.useController = true
+                        view.controllerAutoShow = true
+                        view.controllerHideOnTouch = false
+                        view.controllerShowTimeoutMs = 0
+                        view.showController()
+                        view
+                    },
+                    modifier = Modifier
+                        .height(42.dp)
+                        .width(190.dp)
+                        .clip(RoundedCornerShape(12.dp))
                 )
+//                Button(
+//                    onClick = { /* TODO: edit profile */ },
+//                modifier = Modifier
+//                    .align(Alignment.BottomEnd)
+//                    .offset(x = (-16).dp, y = 40.dp),
+//                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+//                ) {
+//                    Text(
+//                        text = "Edit profile",
+//                        fontFamily = Ubuntu,
+//                        fontWeight = FontWeight.Bold,
+//                        color = Color(0xFFFFD5ED)
+//                    )
+//
+//                    Spacer(modifier = Modifier.width(4.dp))
+//
+//                    Icon(
+//                        imageVector = Icons.Filled.EditNote,
+//                        contentDescription = null,
+//                    )
+//                }
             }
         }
 

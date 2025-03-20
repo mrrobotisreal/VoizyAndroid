@@ -40,7 +40,7 @@ flowBinding = "1.2.0"
 arrow = "1.2.1"
 
 # Media Handling
-exoplayer = "2.19.1"
+#exoplayer = "2.19.1"
 camerax = "1.4.1"
 
 # Other Essentials
@@ -49,6 +49,8 @@ workManager = "2.10.0"
 timber = "5.0.1"
 jwtDecode = "2.0.2"
 mockito = "5.8.0"
+media3Exoplayer = "1.5.1"
+media3Ui = "1.5.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -110,7 +112,8 @@ flowbinding-android = { group = "io.github.reactivecircus.flowbinding", name = "
 arrow-core = { group = "io.arrow-kt", name = "arrow-core", version.ref = "arrow" }
 
 # Media Handling
-exoplayer = { group = "com.google.android.exoplayer", name = "exoplayer", version.ref = "exoplayer" }
+#exoplayer = { group = "com.google.android.exoplayer", name = "exoplayer", version.ref = "exoplayer" }
+#exoplayer-ui = { group = "com.google.android.exoplayer", name = "exoplayer-ui", version.ref = "exoplayer" }
 camerax-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
 camerax-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
 camerax-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
@@ -122,6 +125,8 @@ firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics
 work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 jwt-decode = { group = "com.auth0.android", name = "jwtdecode", version.ref = "jwtDecode" }
+androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3Exoplayer" }
+androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3Ui" }
 
 
 [plugins]
