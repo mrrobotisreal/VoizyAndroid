@@ -11,6 +11,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+enum class AppScreen(val label: String) {
+    HOME("home"),
+    FEEDS("feeds"),
+    GROUPS("groups"),
+    NOTIFICATIONS("notifications"),
+    PROFILE("profile"),
+    MORE("more"),
+}
+
 @HiltViewModel
 class SessionViewModel @Inject constructor(
     private val secureStorage: SecureStorage
@@ -28,6 +37,9 @@ class SessionViewModel @Inject constructor(
         private set
 
     var isLoggedIn by mutableStateOf(false)
+        private set
+
+    var currentAppScreen by mutableStateOf(AppScreen.PROFILE)
         private set
 
     init {
@@ -77,5 +89,9 @@ class SessionViewModel @Inject constructor(
 
     fun getToken(): String? {
         return secureStorage.getToken()
+    }
+
+    fun switchCurrentAppScreen(screen: AppScreen) {
+        this.currentAppScreen = screen
     }
 }

@@ -1,5 +1,7 @@
 package io.winapps.voizy
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
@@ -13,6 +15,7 @@ import io.winapps.voizy.ui.features.auth.splash.SplashScreen
 import io.winapps.voizy.ui.features.profile.ProfileScreen
 import io.winapps.voizy.ui.home.HomeScreen
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun VoizyApp(
     sessionViewModel: SessionViewModel = hiltViewModel()
@@ -24,6 +27,7 @@ fun VoizyApp(
     )
     val didFinishSplash = sessionViewModel.didFinishSplash
     val isLoggedIn = sessionViewModel.isLoggedIn
+    val currentScreen = sessionViewModel.currentAppScreen
 
     Box(
         modifier = Modifier
@@ -41,7 +45,37 @@ fun VoizyApp(
             }
             else -> {
 //                HomeScreen()
-                ProfileScreen()
+//                ProfileScreen()
+                when (currentScreen) {
+                    AppScreen.HOME -> {
+                        // TODO: Implement HOME Screen
+                        ProfileScreen()
+                    }
+                    AppScreen.FEEDS -> {
+                        // TODO: Implement FEEDS Screen
+                        ProfileScreen()
+                    }
+                    AppScreen.GROUPS -> {
+                        // TODO: Implement GROUPS Screen
+                        ProfileScreen()
+                    }
+                    AppScreen.NOTIFICATIONS -> {
+                        // TODO: Implement NOTIFICATIONS Screen
+                        ProfileScreen()
+                    }
+                    AppScreen.PROFILE -> {
+                        // TODO: Implement PROFILE Screen
+                        ProfileScreen()
+                    }
+                    AppScreen.MORE -> {
+                        // TODO: Implement MORE Screen
+                        ProfileScreen()
+                    }
+                    else -> {
+                        // TODO: Implement HOME Screen here as well
+                        ProfileScreen()
+                    }
+                }
             }
         }
     }

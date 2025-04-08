@@ -27,9 +27,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import io.winapps.voizy.AppScreen
+import io.winapps.voizy.SessionViewModel
 
 @Composable
-fun BottomNavBar() {
+fun BottomNavBar(
+    sessionViewModel: SessionViewModel = hiltViewModel(),
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -40,26 +45,64 @@ fun BottomNavBar() {
         verticalAlignment = Alignment.CenterVertically
     ) {
         // 6 icons: Home, Feed, Groups, Notifications, Profile, More
-        NavIconButton(Icons.Default.Home, "Home")
-        NavIconButton(Icons.AutoMirrored.Filled.Feed, "Feed")
-        NavIconButton(Icons.Filled.Groups, "Groups")
-        NavIconButton(Icons.Filled.Notifications, "Notifications")
-        NavIconButton(Icons.Default.Person, "Profile")
-        NavIconButton(Icons.Filled.MoreVert, "More")
+        NavIconButton(
+            icon = Icons.Default.Home,
+            label = "Home",
+            isSelected = sessionViewModel.currentAppScreen == AppScreen.HOME,
+            onClick = { sessionViewModel.switchCurrentAppScreen(AppScreen.HOME) }
+        )
+        NavIconButton(
+            icon = Icons.AutoMirrored.Filled.Feed,
+            label = "Feed",
+            isSelected = sessionViewModel.currentAppScreen == AppScreen.FEEDS,
+            onClick = { sessionViewModel.switchCurrentAppScreen(AppScreen.FEEDS) }
+        )
+        NavIconButton(
+            icon = Icons.Filled.Groups,
+            label = "Groups",
+            isSelected = sessionViewModel.currentAppScreen == AppScreen.GROUPS,
+            onClick = { sessionViewModel.switchCurrentAppScreen(AppScreen.GROUPS) }
+        )
+        NavIconButton(
+            icon = Icons.Filled.Notifications,
+            label = "Notifications",
+            isSelected = sessionViewModel.currentAppScreen == AppScreen.NOTIFICATIONS,
+            onClick = { sessionViewModel.switchCurrentAppScreen(AppScreen.NOTIFICATIONS) }
+        )
+        NavIconButton(
+            icon = Icons.Default.Person,
+            label = "Profile",
+            isSelected = sessionViewModel.currentAppScreen == AppScreen.PROFILE,
+            onClick = { sessionViewModel.switchCurrentAppScreen(AppScreen.PROFILE) }
+        )
+        NavIconButton(
+            icon = Icons.Filled.MoreVert,
+            label = "More",
+            isSelected = sessionViewModel.currentAppScreen == AppScreen.MORE,
+            onClick = { sessionViewModel.switchCurrentAppScreen(AppScreen.MORE) }
+        )
     }
 }
 
 @Composable
-fun NavIconButton(icon: ImageVector, label: String) {
+fun NavIconButton(
+    icon: ImageVector,
+    label: String,
+    isSelected: Boolean = false,
+    onClick: () -> Unit
+    ) {
+    val backgroundColor = if (isSelected) Color(0xFFF10E91) else Color(0xFFF10E91).copy(alpha = 0.7f)
+    val iconTint = if (isSelected) Color(0xFFFFD5ED) else Color(0xFFFFD5ED).copy(alpha = 0.8f)
+
     IconButton(
-        onClick = { /* TODO: handle nav action */ },
+        onClick = onClick,
         modifier = Modifier.size(48.dp).clip(CircleShape),
-        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91))
+        colors = IconButtonDefaults.iconButtonColors(containerColor = backgroundColor)
     ) {
         Icon(
             imageVector = icon,
             contentDescription = label,
-            tint = Color(0xFFFFD5ED)
+            tint = iconTint
         )
     }
 }

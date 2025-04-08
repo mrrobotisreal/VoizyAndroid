@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import io.winapps.voizy.AppScreen
 import io.winapps.voizy.R
 import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.ui.theme.Charm
@@ -180,6 +181,7 @@ fun LoginScreen(
                                         apiKey = response.apiKey,
                                         token = response.token
                                     )
+                                    sessionViewModel.switchCurrentAppScreen(AppScreen.PROFILE) // TODO: switch to AppTab.HOME when ready
 
                                     onLoginSuccess()
                                 }

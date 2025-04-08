@@ -935,7 +935,7 @@ class PlayerViewModel @Inject constructor() : ViewModel() {
                 val mediaItem = MediaItem.fromUri("https://voizy-app.s3.us-west-2.amazonaws.com/default/music/ES_Push+and+Pull+-+TAGE.mp3")
                 setMediaItem(mediaItem)
                 prepare()
-                playWhenReady = true
+                playWhenReady = false
 
                 addListener(object : Player.Listener {
                     override fun onIsPlayingChanged(playing: Boolean) {
