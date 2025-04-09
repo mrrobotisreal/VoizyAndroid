@@ -181,7 +181,6 @@ class PostsViewModel @Inject constructor(
         private set
 
     var profilePicURL by mutableStateOf<String?>(null)
-        private set
 
     var isLoadingProfileInfo by mutableStateOf(false)
         private set

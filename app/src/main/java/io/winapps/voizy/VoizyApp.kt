@@ -49,7 +49,7 @@ fun VoizyApp(
                 when (currentScreen) {
                     AppScreen.HOME -> {
                         // TODO: Implement HOME Screen
-                        ProfileScreen()
+                        HomeScreen()
                     }
                     AppScreen.FEEDS -> {
                         // TODO: Implement FEEDS Screen

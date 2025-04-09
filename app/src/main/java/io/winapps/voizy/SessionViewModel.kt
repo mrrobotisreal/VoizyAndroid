@@ -39,7 +39,7 @@ class SessionViewModel @Inject constructor(
     var isLoggedIn by mutableStateOf(false)
         private set
 
-    var currentAppScreen by mutableStateOf(AppScreen.PROFILE)
+    var currentAppScreen by mutableStateOf(AppScreen.HOME)
         private set
 
     init {

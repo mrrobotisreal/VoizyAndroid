@@ -1,5 +1,6 @@
 package io.winapps.voizy.ui.features.profile
 
+import android.app.Activity
 import android.os.Build
 import android.view.LayoutInflater
 import android.widget.Toast
@@ -47,6 +48,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -58,14 +60,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.DefaultTimeBar
@@ -102,6 +107,13 @@ fun ProfileScreen() {
     val isPlaying = playerViewModel.isPlaying
     val currentPosition = playerViewModel.currentPosition
     val duration = playerViewModel.duration
+    val view = LocalView.current
+
+    SideEffect {
+        val activity = view.context as Activity
+        activity.window.statusBarColor = Color.Transparent.toArgb()
+        WindowCompat.getInsetsController(activity.window, view).isAppearanceLightStatusBars = false
+    }
 
     LaunchedEffect(Unit) {
         val userId = sessionViewModel.userId ?: -1
