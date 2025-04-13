@@ -12,6 +12,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import io.winapps.voizy.ui.features.auth.login.LoginScreen
 import io.winapps.voizy.ui.features.auth.splash.SplashScreen
+import io.winapps.voizy.ui.features.feed.FeedScreen
 import io.winapps.voizy.ui.features.profile.ProfileScreen
 import io.winapps.voizy.ui.home.HomeScreen
 
@@ -44,16 +45,12 @@ fun VoizyApp(
                 )
             }
             else -> {
-//                HomeScreen()
-//                ProfileScreen()
                 when (currentScreen) {
                     AppScreen.HOME -> {
-                        // TODO: Implement HOME Screen
                         HomeScreen()
                     }
                     AppScreen.FEEDS -> {
-                        // TODO: Implement FEEDS Screen
-                        ProfileScreen()
+                        FeedScreen()
                     }
                     AppScreen.GROUPS -> {
                         // TODO: Implement GROUPS Screen
@@ -64,7 +61,6 @@ fun VoizyApp(
                         ProfileScreen()
                     }
                     AppScreen.PROFILE -> {
-                        // TODO: Implement PROFILE Screen
                         ProfileScreen()
                     }
                     AppScreen.MORE -> {
@@ -72,8 +68,7 @@ fun VoizyApp(
                         ProfileScreen()
                     }
                     else -> {
-                        // TODO: Implement HOME Screen here as well
-                        ProfileScreen()
+                        HomeScreen()
                     }
                 }
             }
