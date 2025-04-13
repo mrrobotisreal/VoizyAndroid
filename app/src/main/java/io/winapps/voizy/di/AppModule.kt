@@ -6,6 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.winapps.voizy.data.local.PostsCache
 import io.winapps.voizy.data.local.SecureStorage
 import io.winapps.voizy.data.repository.AuthRepository
 import io.winapps.voizy.data.repository.PostsRepository
@@ -30,5 +31,11 @@ object AppModule {
     @Singleton
     fun providePostsRepository(): PostsRepository {
         return PostsRepository()
+    }
+
+    @Provides
+    @Singleton
+    fun providePostsCache(): PostsCache {
+        return PostsCache()
     }
 }

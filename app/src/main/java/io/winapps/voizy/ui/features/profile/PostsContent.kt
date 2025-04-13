@@ -326,6 +326,8 @@ fun PostItem(
                 )
             }
 
+            val hashtags = post.hashtags ?: emptyList()
+
             PostItemWithReactions(
                 userReaction = userReaction,
                 reactionCount = reactionCount,

@@ -19,6 +19,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.winapps.voizy.SessionViewModel
+import io.winapps.voizy.data.local.PostsCache
 import io.winapps.voizy.data.model.posts.Comment
 import io.winapps.voizy.data.model.posts.CompletePost
 import io.winapps.voizy.data.model.posts.CreatePostRequest
@@ -163,7 +164,8 @@ class ProfileViewModel @Inject constructor(
 @HiltViewModel
 class PostsViewModel @Inject constructor(
     private val postsRepository: PostsRepository,
-    private val usersRepository: UsersRepository
+    private val usersRepository: UsersRepository,
+    private val postsCache: PostsCache
 ) : ViewModel() {
     var postText by mutableStateOf("")
         private set
@@ -217,6 +219,9 @@ class PostsViewModel @Inject constructor(
     var totalPostsErrorMessage by mutableStateOf<String?>(null)
         private set
 
+    var isRefreshing by mutableStateOf(false)
+        private set
+
     var comments by mutableStateOf<List<Comment>?>(emptyList())
         private set
 
@@ -243,67 +248,95 @@ class PostsViewModel @Inject constructor(
         selectedImages = emptyList()
     }
 
-    fun loadCompletePosts(userId: Long, apiKey: String, limit: Long = 20, page: Long = 1) {
+    fun loadCompletePosts(userId: Long, apiKey: String, limit: Long = 20, page: Long = 1, forceRefresh: Boolean = false) {
         viewModelScope.launch {
             isLoading = true
             errorMessage = null
 
             try {
-                val listResponse = postsRepository.listPosts(
-                    apiKey = apiKey,
-                    userIdHeader = userId.toString(),
-                    userId = userId,
-                    limit = limit,
-                    page = page
-                )
-                val rawPosts = listResponse.posts
+                val cachedPosts = if (!forceRefresh) postsCache.getCachedPosts(userId, limit, page) else null
 
-                val finalList = mutableListOf<CompletePost>()
-                for (post in rawPosts) {
-                    val detailDeferred = async {
-                        postsRepository.getPostDetails(
-                            apiKey = apiKey,
-                            userIdHeader = userId.toString(),
-                            postId = post.postID
-                        )
-                    }
-                    val mediaDeferred = async {
-                        postsRepository.getPostMedia(
-                            apiKey = apiKey,
-                            userIdHeader = userId.toString(),
-                            postId = post.postID
-                        )
-                    }
-                    val profilePicDeferred = async {
-                        usersRepository.getProfilePic(
-                            apiKey = apiKey,
-                            userIdHeader = userId.toString(),
-                            userId = post.userID
-                        )
-                    }
-                    val details = detailDeferred.await()
-                    val media = mediaDeferred.await()
-                    val profilePicResponse = profilePicDeferred.await()
-                    val profilePicURL = profilePicResponse.profilePicURL
-
-                    val complete = CompletePost(
-                        post = post,
-                        profilePicURL = profilePicURL,
-                        totalComments = post.totalComments,
-                        reactions = details.reactions,
-                        hashtags = details.hashtags,
-                        images = media.images.orEmpty(),
-                        videos = media.videos.orEmpty()
+                if (cachedPosts != null) {
+                    completePosts = cachedPosts
+                    isLoading = false
+                } else {
+                    val listResponse = postsRepository.listPosts(
+                        apiKey = apiKey,
+                        userIdHeader = userId.toString(),
+                        userId = userId,
+                        limit = limit,
+                        page = page
                     )
-                    finalList.add(complete)
-                }
+                    val rawPosts = listResponse.posts
 
-                completePosts = finalList
+                    val finalList = mutableListOf<CompletePost>()
+                    for (post in rawPosts) {
+                        val detailDeferred = async {
+                            postsRepository.getPostDetails(
+                                apiKey = apiKey,
+                                userIdHeader = userId.toString(),
+                                postId = post.postID
+                            )
+                        }
+                        val mediaDeferred = async {
+                            postsRepository.getPostMedia(
+                                apiKey = apiKey,
+                                userIdHeader = userId.toString(),
+                                postId = post.postID
+                            )
+                        }
+                        val profilePicDeferred = async {
+                            usersRepository.getProfilePic(
+                                apiKey = apiKey,
+                                userIdHeader = userId.toString(),
+                                userId = post.userID
+                            )
+                        }
+                        val details = detailDeferred.await()
+                        val media = mediaDeferred.await()
+                        val profilePicResponse = profilePicDeferred.await()
+                        val profilePicURL = profilePicResponse.profilePicURL
+
+                        val complete = CompletePost(
+                            post = post,
+                            profilePicURL = profilePicURL,
+                            totalComments = post.totalComments,
+                            reactions = details.reactions,
+                            hashtags = details.hashtags,
+                            images = media.images.orEmpty(),
+                            videos = media.videos.orEmpty()
+                        )
+                        finalList.add(complete)
+                    }
+
+                    completePosts = finalList
+
+                    postsCache.cachePosts(userId, limit, page, finalList)
+                }
             } catch (e: Exception) {
                 errorMessage = e.message
             } finally {
                 isLoading = false
             }
+        }
+    }
+
+    fun refreshPosts(userId: Long, apiKey: String, limit: Long = 20, page: Long = 1) {
+        isRefreshing = true
+        loadCompletePosts(userId, apiKey, limit, page)
+        isRefreshing = false
+    }
+
+    fun clearCache() {
+        viewModelScope.launch {
+            postsCache.clearCache()
+        }
+    }
+
+    private fun updatePostInCache(updatedPost: CompletePost) {
+        viewModelScope.launch {
+            val userId = updatedPost.post.userID
+            postsCache.invalidateUserCache(userId)
         }
     }
 
@@ -528,6 +561,10 @@ class PostsViewModel @Inject constructor(
                 }
                 if (response.success) {
                     showCreatePostSuccessToast = true
+
+                    postsCache.invalidateUserCache(userId)
+
+                    loadCompletePosts(userId, apiKey)
                 }
             } catch (e: Exception) {
                 Log.d(e.message, "Create post exception: ${e.message}")
