@@ -109,74 +109,49 @@ fun FeedScreen() {
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.padding(4.dp)
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.padding(4.dp).fillMaxWidth()
             ) {
-                Box(
-                    modifier = Modifier.padding(end = 4.dp)
-                ) {
-                    Card(
-                        elevation = CardDefaults.cardElevation(12.dp),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .border(1.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp))
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.voizy_full_square),
-                            contentDescription = "Voizy full logo",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
+                OutlinedTextField(
+                    value = searchText,
+                    onValueChange = {
+                        feedViewModel.onSearchTextChanged(it)
+                    },
+                    label = {
+                        Text(
+                            "Search $selectedFilterLabel",
+                            fontFamily = Ubuntu,
+                            fontWeight = FontWeight.Normal
                         )
-                    }
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.padding(4.dp)
-                ) {
-                    OutlinedTextField(
-                        value = searchText,
-                        onValueChange = {
-                            feedViewModel.onSearchTextChanged(it)
-                        },
-                        label = {
-                            Text(
-                                "Search $selectedFilterLabel",
-                                fontFamily = Ubuntu,
-                                fontWeight = FontWeight.Normal
-                            )
-                                },
-                        trailingIcon = {
-                            Icon(
-                                imageVector = Icons.Filled.Search,
-                                contentDescription = "Search",
-                                tint = Color(0xFFF10E91)
-                            )
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            focusedTextColor = Color.Black,
-                            focusedLabelColor = Color.DarkGray,
-                            unfocusedContainerColor = Color.White,
-                            unfocusedTextColor = Color.Black,
-                            unfocusedLabelColor = Color.DarkGray
-                        )
-                    )
-
-                    IconButton(
-                        onClick = { feedViewModel.onOpenFiltersDialog() },
-                        colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = Color(0xFFF10E91)
-                        )
-                    ) {
+                    },
+                    trailingIcon = {
                         Icon(
-                            imageVector = Icons.Filled.FilterAlt,
-                            contentDescription = "Filters",
-                            tint = Color(0xFFFFD5ED)
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Search",
+                            tint = Color(0xFFF10E91)
                         )
-                    }
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        focusedTextColor = Color.Black,
+                        focusedLabelColor = Color.DarkGray,
+                        unfocusedContainerColor = Color.White,
+                        unfocusedTextColor = Color.Black,
+                        unfocusedLabelColor = Color.DarkGray
+                    )
+                )
+
+                IconButton(
+                    onClick = { feedViewModel.onOpenFiltersDialog() },
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = Color(0xFFF10E91)
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.FilterAlt,
+                        contentDescription = "Filters",
+                        tint = Color(0xFFFFD5ED)
+                    )
                 }
             }
         }
@@ -268,12 +243,16 @@ fun FeedScreen() {
                     )
                 }
 
-                FiltersDropdown(
-                    selectedFilter = selectedFilter,
-                    onSelectFilter = { filter ->
-                        feedViewModel.onSelectFilter(filter)
-                    }
-                )
+                Box(
+                    modifier = Modifier.padding(vertical = 18.dp, horizontal = 14.dp)
+                ) {
+                    FiltersDropdown(
+                        selectedFilter = selectedFilter,
+                        onSelectFilter = { filter ->
+                            feedViewModel.onSelectFilter(filter)
+                        }
+                    )
+                }
 
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -342,12 +321,19 @@ fun FiltersDropdown(
 
     Box(
         modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .border(1.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp))
+            .background(Color.White, RoundedCornerShape(12.dp))
+            .fillMaxWidth()
+            .padding(2.dp)
     ) {
         Row(
             modifier = Modifier
+                .fillMaxWidth()
                 .clickable { expanded = true }
                 .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 text = selectedFilter.label,
@@ -366,8 +352,9 @@ fun FiltersDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false },
             modifier = Modifier
-                .width(IntrinsicSize.Min)
-                .background(Color(0xFFFDF4C9))
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(horizontal = 18.dp)
         ) {
             FeedTab.entries.forEach { option ->
                 DropdownMenuItem(
