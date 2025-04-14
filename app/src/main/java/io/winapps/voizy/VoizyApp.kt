@@ -13,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import io.winapps.voizy.ui.features.auth.login.LoginScreen
 import io.winapps.voizy.ui.features.auth.splash.SplashScreen
 import io.winapps.voizy.ui.features.feed.FeedScreen
+import io.winapps.voizy.ui.features.groups.GroupsScreen
 import io.winapps.voizy.ui.features.profile.ProfileScreen
 import io.winapps.voizy.ui.home.HomeScreen
 
@@ -53,8 +54,7 @@ fun VoizyApp(
                         FeedScreen()
                     }
                     AppScreen.GROUPS -> {
-                        // TODO: Implement GROUPS Screen
-                        ProfileScreen()
+                        GroupsScreen()
                     }
                     AppScreen.NOTIFICATIONS -> {
                         // TODO: Implement NOTIFICATIONS Screen
