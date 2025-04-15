@@ -6,6 +6,7 @@ import io.winapps.voizy.data.model.posts.GetBatchPresignedPutUrlRequest
 import io.winapps.voizy.data.model.posts.GetBatchPresignedPutUrlResponse
 import io.winapps.voizy.data.model.posts.GetPostDetailsResponse
 import io.winapps.voizy.data.model.posts.GetPostMediaResponse
+import io.winapps.voizy.data.model.posts.GetRecommendedPostsResponse
 import io.winapps.voizy.data.model.posts.GetTotalCommentsResponse
 import io.winapps.voizy.data.model.posts.GetTotalPostsResponse
 import io.winapps.voizy.data.model.posts.ListCommentsResponse
@@ -129,6 +130,17 @@ class PostsRepository @Inject constructor(
             userIdHeader = userIdHeader,
             token = token,
             putPostCommentRequest = putPostCommentRequest,
+        )
+    }
+
+    suspend fun getRecommendedFeed(apiKey: String, userIdHeader: String, userId: Long, limit: Long, page: Long, excludeSeen: Boolean): GetRecommendedPostsResponse {
+        return service.getRecommendedPosts(
+            apiKey = apiKey,
+            userIdHeader = userIdHeader,
+            userId = userId,
+            limit = limit,
+            page = page,
+            excludeSeen = excludeSeen
         )
     }
 }

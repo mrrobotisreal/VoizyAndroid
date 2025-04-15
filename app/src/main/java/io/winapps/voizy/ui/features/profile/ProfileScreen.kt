@@ -434,91 +434,103 @@ fun ProfileScreen() {
                     .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFFDF4C9))
             ) {
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .align(Alignment.CenterHorizontally)
                         .padding(8.dp)
                 ) {
-                    Text(
-                        text = "Comments",
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontFamily = Ubuntu,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = Color.Black,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-
-                Comments(
-                    postID = selectedPostIDForComments,
-                    onClose = {
-                        isViewingComments = false
-                        selectedPostIDForComments = 0
-                    }
-                )
-
-                OutlinedTextField(
-                    value = postsViewModel.commentText,
-                    onValueChange = { postsViewModel.onChangeCommentText(it) },
-                    label = { Text("What are your thoughts?", fontFamily = Ubuntu, fontWeight = FontWeight.Normal) },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        focusedTextColor = Color.Black,
-                        focusedLabelColor = Color.DarkGray,
-                        unfocusedContainerColor = Color.White,
-                        unfocusedTextColor = Color.Black,
-                        unfocusedLabelColor = Color.DarkGray
-                    )
-                )
-
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(4.dp).fillMaxWidth()
-                ) {
-                    TextButton(
-                        onClick = {
-                            isViewingComments = false
-                            selectedPostIDForComments = 0
-                        }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.CenterHorizontally)
+                            .padding(8.dp)
                     ) {
                         Text(
-                            text = "Close",
-                            style = MaterialTheme.typography.bodyMedium.copy(
+                            text = "Comments",
+                            style = MaterialTheme.typography.headlineSmall.copy(
                                 fontFamily = Ubuntu,
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = Color(0xFFF10E91)
+                            color = Color.Black,
+                            modifier = Modifier.align(Alignment.Center)
                         )
                     }
 
-                    if (postsViewModel.isPuttingNewComment) {
-                        CircularProgressIndicator(
-                            color = Color(0xFFF10E91)
+                    Box(
+                        modifier = Modifier
+                            .weight(1f, fill = false)
+                            .fillMaxWidth()
+                    ) {
+                        Comments(
+                            postID = selectedPostIDForComments,
+                            onClose = {
+                                isViewingComments = false
+                                selectedPostIDForComments = 0
+                            }
                         )
-                    } else {
-                        Button(
+                    }
+
+                    OutlinedTextField(
+                        value = postsViewModel.commentText,
+                        onValueChange = { postsViewModel.onChangeCommentText(it) },
+                        label = { Text("What are your thoughts?", fontFamily = Ubuntu, fontWeight = FontWeight.Normal) },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            focusedTextColor = Color.Black,
+                            focusedLabelColor = Color.DarkGray,
+                            unfocusedContainerColor = Color.White,
+                            unfocusedTextColor = Color.Black,
+                            unfocusedLabelColor = Color.DarkGray
+                        )
+                    )
+
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(4.dp).fillMaxWidth()
+                    ) {
+                        TextButton(
                             onClick = {
-                                postsViewModel.putPostComment(
-                                    userId = sessionViewModel.userId ?: 0,
-                                    apiKey = sessionViewModel.getApiKey() ?: "",
-                                    token = sessionViewModel.getToken() ?: "",
-                                    postId = selectedPostIDForComments,
-                                )
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                                isViewingComments = false
+                                selectedPostIDForComments = 0
+                            }
                         ) {
                             Text(
-                                text = "Comment",
+                                text = "Close",
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     fontFamily = Ubuntu,
                                     fontWeight = FontWeight.Bold
                                 ),
-                                color = Color(0xFFFFD5ED)
+                                color = Color(0xFFF10E91)
                             )
+                        }
+
+                        if (postsViewModel.isPuttingNewComment) {
+                            CircularProgressIndicator(
+                                color = Color(0xFFF10E91)
+                            )
+                        } else {
+                            Button(
+                                onClick = {
+                                    postsViewModel.putPostComment(
+                                        userId = sessionViewModel.userId ?: 0,
+                                        apiKey = sessionViewModel.getApiKey() ?: "",
+                                        token = sessionViewModel.getToken() ?: "",
+                                        postId = selectedPostIDForComments,
+                                    )
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                            ) {
+                                Text(
+                                    text = "Comment",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontFamily = Ubuntu,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = Color(0xFFFFD5ED)
+                                )
+                            }
                         }
                     }
                 }

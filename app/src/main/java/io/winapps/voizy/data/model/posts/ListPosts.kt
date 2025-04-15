@@ -22,6 +22,7 @@ data class ListPost(
     val pollDurationType: String?,
     val pollDurationLength: Long?,
     val userReaction: String?,
+    val profilePicURL: String?,
     val totalReactions: Long,
     val totalComments: Long,
     val totalPostShares: Long

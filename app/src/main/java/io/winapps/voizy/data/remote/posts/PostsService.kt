@@ -6,6 +6,7 @@ import io.winapps.voizy.data.model.posts.GetBatchPresignedPutUrlRequest
 import io.winapps.voizy.data.model.posts.GetBatchPresignedPutUrlResponse
 import io.winapps.voizy.data.model.posts.GetPostDetailsResponse
 import io.winapps.voizy.data.model.posts.GetPostMediaResponse
+import io.winapps.voizy.data.model.posts.GetRecommendedPostsResponse
 import io.winapps.voizy.data.model.posts.GetTotalCommentsResponse
 import io.winapps.voizy.data.model.posts.GetTotalPostsResponse
 import io.winapps.voizy.data.model.posts.ListCommentsResponse
@@ -119,4 +120,14 @@ interface PostsService {
         @Header("Authorization") token: String,
         @Body putPostCommentRequest: PutPostCommentRequest
     ): PutPostCommentResponse
+
+    @GET("/posts/feed/recommended/get")
+    suspend fun getRecommendedPosts(
+        @Header("X-API-Key") apiKey: String,
+        @Header("X-User-ID") userIdHeader: String,
+        @Query("id") userId: Long,
+        @Query("limit") limit: Long,
+        @Query("page") page: Long,
+        @Query("excludeSeen") excludeSeen: Boolean
+    ): GetRecommendedPostsResponse
 }
