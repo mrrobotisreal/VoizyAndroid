@@ -97,16 +97,16 @@ fun HomeScreen() {
     val isLoading = homeViewModel.isLoading
     val errorMessage = homeViewModel.errorMessage
 
-    LaunchedEffect(Unit) {
-        homeViewModel.loadRecommendedPosts(
-            userId = userId,
-            apiKey = apiKey,
-            limit = 50,
-            page = 1,
-            excludeSeen = false,
-            forceRefresh = false
-        )
-    }
+//    LaunchedEffect(Unit) {
+//        homeViewModel.loadRecommendedPosts(
+//            userId = userId,
+//            apiKey = apiKey,
+//            limit = 50,
+//            page = 1,
+//            excludeSeen = false,
+//            forceRefresh = false
+//        )
+//    }
 
     SideEffect {
         val activity = view.context as Activity
@@ -193,6 +193,16 @@ fun HomeScreen() {
         ) {
             RecommendedFeed(
                 posts = posts,
+                load = {
+                    homeViewModel.loadRecommendedPosts(
+                        userId = userId,
+                        apiKey = apiKey,
+                        limit = 50,
+                        page = 1,
+                        excludeSeen = false,
+                        forceRefresh = false
+                    )
+                },
                 onSelectViewPostComments = { postID ->
                     selectedPostID = postID
                     isViewingComments = true
@@ -347,6 +357,7 @@ fun HomeScreen() {
 @Composable
 fun RecommendedFeed(
     posts: List<CompletePost>,
+    load: () -> Unit,
     onSelectViewPostComments: (Long) -> Unit,
     isLoading: Boolean,
     errorMessage: String?,
@@ -355,6 +366,10 @@ fun RecommendedFeed(
     token: String
 ) {
     val postsViewModel = hiltViewModel<PostsViewModel>()
+
+    LaunchedEffect(Unit) {
+        load()
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth()

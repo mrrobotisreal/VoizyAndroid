@@ -68,16 +68,24 @@ import androidx.compose.ui.zIndex
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import io.winapps.voizy.R
+import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.data.model.users.UserImage
 import io.winapps.voizy.ui.features.profile.FullScreenImageViewer
 import io.winapps.voizy.ui.features.profile.PostsContent
+import io.winapps.voizy.ui.home.RecommendedFeed
 import io.winapps.voizy.ui.navigation.BottomNavBar
 import io.winapps.voizy.ui.theme.Ubuntu
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun FeedScreen() {
+    val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val userId = sessionViewModel.userId ?: -1
+    val apiKey = sessionViewModel.getApiKey().orEmpty()
+    val token = sessionViewModel.getToken().orEmpty()
     val feedViewModel = hiltViewModel<FeedViewModel>()
+    val isLoading = feedViewModel.isLoading
+    val errorMessage = feedViewModel.errorMessage
     val view = LocalView.current
     val searchText = feedViewModel.searchText
     val showFiltersDialog = feedViewModel.showFiltersDialog
@@ -174,17 +182,49 @@ fun FeedScreen() {
             modifier = Modifier.weight(1f)
         ) {
             when (selectedFilter) {
-                FeedTab.FOR_YOU -> PostsContent(
+                FeedTab.FOR_YOU -> RecommendedFeed(
+                    posts = feedViewModel.recommendedPosts,
+                    load = {
+                        feedViewModel.loadRecommendedPosts(
+                            userId = userId,
+                            apiKey = apiKey,
+                            limit = 50,
+                            page = 1,
+                            excludeSeen = false,
+                            forceRefresh = false
+                        )
+                    },
                     onSelectViewPostComments = { postID ->
                         selectedPostID = postID
                         isViewingComments = true
-                    }
+                    },
+                    isLoading = isLoading,
+                    errorMessage = errorMessage,
+                    userId = userId,
+                    apiKey = apiKey,
+                    token = token
                 )
-                FeedTab.POPULAR -> PostsContent(
+                FeedTab.POPULAR -> RecommendedFeed(
+                    posts = feedViewModel.popularPosts,
+                    load = {
+                        feedViewModel.loadPopularPosts(
+                            userId = userId,
+                            apiKey = apiKey,
+                            limit = 50,
+                            page = 1,
+                            days = 30,
+                            forceRefresh = false
+                        )
+                    },
                     onSelectViewPostComments = { postID ->
                         selectedPostID = postID
                         isViewingComments = true
-                    }
+                    },
+                    isLoading = isLoading,
+                    errorMessage = errorMessage,
+                    userId = userId,
+                    apiKey = apiKey,
+                    token = token
                 )
                 FeedTab.GROUPS -> PostsContent(
                     onSelectViewPostComments = { postID ->
