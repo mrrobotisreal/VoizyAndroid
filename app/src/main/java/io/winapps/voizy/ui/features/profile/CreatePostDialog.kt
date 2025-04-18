@@ -28,6 +28,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -57,6 +59,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -121,9 +124,12 @@ fun CreatePostDialog(
     val preferredName = sessionViewModel.preferredName.orEmpty()
     val selectedImages = postsViewModel.selectedImages
     var isSelectingLocation by remember { mutableStateOf(false) }
+    var isAddingHashtags by remember { mutableStateOf(false) }
     var locationName by remember { mutableStateOf("") }
     var locationLat by remember { mutableStateOf<Double?>(null) }
     var locationLong by remember { mutableStateOf<Double?>(null) }
+    var hashtags by remember { mutableStateOf<List<String>>(emptyList<String>()) }
+    var hashtagText by remember { mutableStateOf("") }
 
     val pickImagesLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents(),
@@ -170,7 +176,7 @@ fun CreatePostDialog(
                 .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
             colors = CardDefaults.cardColors(containerColor = Color(0xFFFDF4C9))
         ) {
-            if (!isSelectingLocation) {
+            if (!isSelectingLocation && !isAddingHashtags) {
                 MainPostFormUI(
                     onClose = { onClose() },
                     onSubmitPost = {
@@ -182,15 +188,22 @@ fun CreatePostDialog(
                             token = token,
                             locationName = locName,
                             locationLat = locationLat,
-                            locationLong = locationLong
+                            locationLong = locationLong,
+                            hashtags = hashtags
                         )
                     },
                     postsViewModel = postsViewModel,
                     sessionViewModel = sessionViewModel,
                     locationName = locationName,
                     onAddLocationClick = {
+                        isAddingHashtags = false
                         isSelectingLocation = true
                     },
+                    onAddHashtagsClick = {
+                        isSelectingLocation = false
+                        isAddingHashtags = true
+                    },
+                    hashtags = hashtags,
                     selectedImages = selectedImages,
                     onPhotoCaptured = { uri ->
                         postsViewModel.addImage(uri)
@@ -200,20 +213,124 @@ fun CreatePostDialog(
                     }
                 )
             } else {
-                LocationPickerUI(
-                    onBack = {
-                        isSelectingLocation = false
-                        locationName = ""
-                        locationLat = null
-                        locationLong = null
-                    },
-                    onAdd = { newName, newLat, newLong ->
-                        locationName = newName
-                        locationLat = newLat
-                        locationLong = newLong
-                        isSelectingLocation = false
+                if (isSelectingLocation) {
+                    LocationPickerUI(
+                        onBack = {
+                            isSelectingLocation = false
+                            locationName = ""
+                            locationLat = null
+                            locationLong = null
+                        },
+                        onAdd = { newName, newLat, newLong ->
+                            locationName = newName
+                            locationLat = newLat
+                            locationLong = newLong
+                            isSelectingLocation = false
+                        }
+                    )
+                } else if (isAddingHashtags) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(8.dp)
+                            .imePadding(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                OutlinedTextField(
+                                    value = hashtagText,
+                                    onValueChange = {
+                                        hashtagText = it
+                                    },
+                                    label = { Text("Add hashtags", fontFamily = Ubuntu, fontWeight = FontWeight.Normal) },
+                                    colors = TextFieldDefaults.colors(
+                                        focusedContainerColor = Color.White,
+                                        focusedTextColor = Color.Black,
+                                        focusedLabelColor = Color.DarkGray,
+                                        unfocusedContainerColor = Color.White,
+                                        unfocusedTextColor = Color.Black,
+                                        unfocusedLabelColor = Color.DarkGray
+                                    )
+                                )
+
+                                IconButton(
+                                    onClick = {
+                                        hashtags = hashtags + hashtagText
+                                        hashtagText = ""
+                                    },
+                                    colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91))
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Tag,
+                                        contentDescription = "Add hashtag",
+                                        tint = Color(0xFFFFD5ED)
+                                    )
+                                }
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            LazyColumn {
+                                items(hashtags) { hashtag ->
+                                    Box(
+                                        modifier = Modifier.padding(horizontal = 2.dp)
+                                    ) {
+                                        HashtagButtonRemoveable(
+                                            hashtag = hashtag,
+                                            onRemove = { tagToRemove ->
+                                                hashtags = hashtags - tagToRemove
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            TextButton(onClick = {
+                                hashtags = emptyList()
+                                hashtagText = ""
+                                isAddingHashtags = false
+                            }) {
+                                Text(
+                                    text = "Back",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontFamily = Ubuntu,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = Color(0xFFF10E91)
+                                )
+                            }
+
+                            Button(
+                                onClick = {
+                                    hashtagText = ""
+                                    isAddingHashtags = false
+                                },
+                                colors = buttonColors(containerColor = Color(0xFFF10E91))
+                            ) {
+                                Text(
+                                    text = "Add",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontFamily = Ubuntu,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = Color(0xFFFFD5ED)
+                                )
+                            }
+                        }
                     }
-                )
+                }
             }
         }
     }
@@ -235,6 +352,8 @@ fun MainPostFormUI(
     sessionViewModel: SessionViewModel,
     locationName: String,
     onAddLocationClick: () -> Unit,
+    onAddHashtagsClick: () -> Unit,
+    hashtags: List<String>,
     selectedImages: List<Uri>,
     onPhotoCaptured: (Uri) -> Unit,
     onPhotosAlbumClick: () -> Unit
@@ -415,6 +534,12 @@ fun MainPostFormUI(
                     )
                 }
 
+                if (hashtags.isNotEmpty()) {
+                    PostItemWithHashtags(
+                        hashtags = hashtags
+                    )
+                }
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -439,7 +564,7 @@ fun MainPostFormUI(
                     }
 
                     IconButton(
-                        onClick = {},
+                        onClick = { onAddHashtagsClick() },
                         colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91)),
                         modifier = Modifier.size(40.dp)
                     ) {

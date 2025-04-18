@@ -495,7 +495,7 @@ class PostsViewModel @Inject constructor(
         }
     }
 
-    fun submitPost(context: Context, userId: Long, apiKey: String, token: String, locationName: String?, locationLat: Double?, locationLong: Double?) {
+    fun submitPost(context: Context, userId: Long, apiKey: String, token: String, locationName: String?, locationLat: Double?, locationLong: Double?, hashtags: List<String> = emptyList()) {
         viewModelScope.launch {
             isSubmittingPost = true
 
@@ -513,7 +513,7 @@ class PostsViewModel @Inject constructor(
                         locationLat = locationLat,
                         locationLong = locationLong,
                         images = emptyList<String>(),
-                        hashtags = emptyList<String>(),
+                        hashtags = hashtags,
                         isPoll = false,
                         pollQuestion = null,
                         pollDurationType = null,

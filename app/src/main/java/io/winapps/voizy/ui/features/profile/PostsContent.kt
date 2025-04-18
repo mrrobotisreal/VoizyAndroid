@@ -2,16 +2,19 @@ package io.winapps.voizy.ui.features.profile
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,13 +27,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.Edit
@@ -86,6 +92,7 @@ import coil.size.Scale
 import coil.size.Size
 import io.winapps.voizy.data.model.posts.Comment
 import io.winapps.voizy.data.model.posts.ReactionType
+import io.winapps.voizy.ui.features.groups.GroupTopic
 import io.winapps.voizy.util.getTimeAgo
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -327,16 +334,92 @@ fun PostItem(
             }
 
             val hashtags = post.hashtags ?: emptyList()
+            if (hashtags.isNotEmpty()) {
+                PostItemWithHashtags(
+                    hashtags = hashtags
+                )
+            }
 
             PostItemWithReactions(
                 userReaction = userReaction,
                 reactionCount = reactionCount,
                 commentCount = commentCount,
                 postSharesCount = postSharesCount,
+                viewsCount = post.post.views,
                 onReaction = onReaction,
                 onViewComments = onViewComments
             )
         }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun PostItemWithHashtags(
+    hashtags: List<String>
+) {
+    LazyRow(
+        modifier = Modifier.padding(2.dp),
+        contentPadding = PaddingValues(2.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        items(hashtags) { hashtag ->
+            Box(
+                modifier = Modifier.padding(horizontal = 2.dp)
+            ) {
+                HashtagButton(
+                    hashtag = hashtag
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun HashtagButton(
+    hashtag: String,
+) {
+    val backgroundColor = Color(0xFFFFD5ED)
+    val textColor = Color(0xFFF10E91)
+
+    TextButton(
+        onClick = {  },
+        colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
+        border = BorderStroke(1.dp, Color(0xFFF10E91)),
+    ) {
+        Text(
+            text = "#$hashtag",
+            color = textColor
+        )
+    }
+}
+
+@Composable
+fun HashtagButtonRemoveable(
+    hashtag: String,
+    onRemove: (String) -> Unit
+) {
+    val backgroundColor = Color(0xFFFFD5ED)
+    val textColor = Color(0xFFF10E91)
+
+    TextButton(
+        onClick = {
+            onRemove(hashtag)
+        },
+        colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
+        border = BorderStroke(1.dp, Color(0xFFF10E91)),
+    ) {
+        Text(
+            text = "#$hashtag",
+            color = textColor
+        )
+
+        Icon(
+            imageVector = Icons.Filled.Close,
+            contentDescription = null,
+            tint = Color.Red
+        )
     }
 }
 
@@ -404,6 +487,7 @@ fun PostItemWithReactions(
     reactionCount: Long,
     commentCount: Long,
     postSharesCount: Long,
+    viewsCount: Long,
     onReaction: (ReactionType) -> Unit,
     onViewComments: () -> Unit
 ) {
@@ -512,6 +596,33 @@ fun PostItemWithReactions(
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = postSharesCount.toString(),
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontFamily = Ubuntu,
+                        fontWeight = FontWeight.Normal
+                    ),
+                    color = Color.DarkGray
+                )
+            }
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(
+                onClick = {},
+                colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91)),
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.BarChart,
+                    contentDescription = null,
+                    tint = Color(0xFFFFD5ED)
+                )
+            }
+            if (viewsCount > 0) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = viewsCount.toString(),
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontFamily = Ubuntu,
                         fontWeight = FontWeight.Normal

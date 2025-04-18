@@ -97,17 +97,6 @@ fun HomeScreen() {
     val isLoading = homeViewModel.isLoading
     val errorMessage = homeViewModel.errorMessage
 
-//    LaunchedEffect(Unit) {
-//        homeViewModel.loadRecommendedPosts(
-//            userId = userId,
-//            apiKey = apiKey,
-//            limit = 50,
-//            page = 1,
-//            excludeSeen = false,
-//            forceRefresh = false
-//        )
-//    }
-
     SideEffect {
         val activity = view.context as Activity
         activity.window.statusBarColor = Color(0xFFF9D841).toArgb()
@@ -206,6 +195,9 @@ fun HomeScreen() {
                 onSelectViewPostComments = { postID ->
                     selectedPostID = postID
                     isViewingComments = true
+                },
+                onCreatePost = {
+                    postsViewModel.onOpenCreatePost()
                 },
                 isLoading = isLoading,
                 errorMessage = errorMessage,
@@ -359,6 +351,7 @@ fun RecommendedFeed(
     posts: List<CompletePost>,
     load: () -> Unit,
     onSelectViewPostComments: (Long) -> Unit,
+    onCreatePost: () -> Unit,
     isLoading: Boolean,
     errorMessage: String?,
     userId: Long,
@@ -375,7 +368,7 @@ fun RecommendedFeed(
         modifier = Modifier.fillMaxWidth()
     ) {
         Button(
-            onClick = { postsViewModel.onOpenCreatePost() },
+            onClick = { onCreatePost() },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(

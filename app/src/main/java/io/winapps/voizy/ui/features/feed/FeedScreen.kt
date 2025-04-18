@@ -70,8 +70,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import io.winapps.voizy.R
 import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.data.model.users.UserImage
+import io.winapps.voizy.ui.features.profile.CreatePostDialog
 import io.winapps.voizy.ui.features.profile.FullScreenImageViewer
 import io.winapps.voizy.ui.features.profile.PostsContent
+import io.winapps.voizy.ui.features.profile.PostsViewModel
 import io.winapps.voizy.ui.home.RecommendedFeed
 import io.winapps.voizy.ui.navigation.BottomNavBar
 import io.winapps.voizy.ui.theme.Ubuntu
@@ -86,6 +88,8 @@ fun FeedScreen() {
     val feedViewModel = hiltViewModel<FeedViewModel>()
     val isLoading = feedViewModel.isLoading
     val errorMessage = feedViewModel.errorMessage
+    val postsViewModel = hiltViewModel<PostsViewModel>()
+    val isCreatingNewPost = postsViewModel.isCreatingNewPost
     val view = LocalView.current
     val searchText = feedViewModel.searchText
     val showFiltersDialog = feedViewModel.showFiltersDialog
@@ -194,6 +198,9 @@ fun FeedScreen() {
                             forceRefresh = false
                         )
                     },
+                    onCreatePost = {
+                        postsViewModel.onOpenCreatePost()
+                    },
                     onSelectViewPostComments = { postID ->
                         selectedPostID = postID
                         isViewingComments = true
@@ -219,6 +226,9 @@ fun FeedScreen() {
                     onSelectViewPostComments = { postID ->
                         selectedPostID = postID
                         isViewingComments = true
+                    },
+                    onCreatePost = {
+                        postsViewModel.onOpenCreatePost()
                     },
                     isLoading = isLoading,
                     errorMessage = errorMessage,
@@ -332,6 +342,14 @@ fun FeedScreen() {
                 }
             }
         }
+    }
+
+    if (isCreatingNewPost) {
+        CreatePostDialog(
+            onClose = { postsViewModel.onCloseCreatePost() },
+            postsViewModel = postsViewModel,
+            sessionViewModel = sessionViewModel
+        )
     }
 
     if (isFullScreenImageOpen) {

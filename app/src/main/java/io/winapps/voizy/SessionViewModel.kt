@@ -33,6 +33,9 @@ class SessionViewModel @Inject constructor(
     var preferredName by mutableStateOf<String?>(null)
         private set
 
+    var profilePicURL by mutableStateOf<String?>(null)
+        private set
+
     var didFinishSplash by mutableStateOf(false)
         private set
 
@@ -77,6 +80,10 @@ class SessionViewModel @Inject constructor(
 
     fun setUserProfileData(preferredName: String) {
         this.preferredName = preferredName
+    }
+
+    fun setUserProfileImage(profilePicURL: String?) {
+        this.profilePicURL = profilePicURL
     }
 
     fun getStoredUserId(): Long? {
