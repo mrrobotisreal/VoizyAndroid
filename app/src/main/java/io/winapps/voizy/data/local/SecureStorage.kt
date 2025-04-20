@@ -47,4 +47,10 @@ class SecureStorage(context: Context) {
     fun getToken(): String? {
         return prefs.getString("token", null)
     }
+
+    fun logout() {
+        prefs.edit().remove("userId").apply()
+        prefs.edit().remove("apiKey").apply()
+        prefs.edit().remove("token").apply()
+    }
 }

@@ -71,6 +71,11 @@ class SessionViewModel @Inject constructor(
         isLoggedIn = false
     }
 
+    fun handleLogout() {
+        markLoggedOut()
+        secureStorage.logout()
+    }
+
     fun setUserData(userId: Long, username: String, apiKey: String, token: String) {
         this.userId = userId
         this.username = username
