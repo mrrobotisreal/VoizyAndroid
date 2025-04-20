@@ -15,6 +15,7 @@ enum class AppScreen(val label: String) {
     HOME("home"),
     FEEDS("feeds"),
     GROUPS("groups"),
+    PEOPLE("people"),
     NOTIFICATIONS("notifications"),
     PROFILE("profile"),
     MORE("more"),

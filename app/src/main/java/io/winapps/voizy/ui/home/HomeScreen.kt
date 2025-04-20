@@ -186,7 +186,7 @@ fun HomeScreen() {
                     homeViewModel.loadRecommendedPosts(
                         userId = userId,
                         apiKey = apiKey,
-                        limit = 50,
+                        limit = 30,
                         page = 1,
                         excludeSeen = false,
                         forceRefresh = false

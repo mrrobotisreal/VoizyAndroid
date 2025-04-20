@@ -4,6 +4,7 @@ import io.winapps.voizy.data.model.posts.CreatePostRequest
 import io.winapps.voizy.data.model.posts.CreatePostResponse
 import io.winapps.voizy.data.model.posts.GetBatchPresignedPutUrlRequest
 import io.winapps.voizy.data.model.posts.GetBatchPresignedPutUrlResponse
+import io.winapps.voizy.data.model.posts.GetFriendFeedResponse
 import io.winapps.voizy.data.model.posts.GetPopularPostsResponse
 import io.winapps.voizy.data.model.posts.GetPostDetailsResponse
 import io.winapps.voizy.data.model.posts.GetPostMediaResponse
@@ -141,4 +142,13 @@ interface PostsService {
         @Query("page") page: Long,
         @Query("days") days: Long
     ): GetPopularPostsResponse
+
+    @GET("/posts/feed/friends/get")
+    suspend fun getFriendFeed(
+        @Header("X-API-Key") apiKey: String,
+        @Header("X-User-ID") userIdHeader: String,
+        @Query("id") userId: Long,
+        @Query("limit") limit: Long,
+        @Query("page") page: Long
+    ): GetFriendFeedResponse
 }

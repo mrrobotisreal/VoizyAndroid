@@ -11,6 +11,7 @@ import io.winapps.voizy.data.model.users.GetProfileResponse
 import io.winapps.voizy.data.model.users.GetTotalFriendsResponse
 import io.winapps.voizy.data.model.users.GetTotalUserImagesResponse
 import io.winapps.voizy.data.model.users.ListFriendshipsResponse
+import io.winapps.voizy.data.model.users.ListPeopleYouMayKnowResponse
 import io.winapps.voizy.data.model.users.ListUserImagesResponse
 import io.winapps.voizy.data.model.users.PutUserImagesRequest
 import io.winapps.voizy.data.model.users.PutUserImagesResponse
@@ -134,6 +135,16 @@ class UsersRepository @Inject constructor(
             userIdHeader = userIdHeader,
             token = token,
             updateCoverPicRequest = updateCoverPicRequest,
+        )
+    }
+
+    suspend fun listPeopleYouMayKnow(apiKey: String, userIdHeader: String, userId: Long, limit: Long, page: Long): ListPeopleYouMayKnowResponse {
+        return usersService.listPeopleYouMayKnow(
+            apiKey = apiKey,
+            userIdHeader = userIdHeader,
+            userId = userId,
+            limit = limit,
+            page = page
         )
     }
 }

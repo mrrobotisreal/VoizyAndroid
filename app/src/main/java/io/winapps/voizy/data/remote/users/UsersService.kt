@@ -10,6 +10,7 @@ import io.winapps.voizy.data.model.users.GetProfileResponse
 import io.winapps.voizy.data.model.users.GetTotalFriendsResponse
 import io.winapps.voizy.data.model.users.GetTotalUserImagesResponse
 import io.winapps.voizy.data.model.users.ListFriendshipsResponse
+import io.winapps.voizy.data.model.users.ListPeopleYouMayKnowResponse
 import io.winapps.voizy.data.model.users.ListUserImagesResponse
 import io.winapps.voizy.data.model.users.PutUserImagesRequest
 import io.winapps.voizy.data.model.users.PutUserImagesResponse
@@ -112,4 +113,13 @@ interface UsersService {
         @Header("Authorization") token: String,
         @Body updateCoverPicRequest: UpdateCoverPicRequest
     ): UpdateCoverPicResponse
+
+    @GET("/users/friends/people/list")
+    suspend fun listPeopleYouMayKnow(
+        @Header("X-API-Key") apiKey: String,
+        @Header("X-User-ID") userIdHeader: String,
+        @Query("id") userId: Long,
+        @Query("limit") limit: Long,
+        @Query("page") page: Long
+    ): ListPeopleYouMayKnowResponse
 }

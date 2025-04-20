@@ -201,4 +201,70 @@ class FeedViewModel @Inject constructor(
             }
         }
     }
+
+    var friendFeed by mutableStateOf<List<CompletePost>>(emptyList())
+        private set
+
+    fun loadFriendFeed(userId: Long, apiKey: String, limit: Long = 50, page: Long = 1, forceRefresh: Boolean = false) {
+        viewModelScope.launch {
+            isLoading = true
+            errorMessage = null
+
+            try {
+                val cachedPosts = null
+
+                if (cachedPosts != null) {
+                    //
+                } else {
+                    val popularPostsResponse = postsRepository.getFriendFeed(
+                        apiKey = apiKey,
+                        userIdHeader = userId.toString(),
+                        userId = userId,
+                        limit = limit,
+                        page = page,
+                    )
+                    val friendFeedPosts = popularPostsResponse.friendPosts
+
+                    val finalList = mutableListOf<CompletePost>()
+                    for (post in friendFeedPosts) {
+                        val detailDeferred = async {
+                            postsRepository.getPostDetails(
+                                apiKey = apiKey,
+                                userIdHeader = userId.toString(),
+                                postId = post.postID
+                            )
+                        }
+                        val mediaDeferred = async {
+                            postsRepository.getPostMedia(
+                                apiKey = apiKey,
+                                userIdHeader = userId.toString(),
+                                postId = post.postID
+                            )
+                        }
+                        val details = detailDeferred.await()
+                        val media = mediaDeferred.await()
+
+                        val complete = CompletePost(
+                            post = post,
+                            profilePicURL = post.profilePicURL,
+                            totalComments = post.totalComments,
+                            reactions = details.reactions,
+                            hashtags = details.hashtags,
+                            images = media.images.orEmpty(),
+                            videos = media.videos.orEmpty()
+                        )
+                        finalList.add(complete)
+                    }
+
+                    friendFeed = finalList
+
+                    // TODO: recommended posts cache here
+                }
+            } catch (e: Exception) {
+                errorMessage = e.message
+            } finally {
+                isLoading = false
+            }
+        }
+    }
 }

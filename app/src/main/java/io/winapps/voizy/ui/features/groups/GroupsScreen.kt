@@ -158,7 +158,7 @@ fun GroupsScreen() {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = "No groups to display",
+                        text = "No groups to display. Groups feature will be available soon!",
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontFamily = Ubuntu,
                             fontWeight = FontWeight.Bold

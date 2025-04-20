@@ -165,7 +165,7 @@ class ProfileViewModel @Inject constructor(
 class PostsViewModel @Inject constructor(
     private val postsRepository: PostsRepository,
     private val usersRepository: UsersRepository,
-    private val postsCache: PostsCache
+//    private val postsCache: PostsCache
 ) : ViewModel() {
     var postText by mutableStateOf("")
         private set
@@ -254,10 +254,11 @@ class PostsViewModel @Inject constructor(
             errorMessage = null
 
             try {
-                val cachedPosts = if (!forceRefresh) postsCache.getCachedPosts(userId, limit, page) else null
+//                val cachedPosts = if (!forceRefresh) postsCache.getCachedPosts(userId, limit, page) else null
+                val cachedPosts = null
 
                 if (cachedPosts != null) {
-                    completePosts = cachedPosts
+//                    completePosts = cachedPosts
                     isLoading = false
                 } else {
                     val listResponse = postsRepository.listPosts(
@@ -311,7 +312,7 @@ class PostsViewModel @Inject constructor(
 
                     completePosts = finalList
 
-                    postsCache.cachePosts(userId, limit, page, finalList)
+//                    postsCache.cachePosts(userId, limit, page, finalList)
                 }
             } catch (e: Exception) {
                 errorMessage = e.message
@@ -329,14 +330,14 @@ class PostsViewModel @Inject constructor(
 
     fun clearCache() {
         viewModelScope.launch {
-            postsCache.clearCache()
+//            postsCache.clearCache()
         }
     }
 
     private fun updatePostInCache(updatedPost: CompletePost) {
         viewModelScope.launch {
             val userId = updatedPost.post.userID
-            postsCache.invalidateUserCache(userId)
+//            postsCache.invalidateUserCache(userId)
         }
     }
 
@@ -562,7 +563,7 @@ class PostsViewModel @Inject constructor(
                 if (response.success) {
                     showCreatePostSuccessToast = true
 
-                    postsCache.invalidateUserCache(userId)
+//                    postsCache.invalidateUserCache(userId)
 
                     loadCompletePosts(userId, apiKey)
                 }

@@ -41,42 +41,42 @@ class GroupsViewModel @Inject constructor() : ViewModel() {
     var isLoading by mutableStateOf(false)
         private set
 
-//    var groups by mutableStateOf<List<Group>>(emptyList())
-//        private set
-
-    var groups by mutableStateOf<List<Group>>(listOf(
-        Group(
-            groupID = 1,
-            name = "Software Engineers UNITE!",
-            description = "",
-            privacy = GroupPrivacy.PUBLIC,
-            creatorID = 1,
-            createdAt = "",
-            totalUsers = 497,
-            imageURL = "https://winapps-solutions-llc.s3.us-west-2.amazonaws.com/portfolio/voizy/mocks/SoftwareEngineersUnite.png"
-        ),
-        Group(
-            groupID = 2,
-            name = "Dogs are the best 🐶",
-            description = "",
-            privacy = GroupPrivacy.PUBLIC,
-            creatorID = 1,
-            createdAt = "",
-            totalUsers = 26543,
-            imageURL = "https://winapps-solutions-llc.s3.us-west-2.amazonaws.com/portfolio/voizy/mocks/DogsAreTheBest.jpg"
-        ),
-        Group(
-            groupID = 3,
-            name = "Kool Kid Krew 😎🍭",
-            description = "",
-            privacy = GroupPrivacy.PUBLIC,
-            creatorID = 1,
-            createdAt = "",
-            totalUsers = 12,
-            imageURL = "https://winapps-solutions-llc.s3.us-west-2.amazonaws.com/portfolio/voizy/mocks/KoolKidKrew.jpg"
-        )
-    ))
+    var groups by mutableStateOf<List<Group>>(emptyList())
         private set
+
+//    var groups by mutableStateOf<List<Group>>(listOf(
+//        Group(
+//            groupID = 1,
+//            name = "Software Engineers UNITE!",
+//            description = "",
+//            privacy = GroupPrivacy.PUBLIC,
+//            creatorID = 1,
+//            createdAt = "",
+//            totalUsers = 497,
+//            imageURL = "https://winapps-solutions-llc.s3.us-west-2.amazonaws.com/portfolio/voizy/mocks/SoftwareEngineersUnite.png"
+//        ),
+//        Group(
+//            groupID = 2,
+//            name = "Dogs are the best 🐶",
+//            description = "",
+//            privacy = GroupPrivacy.PUBLIC,
+//            creatorID = 1,
+//            createdAt = "",
+//            totalUsers = 26543,
+//            imageURL = "https://winapps-solutions-llc.s3.us-west-2.amazonaws.com/portfolio/voizy/mocks/DogsAreTheBest.jpg"
+//        ),
+//        Group(
+//            groupID = 3,
+//            name = "Kool Kid Krew 😎🍭",
+//            description = "",
+//            privacy = GroupPrivacy.PUBLIC,
+//            creatorID = 1,
+//            createdAt = "",
+//            totalUsers = 12,
+//            imageURL = "https://winapps-solutions-llc.s3.us-west-2.amazonaws.com/portfolio/voizy/mocks/KoolKidKrew.jpg"
+//        )
+//    ))
+//        private set
 
     fun onSearchTextChanged(newValue: String) {
         searchText = newValue

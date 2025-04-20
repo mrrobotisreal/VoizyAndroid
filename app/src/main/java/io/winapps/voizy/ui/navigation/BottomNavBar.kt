@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PersonSearch
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -88,12 +89,19 @@ fun BottomNavBar(
                 onClick = { sessionViewModel.switchCurrentAppScreen(AppScreen.GROUPS) }
             )
             NavIconButton(
-                screen = AppScreen.NOTIFICATIONS,
-                icon = Icons.Filled.Notifications,
-                label = "Notifications",
-                isSelected = sessionViewModel.currentAppScreen == AppScreen.NOTIFICATIONS,
-                onClick = { sessionViewModel.switchCurrentAppScreen(AppScreen.NOTIFICATIONS) }
+                screen = AppScreen.PEOPLE,
+                icon = Icons.Default.PersonSearch,
+                label = "People",
+                isSelected = sessionViewModel.currentAppScreen == AppScreen.PEOPLE,
+                onClick = { sessionViewModel.switchCurrentAppScreen(AppScreen.PEOPLE) } // TODO: Change to people screen
             )
+//            NavIconButton(
+//                screen = AppScreen.NOTIFICATIONS,
+//                icon = Icons.Filled.Notifications,
+//                label = "Notifications",
+//                isSelected = sessionViewModel.currentAppScreen == AppScreen.NOTIFICATIONS,
+//                onClick = { sessionViewModel.switchCurrentAppScreen(AppScreen.NOTIFICATIONS) }
+//            )
             NavIconButton(
                 screen = AppScreen.PROFILE,
                 icon = Icons.Default.Person,

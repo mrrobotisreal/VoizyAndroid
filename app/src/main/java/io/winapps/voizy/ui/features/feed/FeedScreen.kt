@@ -70,6 +70,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import io.winapps.voizy.R
 import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.data.model.users.UserImage
+import io.winapps.voizy.ui.features.profile.Comments
 import io.winapps.voizy.ui.features.profile.CreatePostDialog
 import io.winapps.voizy.ui.features.profile.FullScreenImageViewer
 import io.winapps.voizy.ui.features.profile.PostsContent
@@ -192,7 +193,7 @@ fun FeedScreen() {
                         feedViewModel.loadRecommendedPosts(
                             userId = userId,
                             apiKey = apiKey,
-                            limit = 50,
+                            limit = 30,
                             page = 1,
                             excludeSeen = false,
                             forceRefresh = false
@@ -217,7 +218,7 @@ fun FeedScreen() {
                         feedViewModel.loadPopularPosts(
                             userId = userId,
                             apiKey = apiKey,
-                            limit = 50,
+                            limit = 30,
                             page = 1,
                             days = 30,
                             forceRefresh = false
@@ -242,11 +243,35 @@ fun FeedScreen() {
                         isViewingComments = true
                     }
                 )
-                FeedTab.FRIENDS -> PostsContent(
+//                FeedTab.FRIENDS -> PostsContent(
+//                    onSelectViewPostComments = { postID ->
+//                        selectedPostID = postID
+//                        isViewingComments = true
+//                    }
+//                )
+                FeedTab.FRIENDS -> RecommendedFeed(
+                    posts = feedViewModel.friendFeed,
+                    load = {
+                        feedViewModel.loadFriendFeed(
+                            userId = userId,
+                            apiKey = apiKey,
+                            limit = 30,
+                            page = 1,
+                            forceRefresh = false
+                        )
+                    },
                     onSelectViewPostComments = { postID ->
                         selectedPostID = postID
                         isViewingComments = true
-                    }
+                    },
+                    onCreatePost = {
+                        postsViewModel.onOpenCreatePost()
+                    },
+                    isLoading = isLoading,
+                    errorMessage = errorMessage,
+                    userId = userId,
+                    apiKey = apiKey,
+                    token = token
                 )
             }
         }
@@ -338,6 +363,132 @@ fun FeedScreen() {
                             ),
                             color = Color(0xFFFFD5ED)
                         )
+                    }
+                }
+            }
+        }
+    }
+
+    if (isViewingComments) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.4f))
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) {}
+        ) {
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                elevation = CardDefaults.cardElevation(7.dp),
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(4.dp)
+                    .systemBarsPadding()
+                    .imePadding()
+                    .fillMaxWidth()
+                    .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFDF4C9))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.CenterHorizontally)
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "Comments",
+                            style = androidx.compose.material3.MaterialTheme.typography.headlineSmall.copy(
+                                fontFamily = Ubuntu,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = Color.Black,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f, fill = false)
+                            .fillMaxWidth()
+                    ) {
+                        Comments(
+                            postID = selectedPostID,
+                            onClose = {
+                                isViewingComments = false
+                                selectedPostID = 0
+                            }
+                        )
+                    }
+
+                    OutlinedTextField(
+                        value = postsViewModel.commentText,
+                        onValueChange = { postsViewModel.onChangeCommentText(it) },
+                        label = { Text("What are your thoughts?", fontFamily = Ubuntu, fontWeight = FontWeight.Normal) },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            focusedTextColor = Color.Black,
+                            focusedLabelColor = Color.DarkGray,
+                            unfocusedContainerColor = Color.White,
+                            unfocusedTextColor = Color.Black,
+                            unfocusedLabelColor = Color.DarkGray
+                        )
+                    )
+
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(4.dp).fillMaxWidth()
+                    ) {
+                        TextButton(
+                            onClick = {
+                                isViewingComments = false
+                                selectedPostID = 0
+                            }
+                        ) {
+                            Text(
+                                text = "Close",
+                                style = androidx.compose.material3.MaterialTheme.typography.bodyMedium.copy(
+                                    fontFamily = Ubuntu,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = Color(0xFFF10E91)
+                            )
+                        }
+
+                        if (postsViewModel.isPuttingNewComment) {
+                            CircularProgressIndicator(
+                                color = Color(0xFFF10E91)
+                            )
+                        } else {
+                            Button(
+                                onClick = {
+                                    postsViewModel.putPostComment(
+                                        userId = sessionViewModel.userId ?: 0,
+                                        apiKey = sessionViewModel.getApiKey() ?: "",
+                                        token = sessionViewModel.getToken() ?: "",
+                                        postId = selectedPostID,
+                                    )
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                            ) {
+                                Text(
+                                    text = "Comment",
+                                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium.copy(
+                                        fontFamily = Ubuntu,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = Color(0xFFFFD5ED)
+                                )
+                            }
+                        }
                     }
                 }
             }

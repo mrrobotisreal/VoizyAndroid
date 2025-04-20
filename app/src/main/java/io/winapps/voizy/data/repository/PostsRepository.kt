@@ -4,6 +4,7 @@ import io.winapps.voizy.data.model.posts.CreatePostRequest
 import io.winapps.voizy.data.model.posts.CreatePostResponse
 import io.winapps.voizy.data.model.posts.GetBatchPresignedPutUrlRequest
 import io.winapps.voizy.data.model.posts.GetBatchPresignedPutUrlResponse
+import io.winapps.voizy.data.model.posts.GetFriendFeedResponse
 import io.winapps.voizy.data.model.posts.GetPopularPostsResponse
 import io.winapps.voizy.data.model.posts.GetPostDetailsResponse
 import io.winapps.voizy.data.model.posts.GetPostMediaResponse
@@ -153,6 +154,16 @@ class PostsRepository @Inject constructor(
             limit = limit,
             page = page,
             days = days
+        )
+    }
+
+    suspend fun getFriendFeed(apiKey: String, userIdHeader: String, userId: Long, limit: Long, page: Long): GetFriendFeedResponse {
+        return service.getFriendFeed(
+            apiKey = apiKey,
+            userIdHeader = userIdHeader,
+            userId = userId,
+            limit = limit,
+            page = page
         )
     }
 }
