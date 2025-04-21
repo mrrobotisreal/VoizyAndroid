@@ -5,6 +5,7 @@ import io.winapps.voizy.data.model.users.CreateAccountResponse
 import io.winapps.voizy.data.model.users.GetBatchUserImagesPresignedPutUrlsRequest
 import io.winapps.voizy.data.model.users.GetBatchUserImagesPresignedPutUrlsResponse
 import io.winapps.voizy.data.model.users.GetCoverPicResponse
+import io.winapps.voizy.data.model.users.GetFriendStatusResponse
 import io.winapps.voizy.data.model.users.GetProfilePicResponse
 import io.winapps.voizy.data.model.users.GetProfileResponse
 import io.winapps.voizy.data.model.users.GetTotalFriendsResponse
@@ -122,4 +123,12 @@ interface UsersService {
         @Query("limit") limit: Long,
         @Query("page") page: Long
     ): ListPeopleYouMayKnowResponse
+
+    @GET("/users/friends/get/status")
+    suspend fun getFriendStatus(
+        @Header("X-API-Key") apiKey: String,
+        @Header("X-User-ID") userIdHeader: String,
+        @Query("id") userId: Long,
+        @Query("friend") friendId: Long
+    ): GetFriendStatusResponse
 }

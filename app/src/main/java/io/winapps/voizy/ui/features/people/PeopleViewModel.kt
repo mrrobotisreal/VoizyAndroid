@@ -81,6 +81,7 @@ class PeopleViewModel @Inject constructor(
 
                     val completePerson = CompletePerson(
                         userID = person.userID,
+                        username = person.username,
                         displayName = GetDisplayName(
                             username = person.username,
                             preferredName = person.preferredName,

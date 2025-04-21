@@ -1,13 +1,11 @@
-package io.winapps.voizy.ui.features.profile
+package io.winapps.voizy.ui.features.people.person
 
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,22 +18,21 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AddLocation
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
@@ -43,6 +40,7 @@ import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Poll
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -67,53 +65,129 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
-import coil.compose.AsyncImage
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
-import coil.size.Scale
-import coil.size.Size
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.HorizontalPagerIndicator
-import com.google.accompanist.pager.rememberPagerState
 import io.winapps.voizy.SessionViewModel
+import io.winapps.voizy.ui.features.profile.AddImagesCarousel
+import io.winapps.voizy.ui.features.profile.CameraIconWithPermission
+import io.winapps.voizy.ui.features.profile.HashtagButtonRemoveable
+import io.winapps.voizy.ui.features.profile.LocationPickerUI
+import io.winapps.voizy.ui.features.profile.PostItem
+import io.winapps.voizy.ui.features.profile.PostItemWithHashtags
+import io.winapps.voizy.ui.features.profile.PostsViewModel
+import io.winapps.voizy.ui.features.profile.isKeyboardVisible
 import io.winapps.voizy.ui.theme.Ubuntu
-import java.io.File
 
-fun createImageFileUri(context: Context): Uri? {
-    val filename = "temp_photo_${System.currentTimeMillis()}.jpg"
-    val tempFile = File(context.cacheDir, filename)
-    return try {
-        FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileprovider",
-            tempFile
-        )
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    }
-}
-
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun isKeyboardVisible(): Boolean {
-    val density = LocalDensity.current
-    val imeBottomPx = WindowInsets.ime.getBottom(density)
-    return imeBottomPx > 0
+fun PersonPostsContent(
+    onSelectViewPostComments: (Long) -> Unit,
+) {
+    val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val userId = sessionViewModel.userId ?: -1
+    val apiKey = sessionViewModel.getApiKey().orEmpty()
+    val token = sessionViewModel.getToken().orEmpty()
+
+    val personViewModel = hiltViewModel<PersonViewModel>()
+    val personId = personViewModel.selectedPersonId
+    val preferredName = personViewModel.preferredName
+
+    val postsViewModel = hiltViewModel<PersonPostsViewModel>()
+    val posts = postsViewModel.completePosts
+    val isLoading = postsViewModel.isLoadingPosts
+    val errorMessage = postsViewModel.postsErrorMessage
+
+    LaunchedEffect(Unit) {
+        postsViewModel.loadCompletePosts(
+            personId = personId,
+            userId = userId,
+            apiKey = apiKey,
+            limit = 20,
+            page = 1
+        )
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Button(
+            onClick = { postsViewModel.onOpenCreatePost() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = 8.dp, vertical = 2.dp
+                ),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+        ) {
+            Text(
+                text = "Post on $preferredName's page",
+                fontFamily = Ubuntu,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFFFD5ED)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.Send,
+                contentDescription = "Create post button",
+            )
+        }
+
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            when {
+                isLoading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Color(0xFFF10E91)
+                    )
+                }
+                errorMessage != null -> {
+                    Text(
+                        text = "Error: $errorMessage",
+                        modifier = Modifier.align(Alignment.Center),
+                        fontFamily = Ubuntu,
+                        fontWeight = FontWeight.Normal
+                    )
+                }
+                else -> {
+                    LazyColumn {
+                        items(posts) { post ->
+                            PostItem(
+                                post = post,
+                                onReaction = { reactionType ->
+                                    postsViewModel.putPostReaction(
+                                        postId = post.post.postID,
+                                        userId = userId,
+                                        apiKey = apiKey,
+                                        token = token,
+                                        reactionType = reactionType,
+                                    )
+                                },
+                                onViewComments = {
+                                    onSelectViewPostComments(post.post.postID)
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun CreatePostDialog(
+fun PostToPersonDialog(
     onClose: () -> Unit,
     postsViewModel: PostsViewModel,
-    sessionViewModel: SessionViewModel
+    personPostsViewModel: PersonPostsViewModel,
+    personViewModel: PersonViewModel,
+    sessionViewModel: SessionViewModel,
+    personId: Long
 ) {
     val context = LocalContext.current
     val userId = sessionViewModel.userId ?: -1
@@ -176,11 +250,12 @@ fun CreatePostDialog(
             colors = CardDefaults.cardColors(containerColor = Color(0xFFFDF4C9))
         ) {
             if (!isSelectingLocation && !isAddingHashtags) {
-                MainPostFormUI(
+                PostToPersonMainUI(
                     onClose = { onClose() },
                     onSubmitPost = {
                         val locName = if (locationName.isBlank() || locationName.isEmpty()) null else locationName
-                        postsViewModel.submitPost(
+                        personPostsViewModel.submitPost(
+                            personId = personId,
                             context = context,
                             apiKey = apiKey,
                             userId = userId,
@@ -191,8 +266,9 @@ fun CreatePostDialog(
                             hashtags = hashtags
                         )
                     },
+                    personViewModel = personViewModel,
+                    personPostsViewModel = personPostsViewModel,
                     postsViewModel = postsViewModel,
-                    sessionViewModel = sessionViewModel,
                     locationName = locationName,
                     onAddLocationClick = {
                         isAddingHashtags = false
@@ -205,7 +281,7 @@ fun CreatePostDialog(
                     hashtags = hashtags,
                     selectedImages = selectedImages,
                     onRemoveImage = { uri ->
-                        postsViewModel.removeImage(uri)
+                        personPostsViewModel.removeImage(uri)
                     },
                     onPhotoCaptured = { uri ->
                         postsViewModel.addImage(uri)
@@ -339,21 +415,22 @@ fun CreatePostDialog(
         }
     }
 
-    if (postsViewModel.showCreatePostSuccessToast) {
-        Toast.makeText(LocalContext.current, "Successfully created post!", Toast.LENGTH_SHORT).show()
-        postsViewModel.loadTotalPosts(userId, apiKey)
-        postsViewModel.loadCompletePosts(userId, apiKey, 30, 1)
-        postsViewModel.endShowCreatePostSuccessToast()
+    if (personPostsViewModel.showCreatePostSuccessToast) {
+        Toast.makeText(LocalContext.current, "Successfully posted to $preferredName's page!", Toast.LENGTH_SHORT).show()
+        personPostsViewModel.loadTotalPosts(personId, userId, apiKey)
+        personPostsViewModel.loadCompletePosts(personId, userId, apiKey, 30, 1)
+        personPostsViewModel.endShowCreatePostSuccessToast()
         onClose()
     }
 }
 
 @Composable
-fun MainPostFormUI(
+fun PostToPersonMainUI(
     onClose: () -> Unit,
     onSubmitPost: () -> Unit,
+    personViewModel: PersonViewModel,
+    personPostsViewModel: PersonPostsViewModel,
     postsViewModel: PostsViewModel,
-    sessionViewModel: SessionViewModel,
     locationName: String,
     onAddLocationClick: () -> Unit,
     onAddHashtagsClick: () -> Unit,
@@ -369,7 +446,7 @@ fun MainPostFormUI(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Create Post",
+            text = "Post to ${personViewModel.preferredName}'s Page",
             style = MaterialTheme.typography.headlineMedium,
             color = Color.Black,
             fontFamily = Ubuntu,
@@ -504,8 +581,8 @@ fun MainPostFormUI(
                     modifier = Modifier.weight(1f)
                 ) {
                     OutlinedTextField(
-                        value = postsViewModel.postText,
-                        onValueChange = { postsViewModel.onPostTextChanged(it) },
+                        value = personPostsViewModel.postText,
+                        onValueChange = { personPostsViewModel.onPostTextChanged(it) },
                         label = { Text("What's on your mind?", fontFamily = Ubuntu, fontWeight = FontWeight.Normal) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
@@ -626,7 +703,7 @@ fun MainPostFormUI(
                 )
             }
 
-            if (postsViewModel.isSubmittingPost) {
+            if (personPostsViewModel.isSubmittingPost) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
                     color = Color(0xFFF10E91)
@@ -640,125 +717,5 @@ fun MainPostFormUI(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun CameraIconWithPermission(
-    onPhotoCaptured: (Uri) -> Unit
-) {
-    val context = LocalContext.current
-
-    var cameraPermissionGranted by remember { mutableStateOf(false) }
-
-    var tempUri by remember { mutableStateOf<Uri?>(null) }
-
-    val takePictureLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture()
-    ) { success ->
-        if (success && tempUri != null) {
-            onPhotoCaptured(tempUri!!)
-        }
-    }
-
-    val requestCameraPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        cameraPermissionGranted = granted
-        if (granted && tempUri != null) {
-            takePictureLauncher.launch(tempUri!!)
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        val hasPerm = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-        cameraPermissionGranted = hasPerm
-    }
-
-    IconButton(
-        onClick = {
-            val uri = createImageFileUri(context)
-            if (uri == null) return@IconButton
-
-            tempUri = uri
-            if (cameraPermissionGranted) {
-                takePictureLauncher.launch(uri)
-            } else {
-                requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-            }
-        },
-        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91)),
-        modifier = Modifier.size(40.dp)
-    ) {
-        Icon(
-            imageVector = Icons.Filled.CameraAlt,
-            contentDescription = null,
-            tint = Color(0xFFFFD5ED)
-        )
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun AddImagesCarousel(
-    imageUrls: List<Uri>,
-    onRemove: (Uri) -> Unit,
-    modifier: Modifier = Modifier,
-    heightDp: Dp = 250.dp
-) {
-    if (imageUrls.isEmpty()) return
-
-    val pagerState = rememberPagerState()
-
-    Column(modifier = modifier) {
-        HorizontalPager(
-            count = imageUrls.size,
-            state = pagerState,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(heightDp)
-        ) { page ->
-            val url = imageUrls[page]
-            Box(modifier = Modifier.fillMaxSize()) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(url)
-                        .crossfade(true)
-                        .scale(Scale.FILL)
-                        .size(Size.ORIGINAL)
-                        .build(),
-                    contentDescription = "Image",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.LightGray),
-                    contentScale = ContentScale.Crop
-                )
-
-                IconButton(
-                    onClick = { onRemove(url) },
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                        .size(24.dp)
-                        .background(Color.Red, CircleShape)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Remove image",
-                        tint = Color.White,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        HorizontalPagerIndicator(
-            pagerState = pagerState,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
     }
 }

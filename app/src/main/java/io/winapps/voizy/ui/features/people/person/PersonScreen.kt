@@ -1,9 +1,8 @@
-package io.winapps.voizy.ui.features.profile
+package io.winapps.voizy.ui.features.people.person
 
 import android.app.Activity
 import android.os.Build
 import android.view.LayoutInflater
-import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -29,8 +28,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
-import androidx.compose.material.icons.filled.EditNote
-import androidx.compose.material.icons.filled.ModeEdit
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonAdd
@@ -86,36 +83,49 @@ import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import io.winapps.voizy.R
 import io.winapps.voizy.SessionViewModel
+import io.winapps.voizy.ui.features.profile.AboutContent
+import io.winapps.voizy.ui.features.profile.Comments
+import io.winapps.voizy.ui.features.profile.CreatePostDialog
+import io.winapps.voizy.ui.features.profile.FriendsContent
+import io.winapps.voizy.ui.features.profile.FullScreenImageViewer
+import io.winapps.voizy.ui.features.profile.PhotosContent
+import io.winapps.voizy.ui.features.profile.PostsContent
+import io.winapps.voizy.ui.features.profile.PostsViewModel
+import io.winapps.voizy.ui.features.profile.ProfileTab
+import io.winapps.voizy.ui.features.profile.ProfileTabsRow
 import io.winapps.voizy.ui.navigation.BottomNavBar
 import io.winapps.voizy.ui.theme.Ubuntu
 import io.winapps.voizy.util.GetDisplayName
 
-@OptIn(UnstableApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
+@OptIn(UnstableApi::class)
 @Composable
-fun ProfileScreen() {
+fun PersonScreen() {
     val context = LocalContext.current
-    val profileViewModel = hiltViewModel<ProfileViewModel>()
-    val postsViewModel = hiltViewModel<PostsViewModel>()
-    val friendsViewModel = hiltViewModel<FriendsViewModel>()
-    val photosViewModel = hiltViewModel<PhotosViewModel>()
     val sessionViewModel = hiltViewModel<SessionViewModel>()
-    val playerViewModel = hiltViewModel<PlayerViewModel>()
     val userId = sessionViewModel.userId ?: 0
     val apiKey = sessionViewModel.getApiKey() ?: ""
     val token = sessionViewModel.getToken() ?: ""
+    val personViewModel = hiltViewModel<PersonViewModel>()
+    val personId = personViewModel.selectedPersonId
+    val personPostsViewModel = hiltViewModel<PersonPostsViewModel>()
+    val personFriendsViewModel = hiltViewModel<PersonFriendsViewModel>()
+    val personPhotosViewModel = hiltViewModel<PersonPhotosViewModel>()
+    val personPlayerViewModel = hiltViewModel<PersonPlayerViewModel>()
+    val postsViewModel = hiltViewModel<PostsViewModel>()
     var selectedTab by remember { mutableStateOf(ProfileTab.POSTS) }
     val (isFullScreenImageOpen, setFullScreenImageOpen) = rememberSaveable { mutableStateOf(false) }
     val (currentImageIndex, setCurrentImageIndex) = rememberSaveable { mutableIntStateOf(0) }
-    val isCreatingNewPost = postsViewModel.isCreatingNewPost
-    val images = photosViewModel.userImages
+    val isCreatingNewPost = personPostsViewModel.isCreatingNewPost
+    val images = personPhotosViewModel.userImages
     var isViewingComments by remember { mutableStateOf(false) }
     var selectedPostIDForComments by remember { mutableLongStateOf(0) }
-    val exoPlayer = remember { playerViewModel.getExoPlayer(context) }
-    val isPlaying = playerViewModel.isPlaying
-    val currentPosition = playerViewModel.currentPosition
-    val duration = playerViewModel.duration
+    val exoPlayer = remember { personPlayerViewModel.getExoPlayer(context) }
+    val isPlaying = personPlayerViewModel.isPlaying
+    val currentPosition = personPlayerViewModel.currentPosition
+    val duration = personPlayerViewModel.duration
     val view = LocalView.current
+    val friendStatus = personFriendsViewModel.friendStatus
 
     SideEffect {
         val activity = view.context as Activity
@@ -124,49 +134,25 @@ fun ProfileScreen() {
     }
 
     LaunchedEffect(Unit) {
-        val userId = sessionViewModel.userId ?: -1
-        val apiKey = sessionViewModel.getApiKey().orEmpty()
-        profileViewModel.loadCoverPic(
-            userId = userId,
-            apiKey = apiKey
-        )
-        profileViewModel.loadProfilePic(
-            userId = userId,
-            apiKey = apiKey
-        )
-        profileViewModel.loadProfileInfo(
-            userId = userId,
-            apiKey = apiKey
-        )
-        friendsViewModel.loadTotalFriends(
-            userId = userId,
-            apiKey = apiKey
-        )
-        postsViewModel.loadTotalPosts(
-            userId = userId,
-            apiKey = apiKey
-        )
-        photosViewModel.loadTotalImages(
-            userId = userId,
-            apiKey = apiKey
-        )
-        photosViewModel.loadUserImages(
-            userId = userId,
-            apiKey = apiKey,
-            limit = 40,
-            page = 1,
-        )
+        personViewModel.loadCoverPic(personId = personId, userId = userId, apiKey = apiKey)
+        personViewModel.loadProfilePic(personId = personId, userId = userId, apiKey = apiKey)
+        personViewModel.loadProfileInfo(personId = personId, userId = userId, apiKey = apiKey)
+        personFriendsViewModel.loadFriendStatus(personId = personId, userId = userId, apiKey = apiKey)
+        personFriendsViewModel.loadTotalFriends(personId = personId, userId = userId, apiKey = apiKey)
+        personPostsViewModel.loadTotalPosts(personId = personId, userId = userId, apiKey = apiKey)
+        personPhotosViewModel.loadTotalImages(personId = personId, userId = userId, apiKey = apiKey)
+        personPhotosViewModel.loadUserImages(personId = personId, userId = userId, apiKey = apiKey, limit = 40, page = 1)
     }
 
     Column(
         modifier = Modifier.fillMaxSize().background(Color(0xFFFDF4C9)),
     ) {
         Box(
-            modifier = Modifier.fillMaxWidth().height(180.dp),
+            modifier = Modifier.fillMaxWidth().height(180.dp)
         ) {
-            if (!profileViewModel.coverPicURL.isNullOrEmpty()) {
+            if (!personViewModel.coverPicURL.isNullOrEmpty()) {
                 val painter = rememberAsyncImagePainter(
-                    model = profileViewModel.coverPicURL
+                    model = personViewModel.coverPicURL
                 )
                 Image(
                     painter = painter,
@@ -195,9 +181,9 @@ fun ProfileScreen() {
                     .align(Alignment.BottomStart)
                     .offset(x = 16.dp, y = 40.dp)
             ) {
-                if (!profileViewModel.profilePicURL.isNullOrEmpty()) {
+                if (!personViewModel.profilePicURL.isNullOrEmpty()) {
                     val painter = rememberAsyncImagePainter(
-                        model = profileViewModel.profilePicURL
+                        model = personViewModel.profilePicURL
                     )
                     Image(
                         painter = painter,
@@ -232,31 +218,106 @@ fun ProfileScreen() {
             }
 
             Column(
-                verticalArrangement = Arrangement.SpaceEvenly,
+                verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.align(Alignment.BottomEnd).offset(x = (-6).dp, y = 40.dp)
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .offset(x = (-6).dp, y = 40.dp)
                     .padding(4.dp)
             ) {
-                Button(
-                    onClick = {},
-                    modifier = Modifier
-                        .padding(
-                            horizontal = 4.dp, vertical = 1.dp
-                        ).align(Alignment.End),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
-                ) {
-                    Text(
-                        text = "Edit",
-                        fontFamily = Ubuntu,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFFD5ED)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        imageVector = Icons.Filled.ModeEdit,
-                        contentDescription = "Edit Profile",
-                        tint = Color(0xFFFFD5ED)
-                    )
+                when(friendStatus) {
+                    FriendStatus.IDLE -> {
+                        Button(
+                            onClick = {},
+                            modifier = Modifier
+                                .padding(
+                                    horizontal = 4.dp, vertical = 1.dp
+                                ).align(Alignment.End),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                        ) {
+                            Text(
+                                text = "Request",
+                                fontFamily = Ubuntu,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFFD5ED)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                imageVector = Icons.Filled.PersonAdd,
+                                contentDescription = "Add friend",
+                                tint = Color(0xFFFFD5ED)
+                            )
+                        }
+                    }
+                    FriendStatus.PENDING -> {
+                        Button(
+                            onClick = {},
+                            modifier = Modifier
+                                .padding(
+                                    horizontal = 4.dp, vertical = 1.dp
+                                ).align(Alignment.End),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                        ) {
+                            Text(
+                                text = "Cancel",
+                                fontFamily = Ubuntu,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFFD5ED)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                imageVector = Icons.Filled.PersonAddDisabled,
+                                contentDescription = "Cancel friend request",
+                                tint = Color(0xFFFFD5ED)
+                            )
+                        }
+                    }
+                    FriendStatus.ACCEPTED -> {
+                        Button(
+                            onClick = {},
+                            modifier = Modifier
+                                .padding(
+                                    horizontal = 4.dp, vertical = 1.dp
+                                ).align(Alignment.End),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                        ) {
+                            Text(
+                                text = "Unfriend",
+                                fontFamily = Ubuntu,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFFD5ED)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                imageVector = Icons.Filled.PersonRemove,
+                                contentDescription = "Remove friend (unfriend)",
+                                tint = Color(0xFFFFD5ED)
+                            )
+                        }
+                    }
+                    FriendStatus.BLOCKED -> {
+                        Button(
+                            onClick = {},
+                            modifier = Modifier
+                                .padding(
+                                    horizontal = 4.dp, vertical = 1.dp
+                                ).align(Alignment.End),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
+                        ) {
+                            Text(
+                                text = "(Disabled)",
+                                fontFamily = Ubuntu,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(
+                                imageVector = Icons.Filled.PersonOff,
+                                contentDescription = "Add friend is disabled",
+                                tint = Color.White
+                            )
+                        }
+                    }
                 }
 
                 Row(
@@ -320,10 +381,10 @@ fun ProfileScreen() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             val displayName = GetDisplayName(
-                username = sessionViewModel.username ?: "",
-                preferredName = profileViewModel.preferredName,
-                firstName = profileViewModel.firstName,
-                lastName = profileViewModel.lastName
+                username = personViewModel.username,
+                preferredName = personViewModel.preferredName,
+                firstName = personViewModel.firstName,
+                lastName = personViewModel.lastName
             )
             Text(
                 text = displayName,
@@ -342,7 +403,7 @@ fun ProfileScreen() {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (friendsViewModel.isLoadingTotalFriends) {
+                if (personFriendsViewModel.isLoadingTotalFriends) {
                     CircularProgressIndicator(
                         color = Color(0xFFF10E91)
                     )
@@ -353,7 +414,7 @@ fun ProfileScreen() {
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
-                        text = "${friendsViewModel.totalFriends} Friends",
+                        text = "${personFriendsViewModel.totalFriends} Friends",
                         fontFamily = Ubuntu,
                         fontWeight = FontWeight.Normal
                     )
@@ -361,7 +422,7 @@ fun ProfileScreen() {
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (postsViewModel.isLoadingTotalPosts) {
+                if (personPostsViewModel.isLoadingTotalPosts) {
                     CircularProgressIndicator(
                         color = Color(0xFFF10E91)
                     )
@@ -372,7 +433,7 @@ fun ProfileScreen() {
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
-                        text = "${postsViewModel.totalPosts} Posts",
+                        text = "${personPostsViewModel.totalPosts} Posts",
                         fontFamily = Ubuntu,
                         fontWeight = FontWeight.Normal
                     )
@@ -380,7 +441,7 @@ fun ProfileScreen() {
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (photosViewModel.isLoadingTotalImages) {
+                if (personPhotosViewModel.isLoadingTotalImages) {
                     CircularProgressIndicator(
                         color = Color(0xFFF10E91)
                     )
@@ -391,7 +452,7 @@ fun ProfileScreen() {
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
-                        text = "${photosViewModel.totalImages} Photos",
+                        text = "${personPhotosViewModel.totalImages} Photos",
                         fontFamily = Ubuntu,
                         fontWeight = FontWeight.Normal
                     )
@@ -408,19 +469,19 @@ fun ProfileScreen() {
             modifier = Modifier.weight(1f)
         ) {
             when (selectedTab) {
-                ProfileTab.POSTS -> PostsContent(
+                ProfileTab.POSTS -> PersonPostsContent(
                     onSelectViewPostComments = { postID ->
                         selectedPostIDForComments = postID
                         isViewingComments = true
                     }
                 )
-                ProfileTab.PHOTOS -> PhotosContent(
+                ProfileTab.PHOTOS -> PersonPhotosContent(
                     images = images,
                     setFullScreenImageOpen = setFullScreenImageOpen,
                     setCurrentImageIndex = setCurrentImageIndex
                 )
-                ProfileTab.ABOUT -> AboutContent()
-                ProfileTab.FRIENDS -> FriendsContent()
+                ProfileTab.ABOUT -> PersonAboutContent()
+                ProfileTab.FRIENDS -> PersonFriendsContent()
             }
         }
 
@@ -433,7 +494,7 @@ fun ProfileScreen() {
                 .fillMaxSize()
                 .zIndex(9999f)
         ) {
-            FullScreenImageViewer(
+            FullScreenPersonImageViewer(
                 images = images,
                 startIndex = currentImageIndex,
                 onClose = {
@@ -444,10 +505,13 @@ fun ProfileScreen() {
     }
 
     if (isCreatingNewPost) {
-        CreatePostDialog(
-            onClose = { postsViewModel.onCloseCreatePost() },
+        PostToPersonDialog(
+            onClose = { personPostsViewModel.onCloseCreatePost() },
             postsViewModel = postsViewModel,
-            sessionViewModel = sessionViewModel
+            personPostsViewModel = personPostsViewModel,
+            personViewModel = personViewModel,
+            sessionViewModel = sessionViewModel,
+            personId = personId
         )
     }
 
@@ -510,8 +574,8 @@ fun ProfileScreen() {
                     }
 
                     OutlinedTextField(
-                        value = postsViewModel.commentText,
-                        onValueChange = { postsViewModel.onChangeCommentText(it) },
+                        value = personPostsViewModel.commentText,
+                        onValueChange = { personPostsViewModel.onChangeCommentText(it) },
                         label = { Text("What are your thoughts?", fontFamily = Ubuntu, fontWeight = FontWeight.Normal) },
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                         colors = TextFieldDefaults.colors(
@@ -545,14 +609,14 @@ fun ProfileScreen() {
                             )
                         }
 
-                        if (postsViewModel.isPuttingNewComment) {
+                        if (personPostsViewModel.isPuttingNewComment) {
                             CircularProgressIndicator(
                                 color = Color(0xFFF10E91)
                             )
                         } else {
                             Button(
                                 onClick = {
-                                    postsViewModel.putPostComment(
+                                    personPostsViewModel.putPostComment(
                                         userId = sessionViewModel.userId ?: 0,
                                         apiKey = sessionViewModel.getApiKey() ?: "",
                                         token = sessionViewModel.getToken() ?: "",
@@ -575,170 +639,5 @@ fun ProfileScreen() {
                 }
             }
         }
-    }
-
-    if (photosViewModel.isAddingImages) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.4f))
-                .clickable(
-                    indication = null,
-                    interactionSource = remember { MutableInteractionSource() }
-                ) {}
-        ) {
-            Card(
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(7.dp),
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(4.dp)
-                    .systemBarsPadding()
-                    .imePadding()
-                    .fillMaxWidth()
-                    .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFDF4C9))
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.CenterHorizontally)
-                        .padding(8.dp)
-                ) {
-                    Text(
-                        text = "Add Profile Images",
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontFamily = Ubuntu,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = Color.Black,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    elevation = CardDefaults.cardElevation(1.dp),
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .weight(1F)
-                        .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Column {
-                        if (photosViewModel.selectedImages.isNotEmpty()) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f)
-                                    .align(Alignment.CenterHorizontally)
-                                    .padding(8.dp)
-                            ) {
-                                AddImagesCarousel(
-                                    imageUrls = photosViewModel.selectedImages,
-                                    onRemove = { uri ->
-                                        photosViewModel.removeImage(uri)
-                                    },
-                                    heightDp = 400.dp
-                                )
-                            }
-                        } else {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f)
-                                    .align(Alignment.CenterHorizontally)
-                                    .padding(8.dp)
-                            ) {
-                                Text(
-                                    text = "No images added yet",
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        fontFamily = Ubuntu,
-                                        fontWeight = FontWeight.Normal
-                                    ),
-                                    color = Color.Black,
-                                    modifier = Modifier.align(Alignment.Center)
-                                )
-                            }
-                        }
-
-                        CameraButtonWithPermission(
-                            onPhotoCaptured = { uri ->
-                                photosViewModel.addImage(uri)
-                            }
-                        )
-                        PhotosButtonWithPermission(
-                            onPhotosSelected = { uris ->
-                                photosViewModel.addImages(uris)
-                            }
-                        )
-                    }
-                }
-
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(4.dp).fillMaxWidth()
-                ) {
-                    TextButton(
-                        onClick = {
-                            photosViewModel.onCloseAddImages()
-                        }
-                    ) {
-                        Text(
-                            text = "Close",
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                fontFamily = Ubuntu,
-                                fontWeight = FontWeight.Bold
-                            ),
-                            color = Color(0xFFF10E91)
-                        )
-                    }
-
-                    if (photosViewModel.isPuttingNewImages) {
-                        CircularProgressIndicator(
-                            color = Color(0xFFF10E91)
-                        )
-                    } else {
-                        Button(
-                            onClick = {
-                                if (photosViewModel.selectedImages.isEmpty()) {
-                                    return@Button
-                                }
-                                photosViewModel.putUserImages(
-                                    context = context,
-                                    userId = sessionViewModel.userId ?: 0,
-                                    apiKey = sessionViewModel.getApiKey() ?: "",
-                                    token = sessionViewModel.getToken() ?: ""
-                                )
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
-                        ) {
-                            Text(
-                                text = "Add Images",
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    fontFamily = Ubuntu,
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = Color(0xFFFFD5ED)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    if (photosViewModel.showPutUserImagesSuccessToast) {
-        Toast.makeText(context, "Successfully uploaded images!", Toast.LENGTH_SHORT).show()
-        photosViewModel.loadTotalImages(userId = userId, apiKey = apiKey)
-        photosViewModel.loadUserImages(
-            userId = userId,
-            apiKey = apiKey,
-            limit = 50,
-            page = 1,
-        )
-        photosViewModel.onCloseAddImages()
-        photosViewModel.endShowPutUserImagesSuccessToast()
     }
 }

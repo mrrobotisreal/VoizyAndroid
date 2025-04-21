@@ -17,6 +17,7 @@ import io.winapps.voizy.ui.features.groups.GroupsScreen
 import io.winapps.voizy.ui.features.more.MoreScreen
 import io.winapps.voizy.ui.features.notifications.NotificationsScreen
 import io.winapps.voizy.ui.features.people.PeopleScreen
+import io.winapps.voizy.ui.features.people.person.PersonScreen
 import io.winapps.voizy.ui.features.profile.ProfileScreen
 import io.winapps.voizy.ui.home.HomeScreen
 
@@ -61,6 +62,9 @@ fun VoizyApp(
                     }
                     AppScreen.PEOPLE -> {
                         PeopleScreen()
+                    }
+                    AppScreen.PERSON -> {
+                        PersonScreen()
                     }
                     AppScreen.NOTIFICATIONS -> {
                         NotificationsScreen()

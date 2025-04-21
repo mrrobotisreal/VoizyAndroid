@@ -62,8 +62,10 @@ import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
+import io.winapps.voizy.AppScreen
 import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.data.model.users.CompletePerson
+import io.winapps.voizy.ui.features.people.person.PersonViewModel
 import io.winapps.voizy.ui.navigation.BottomNavBar
 import io.winapps.voizy.ui.theme.Ubuntu
 
@@ -184,6 +186,9 @@ fun PeopleContent(
     isLoading: Boolean,
     errorMessage: String?
 ) {
+    val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val personViewModel = hiltViewModel<PersonViewModel>()
+
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -230,8 +235,9 @@ fun PeopleContent(
                             ) {
                                 PersonCard(
                                     person = person,
-                                    onClick = { _ ->
-                                        //
+                                    onClick = { personToView ->
+                                        personViewModel.selectPerson(personToView.userID, personToView.username)
+                                        sessionViewModel.switchCurrentAppScreen(AppScreen.PERSON)
                                     }
                                 )
                             }

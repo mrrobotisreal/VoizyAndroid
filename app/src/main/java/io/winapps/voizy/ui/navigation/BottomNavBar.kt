@@ -14,6 +14,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Divider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Feed
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowCircleLeft
 import androidx.compose.material.icons.filled.Feed
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
@@ -90,9 +92,9 @@ fun BottomNavBar(
             )
             NavIconButton(
                 screen = AppScreen.PEOPLE,
-                icon = Icons.Default.PersonSearch,
+                icon = if (sessionViewModel.currentAppScreen == AppScreen.PERSON) Icons.Filled.ArrowCircleLeft else Icons.Default.PersonSearch,
                 label = "People",
-                isSelected = sessionViewModel.currentAppScreen == AppScreen.PEOPLE,
+                isSelected = sessionViewModel.currentAppScreen == AppScreen.PEOPLE || sessionViewModel.currentAppScreen == AppScreen.PERSON,
                 onClick = { sessionViewModel.switchCurrentAppScreen(AppScreen.PEOPLE) } // TODO: Change to people screen
             )
 //            NavIconButton(

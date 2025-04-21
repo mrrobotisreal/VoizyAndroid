@@ -25,6 +25,7 @@ data class FriendInCommon(
 
 data class CompletePerson(
     val userID: Long,
+    val username: String,
     val displayName: String,
     val profilePicURL: String?,
     val cityOfResidence: String?,

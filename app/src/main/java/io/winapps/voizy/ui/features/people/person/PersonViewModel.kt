@@ -1,12 +1,9 @@
-package io.winapps.voizy.ui.features.profile
+package io.winapps.voizy.ui.features.people.person
 
-import android.app.Application
 import android.content.Context
 import android.location.Location
 import android.net.Uri
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -16,10 +13,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import dagger.hilt.android.internal.Contexts.getApplication
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.winapps.voizy.SessionViewModel
-import io.winapps.voizy.data.local.PostsCache
 import io.winapps.voizy.data.model.posts.Comment
 import io.winapps.voizy.data.model.posts.CompletePost
 import io.winapps.voizy.data.model.posts.CreatePostRequest
@@ -30,17 +24,10 @@ import io.winapps.voizy.data.model.posts.PutPostCommentRequest
 import io.winapps.voizy.data.model.posts.PutPostMediaRequest
 import io.winapps.voizy.data.model.posts.PutPostReactionRequest
 import io.winapps.voizy.data.model.posts.ReactionType
-import io.winapps.voizy.data.model.posts.UpdatePostRequest
 import io.winapps.voizy.data.model.users.Friend
-import io.winapps.voizy.data.model.users.GetBatchUserImagesPresignedPutUrlsRequest
-import io.winapps.voizy.data.model.users.PresignedUserImageFile
-import io.winapps.voizy.data.model.users.PutUserImagesRequest
-import io.winapps.voizy.data.model.users.UpdateCoverPicRequest
-import io.winapps.voizy.data.model.users.UpdateProfilePicRequest
 import io.winapps.voizy.data.model.users.UserImage
 import io.winapps.voizy.data.repository.PostsRepository
 import io.winapps.voizy.data.repository.UsersRepository
-import io.winapps.voizy.util.getInstantNowString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -50,30 +37,34 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import okio.IOException
+import java.io.IOException
 import javax.inject.Inject
 
-enum class ProfileTab {
-    POSTS, PHOTOS, ABOUT, FRIENDS
-}
-
 @HiltViewModel
-class ProfileViewModel @Inject constructor(
+class PersonViewModel @Inject constructor(
     private val usersRepository: UsersRepository
 ) : ViewModel() {
-    var isLoadingProfilePicURL by mutableStateOf(false)
+    var selectedPersonId by mutableLongStateOf(0)
+        private set
+
+    var username by mutableStateOf("")
+        private set
+
+    fun selectPerson(personId: Long, username: String) {
+        selectedPersonId = personId
+        this.username = username
+    }
+
+    var isLoading by mutableStateOf(false)
+        private set
+
+    var errorMessage by mutableStateOf<String?>(null)
         private set
 
     var profilePicURL by mutableStateOf<String?>(null)
         private set
 
-    var isLoadingCoverPic by mutableStateOf(false)
-        private set
-
     var coverPicURL by mutableStateOf<String?>(null)
-        private set
-
-    var isLoadingProfileInfo by mutableStateOf(false)
         private set
 
     var firstName by mutableStateOf<String?>(null)
@@ -97,53 +88,56 @@ class ProfileViewModel @Inject constructor(
     var dateJoined by mutableStateOf<String?>(null)
         private set
 
-    fun loadProfilePic(userId: Long, apiKey: String) {
+    fun loadProfilePic(personId: Long, userId: Long, apiKey: String) {
         viewModelScope.launch {
-            isLoadingProfilePicURL = true
+            isLoading = true
+            errorMessage = null
 
             try {
                 val response = usersRepository.getProfilePic(
                     apiKey = apiKey,
                     userIdHeader = userId.toString(),
-                    userId = userId
+                    userId = personId
                 )
                 profilePicURL = response.profilePicURL
             } catch (e: Exception) {
-                //
+                errorMessage = e.message
             } finally {
-                isLoadingProfilePicURL = false
+                isLoading = false
             }
         }
     }
 
-    fun loadCoverPic(userId: Long, apiKey: String) {
+    fun loadCoverPic(personId: Long, userId: Long, apiKey: String) {
         viewModelScope.launch {
-            isLoadingCoverPic = true
+            isLoading = true
+            errorMessage = null
 
             try {
                 val response = usersRepository.getCoverPic(
                     apiKey = apiKey,
                     userIdHeader = userId.toString(),
-                    userId = userId
+                    userId = personId
                 )
                 coverPicURL = response.coverPicURL
             } catch (e: Exception) {
-                //
+                errorMessage = e.message
             } finally {
-                isLoadingCoverPic = false
+                isLoading = false
             }
         }
     }
 
-    fun loadProfileInfo(userId: Long, apiKey: String) {
+    fun loadProfileInfo(personId: Long, userId: Long, apiKey: String) {
         viewModelScope.launch {
-            isLoadingProfileInfo = true
+            isLoading = true
+            errorMessage = null
 
             try {
                 val response = usersRepository.getProfileInfo(
                     apiKey = apiKey,
                     userIdHeader = userId.toString(),
-                    userId = userId
+                    userId = personId
                 )
                 firstName = response.firstName
                 lastName = response.lastName
@@ -153,50 +147,33 @@ class ProfileViewModel @Inject constructor(
                 placeOfWork = response.placeOfWork
                 dateJoined = response.dateJoined
             } catch (e: Exception) {
-                //
+                errorMessage = e.message
             } finally {
-                isLoadingProfileInfo = false
+                isLoading = false
             }
         }
     }
 }
 
 @HiltViewModel
-class PostsViewModel @Inject constructor(
-    private val postsRepository: PostsRepository,
-    private val usersRepository: UsersRepository,
-//    private val postsCache: PostsCache
+class PersonPostsViewModel @Inject constructor(
+    val postsRepository: PostsRepository,
+    val usersRepository: UsersRepository
 ) : ViewModel() {
-    var postText by mutableStateOf("")
+    var isLoadingTotalPosts by mutableStateOf(false)
         private set
 
-    var isCreatingNewPost by mutableStateOf(false)
+    var totalPostsErrorMessage by mutableStateOf<String?>(null)
         private set
 
-    var isSubmittingPost by mutableStateOf(false)
+    var totalPosts by mutableLongStateOf(0)
         private set
 
-    var showCreatePostSuccessToast by mutableStateOf(false)
+    var isLoadingPosts by mutableStateOf(false)
         private set
 
-    var isLoadingProfilePicURL by mutableStateOf(false)
+    var postsErrorMessage by mutableStateOf<String?>(null)
         private set
-
-    var profilePicURL by mutableStateOf<String?>(null)
-
-    var isLoadingProfileInfo by mutableStateOf(false)
-        private set
-
-    var displayName by mutableStateOf<String?>(null)
-        private set
-
-    var selectedLocation by mutableStateOf<Location?>(null) // might need to update this to my custom Location object
-        private set
-
-     var selectedImages by mutableStateOf<List<Uri>>(emptyList())
-         private set
-
-    // var hashtags by mutableStateOf<List<String>>(emptyList())
 
     var completePosts by mutableStateOf(emptyList<CompletePost>())
         private set
@@ -204,22 +181,13 @@ class PostsViewModel @Inject constructor(
     var posts by mutableStateOf(emptyList<ListPost>())
         private set
 
-    var isLoading by mutableStateOf(false)
+    var displayName by mutableStateOf<String?>(null)
         private set
 
-    var errorMessage by mutableStateOf<String?>(null)
+    var selectedLocation by mutableStateOf<Location?>(null)
         private set
 
-    var totalPosts by mutableLongStateOf(0)
-        private set
-
-    var isLoadingTotalPosts by mutableStateOf(false)
-        private set
-
-    var totalPostsErrorMessage by mutableStateOf<String?>(null)
-        private set
-
-    var isRefreshing by mutableStateOf(false)
+    var selectedImages by mutableStateOf<List<Uri>>(emptyList())
         private set
 
     var comments by mutableStateOf<List<Comment>?>(emptyList())
@@ -232,6 +200,18 @@ class PostsViewModel @Inject constructor(
         private set
 
     var isPuttingNewComment by mutableStateOf(false)
+        private set
+
+    var postText by mutableStateOf("")
+        private set
+
+    var isCreatingNewPost by mutableStateOf(false)
+        private set
+
+    var isSubmittingPost by mutableStateOf(false)
+        private set
+
+    var showCreatePostSuccessToast by mutableStateOf(false)
         private set
 
     fun onPostTextChanged(newValue: String) {
@@ -248,10 +228,10 @@ class PostsViewModel @Inject constructor(
         selectedImages = emptyList()
     }
 
-    fun loadCompletePosts(userId: Long, apiKey: String, limit: Long = 20, page: Long = 1, forceRefresh: Boolean = false) {
+    fun loadCompletePosts(personId: Long, userId: Long, apiKey: String, limit: Long = 20, page: Long = 1, forceRefresh: Boolean = false) {
         viewModelScope.launch {
-            isLoading = true
-            errorMessage = null
+            isLoadingPosts = true
+            postsErrorMessage = null
 
             try {
 //                val cachedPosts = if (!forceRefresh) postsCache.getCachedPosts(userId, limit, page) else null
@@ -259,12 +239,12 @@ class PostsViewModel @Inject constructor(
 
                 if (cachedPosts != null) {
 //                    completePosts = cachedPosts
-                    isLoading = false
+                    isLoadingPosts = false
                 } else {
                     val listResponse = postsRepository.listPosts(
                         apiKey = apiKey,
                         userIdHeader = userId.toString(),
-                        userId = userId,
+                        userId = personId,
                         limit = limit,
                         page = page
                     )
@@ -315,33 +295,14 @@ class PostsViewModel @Inject constructor(
 //                    postsCache.cachePosts(userId, limit, page, finalList)
                 }
             } catch (e: Exception) {
-                errorMessage = e.message
+                postsErrorMessage = e.message
             } finally {
-                isLoading = false
+                isLoadingPosts = false
             }
         }
     }
 
-    fun refreshPosts(userId: Long, apiKey: String, limit: Long = 20, page: Long = 1) {
-        isRefreshing = true
-        loadCompletePosts(userId, apiKey, limit, page)
-        isRefreshing = false
-    }
-
-    fun clearCache() {
-        viewModelScope.launch {
-//            postsCache.clearCache()
-        }
-    }
-
-    private fun updatePostInCache(updatedPost: CompletePost) {
-        viewModelScope.launch {
-            val userId = updatedPost.post.userID
-//            postsCache.invalidateUserCache(userId)
-        }
-    }
-
-    fun loadTotalPosts(userId: Long, apiKey: String) {
+    fun loadTotalPosts(personId: Long, userId: Long, apiKey: String) {
         viewModelScope.launch {
             isLoadingTotalPosts = true
             totalPostsErrorMessage = null
@@ -350,7 +311,7 @@ class PostsViewModel @Inject constructor(
                 val response = postsRepository.getTotalPosts(
                     apiKey = apiKey,
                     userIdHeader = userId.toString(),
-                    userId = userId
+                    userId = personId
                 )
                 totalPosts = response.totalPosts
             } catch (e: Exception) {
@@ -376,48 +337,6 @@ class PostsViewModel @Inject constructor(
                 )
             } catch (e: Exception) {
                 //
-            }
-        }
-    }
-
-    fun loadProfilePic(userId: Long, apiKey: String) {
-        viewModelScope.launch {
-            isLoadingProfilePicURL = true
-
-            try {
-                val response = usersRepository.getProfilePic(
-                    apiKey = apiKey,
-                    userIdHeader = userId.toString(),
-                    userId = userId
-                )
-                profilePicURL = response.profilePicURL
-            } catch (e: Exception) {
-                //
-            } finally {
-                isLoadingProfilePicURL = false
-            }
-        }
-    }
-
-    fun loadProfileInfo(userId: Long, apiKey: String, username: String, preferredName: String) {
-        viewModelScope.launch {
-            isLoadingProfileInfo = true
-
-            try {
-                val response = usersRepository.getProfileInfo(
-                    apiKey = apiKey,
-                    userIdHeader = userId.toString(),
-                    userId = userId
-                )
-                displayName = if (!response.firstName.isNullOrBlank() && !response.lastName.isNullOrBlank()) {
-                    "${response.firstName} ${response.lastName} (${response.username})"
-                } else {
-                    "${response.preferredName} (${response.username})"
-                }
-            } catch (e: Exception) {
-                //
-            } finally {
-                isLoadingProfileInfo = false
             }
         }
     }
@@ -500,7 +419,7 @@ class PostsViewModel @Inject constructor(
         }
     }
 
-    fun submitPost(context: Context, userId: Long, apiKey: String, token: String, locationName: String?, locationLat: Double?, locationLong: Double?, hashtags: List<String> = emptyList()) {
+    fun submitPost(context: Context, personId: Long, userId: Long, apiKey: String, token: String, locationName: String?, locationLat: Double?, locationLong: Double?, hashtags: List<String> = emptyList()) {
         viewModelScope.launch {
             isSubmittingPost = true
 
@@ -511,7 +430,7 @@ class PostsViewModel @Inject constructor(
                     token = "Bearer $token",
                     createPostRequest = CreatePostRequest(
                         userID = userId,
-                        toUserID = -1,
+                        toUserID = personId,
                         originalPostID = null,
                         contentText = postText,
                         locationName = locationName,
@@ -537,7 +456,7 @@ class PostsViewModel @Inject constructor(
                         token = "Bearer $token",
                         getBatchPresignedPutUrlRequest = GetBatchPresignedPutUrlRequest(
                             postID = postID,
-                            userID = userId,
+                            userID = userId, // TODO: figure out if I need to change this to personId after looking at server code
                             fileNames = fileNames,
                         )
                     )
@@ -569,7 +488,7 @@ class PostsViewModel @Inject constructor(
 
 //                    postsCache.invalidateUserCache(userId)
 
-                    loadCompletePosts(userId, apiKey)
+                    loadCompletePosts(personId, userId, apiKey)
                 }
             } catch (e: Exception) {
                 Log.d(e.message, "Create post exception: ${e.message}")
@@ -626,10 +545,24 @@ class PostsViewModel @Inject constructor(
     }
 }
 
+enum class FriendStatus(val label: String) {
+    IDLE("idle"),
+    PENDING("pending"),
+    ACCEPTED("accepted"),
+    BLOCKED("blocked");
+
+    companion object {
+        val default = IDLE
+    }
+}
+
 @HiltViewModel
-class FriendsViewModel @Inject constructor(
+class PersonFriendsViewModel @Inject constructor(
     private val usersRepository: UsersRepository
 ) : ViewModel() {
+    var friendStatus by mutableStateOf<FriendStatus>(FriendStatus.IDLE)
+        private set
+
     var friends by mutableStateOf(emptyList<Friend>())
         private set
 
@@ -651,7 +584,36 @@ class FriendsViewModel @Inject constructor(
     var searchText by mutableStateOf("")
         private set
 
-    fun loadFriends(userId: Long, apiKey: String, limit: Long = 50, page: Long = 1) {
+    fun loadFriendStatus(personId: Long, userId: Long, apiKey: String) {
+        viewModelScope.launch {
+            try {
+                val response = usersRepository.getFriendStatus(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    userId = userId,
+                    friendId = personId
+                )
+                friendStatus = when(response.status) {
+                    "pending" -> {
+                        FriendStatus.PENDING
+                    }
+                    "accepted" -> {
+                        FriendStatus.ACCEPTED
+                    }
+                    "blocked" -> {
+                        FriendStatus.BLOCKED
+                    }
+                    else -> {
+                        FriendStatus.IDLE
+                    }
+                }
+            } catch (e: Exception) {
+                //
+            }
+        }
+    }
+
+    fun loadFriends(personId: Long, userId: Long, apiKey: String, limit: Long = 50, page: Long = 1) {
         viewModelScope.launch {
             isLoading = true
             errorMessage = null
@@ -660,11 +622,11 @@ class FriendsViewModel @Inject constructor(
                 val response = usersRepository.listFriendships(
                     apiKey = apiKey,
                     userIdHeader = userId.toString(),
-                    userId = userId,
+                    userId = personId,
                     limit = limit,
                     page = page,
                 )
-                friends = response.friends
+                friends = if (!response.friends.isNullOrEmpty()) response.friends else emptyList()
             } catch (e: Exception) {
                 errorMessage = e.message
             } finally {
@@ -673,7 +635,7 @@ class FriendsViewModel @Inject constructor(
         }
     }
 
-    fun loadTotalFriends(userId: Long, apiKey: String) {
+    fun loadTotalFriends(personId: Long, userId: Long, apiKey: String) {
         viewModelScope.launch {
             isLoadingTotalFriends = true
             totalFriendsErrorMessage = null
@@ -682,7 +644,7 @@ class FriendsViewModel @Inject constructor(
                 val response = usersRepository.getTotalFriends(
                     apiKey = apiKey,
                     userIdHeader = userId.toString(),
-                    userId = userId
+                    userId = personId
                 )
                 totalFriends = response.totalFriends
             } catch (e: Exception) {
@@ -699,7 +661,7 @@ class FriendsViewModel @Inject constructor(
 }
 
 @HiltViewModel
-class PhotosViewModel @Inject constructor(
+class PersonPhotosViewModel @Inject constructor(
     private val usersRepository: UsersRepository
 ) : ViewModel() {
     var userImages by mutableStateOf(emptyList<UserImage>())
@@ -719,31 +681,7 @@ class PhotosViewModel @Inject constructor(
     var totalImagesErrorMessage by mutableStateOf<String?>(null)
         private set
 
-    var selectedImages by mutableStateOf<List<Uri>>(emptyList())
-        private set
-
-    var isAddingImages by mutableStateOf(false)
-        private set
-
-    var isPuttingNewImages by mutableStateOf(false)
-        private set
-
-    var showPutUserImagesSuccessToast by mutableStateOf(false)
-        private set
-
-    var isUpdatingProfilePic by mutableStateOf(false)
-        private set
-
-    var showUpdateProfilePicSuccessToast by mutableStateOf(false)
-        private set
-
-    var isUpdatingCoverPic by mutableStateOf(false)
-        private set
-
-    var showUpdateCoverPicSuccessToast by mutableStateOf(false)
-        private set
-
-    fun loadUserImages(userId: Long, apiKey: String, limit: Long = 40, page: Long = 1) {
+    fun loadUserImages(personId: Long, userId: Long, apiKey: String, limit: Long = 40, page: Long = 1) {
         viewModelScope.launch {
             isLoading = true
             errorMessage = null
@@ -752,7 +690,7 @@ class PhotosViewModel @Inject constructor(
                 val response = usersRepository.listImages(
                     apiKey = apiKey,
                     userIdHeader = userId.toString(),
-                    userId = userId,
+                    userId = personId,
                     limit = limit,
                     page = page,
                 )
@@ -765,7 +703,7 @@ class PhotosViewModel @Inject constructor(
         }
     }
 
-    fun loadTotalImages(userId: Long, apiKey: String) {
+    fun loadTotalImages(personId: Long, userId: Long, apiKey: String) {
         viewModelScope.launch {
             isLoadingTotalImages = true
             totalImagesErrorMessage = null
@@ -774,7 +712,7 @@ class PhotosViewModel @Inject constructor(
                 val response = usersRepository.getTotalImages(
                     apiKey = apiKey,
                     userIdHeader = userId.toString(),
-                    userId = userId
+                    userId = personId
                 )
                 totalImages = response.totalImages
             } catch (e: Exception) {
@@ -784,186 +722,34 @@ class PhotosViewModel @Inject constructor(
             }
         }
     }
-
-    fun onOpenAddImages() {
-        isAddingImages = true
-    }
-
-    fun onCloseAddImages() {
-        isAddingImages = false
-    }
-
-    fun addImage(uri: Uri) {
-        if (selectedImages.size < 10) {
-            selectedImages = selectedImages + uri
-        }
-    }
-
-    fun addImages(uris: List<Uri>) {
-        val total = selectedImages.size + uris.size
-        val slice = if (total > 10) uris.take(10 - selectedImages.size) else uris
-        selectedImages = selectedImages + slice
-    }
-
-    fun removeImage(uri: Uri) {
-        selectedImages = selectedImages - uri
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun putUserImages(context: Context, apiKey: String, userId: Long, token: String) {
-        viewModelScope.launch {
-            isPuttingNewImages = true
-
-            try {
-                val nowString = getInstantNowString()
-                val fileNames: List<String> = List(selectedImages.size) { index ->
-                    "on${nowString}_image${index + 1}.jpg"
-                }
-                val imagesResponse = usersRepository.getBatchUserImagesPresignedPutUrls(
-                    apiKey = apiKey,
-                    userIdHeader = userId.toString(),
-                    token = "Bearer $token",
-                    getBatchUserImagesPresignedPutUrlsRequest = GetBatchUserImagesPresignedPutUrlsRequest(
-                        userID = userId,
-                        fileNames = fileNames
-                    )
-                )
-                uploadImagesToS3(
-                    context,
-                    selectedImages,
-                    imagesResponse.images,
-                )
-
-                val images: List<String> = List(imagesResponse.images.size) { index ->
-                    imagesResponse.images[index].finalURL
-                }
-                val putResponse = usersRepository.putUserImages(
-                    apiKey = apiKey,
-                    userIdHeader = userId.toString(),
-                    token = "Bearer $token",
-                    putUserImagesRequest = PutUserImagesRequest(
-                        userID = userId,
-                        images = images
-                    )
-                )
-                if (putResponse.success) {
-                    showPutUserImagesSuccessToast = true
-                }
-            } catch (e: Exception) {
-                Log.e(e.message, "PutUserImages error! ${e.message}")
-            } finally {
-                isPuttingNewImages = false
-            }
-        }
-    }
-
-    private suspend fun uploadImagesToS3(
-        context: Context,
-        selectedImages: List<Uri>,
-        presignedFiles: List<PresignedUserImageFile>,
-    ) {
-        val count = minOf(selectedImages.size, presignedFiles.size)
-        for (i in 0 until count) {
-            val localUri = selectedImages[i]
-            val presignedUrl = presignedFiles[i].presignedURL
-            putImageToPresignedUrl(context, localUri, presignedUrl)
-        }
-    }
-
-    suspend fun putImageToPresignedUrl(
-        context: Context,
-        localUri: Uri,
-        presignedUrl: String
-    ) {
-        withContext(Dispatchers.IO) {
-            val contentResolver = context.contentResolver
-            val inputStream = contentResolver.openInputStream(localUri) ?: return@withContext
-
-            val bytes = inputStream.readBytes()
-            inputStream.close()
-
-            val mimeType = "image/jpeg"
-
-            val requestBody = bytes.toRequestBody(mimeType.toMediaTypeOrNull())
-            val request = Request.Builder()
-                .url(presignedUrl)
-                .put(requestBody)
-                .build()
-
-            val client = OkHttpClient()
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    throw IOException("Failed to upload to S3. HTTP ${response.code}")
-                }
-            }
-        }
-    }
-
-    fun updateProfilePic(userId: Long, imageId: Long, apiKey: String, token: String) {
-        viewModelScope.launch {
-            isUpdatingProfilePic = true
-
-            try {
-                val response = usersRepository.updateProfilePic(
-                    apiKey = apiKey,
-                    userIdHeader = userId.toString(),
-                    token = "Bearer $token",
-                    updateProfilePicRequest = UpdateProfilePicRequest(
-                        userID = userId,
-                        imageID = imageId
-                    )
-                )
-                if (response.success) {
-                    showUpdateProfilePicSuccessToast = true
-                }
-            } catch (e: Exception) {
-                //
-            } finally {
-                isUpdatingProfilePic = false
-            }
-        }
-    }
-
-    fun updateCoverPic(userId: Long, imageId: Long, apiKey: String, token: String) {
-        viewModelScope.launch {
-            isUpdatingCoverPic = true
-
-            try {
-                val response = usersRepository.updateCoverPic(
-                    apiKey = apiKey,
-                    userIdHeader = userId.toString(),
-                    token = "Bearer $token",
-                    updateCoverPicRequest = UpdateCoverPicRequest(
-                        userID = userId,
-                        imageID = imageId
-                    )
-                )
-                if (response.success) {
-                    showUpdateCoverPicSuccessToast = true
-                }
-            } catch (e: Exception) {
-                //
-            } finally {
-                isUpdatingCoverPic = false
-            }
-        }
-    }
-
-    fun endShowPutUserImagesSuccessToast() {
-        showPutUserImagesSuccessToast = false
-    }
-
-    fun endShowUpdateProfilePicSuccessToast() {
-        showUpdateProfilePicSuccessToast = false
-    }
-
-    fun endShowUpdateCoverPicSuccessToast() {
-        showUpdateCoverPicSuccessToast = false
-    }
 }
 
 @HiltViewModel
-class PlayerViewModel @Inject constructor() : ViewModel() {
+class PersonPlayerViewModel @Inject constructor() : ViewModel() {
+    var isLoadingSong by mutableStateOf(false)
+        private set
+
+    var songErrorMessage by mutableStateOf<String?>(null)
+        private set
+
+    var songURL by mutableStateOf<String?>(null)
+        private set
+
+    fun loadSongURL(personId: Long, userId: Long, apiKey: String) {
+        viewModelScope.launch {
+            isLoadingSong = true
+            songErrorMessage = null
+
+            try {
+                // load song here
+            } catch (e: Exception) {
+                songErrorMessage = e.message
+            } finally {
+                isLoadingSong = false
+            }
+        }
+    }
+
     private var _exoPlayer: ExoPlayer? = null
     var isPlaying by mutableStateOf(false)
         private set
@@ -984,7 +770,7 @@ class PlayerViewModel @Inject constructor() : ViewModel() {
 
                 addListener(object : Player.Listener {
                     override fun onIsPlayingChanged(playing: Boolean) {
-                        this@PlayerViewModel.isPlaying = playing
+                        this@PersonPlayerViewModel.isPlaying = playing
                     }
                 })
             }

@@ -6,6 +6,7 @@ import io.winapps.voizy.data.model.users.CreateAccountResponse
 import io.winapps.voizy.data.model.users.GetBatchUserImagesPresignedPutUrlsRequest
 import io.winapps.voizy.data.model.users.GetBatchUserImagesPresignedPutUrlsResponse
 import io.winapps.voizy.data.model.users.GetCoverPicResponse
+import io.winapps.voizy.data.model.users.GetFriendStatusResponse
 import io.winapps.voizy.data.model.users.GetProfilePicResponse
 import io.winapps.voizy.data.model.users.GetProfileResponse
 import io.winapps.voizy.data.model.users.GetTotalFriendsResponse
@@ -145,6 +146,15 @@ class UsersRepository @Inject constructor(
             userId = userId,
             limit = limit,
             page = page
+        )
+    }
+
+    suspend fun getFriendStatus(apiKey: String, userIdHeader: String, userId: Long, friendId: Long): GetFriendStatusResponse {
+        return usersService.getFriendStatus(
+            apiKey = apiKey,
+            userIdHeader = userIdHeader,
+            userId = userId,
+            friendId = friendId
         )
     }
 }
