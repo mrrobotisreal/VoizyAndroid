@@ -24,6 +24,7 @@ import io.winapps.voizy.data.model.posts.PutPostCommentRequest
 import io.winapps.voizy.data.model.posts.PutPostMediaRequest
 import io.winapps.voizy.data.model.posts.PutPostReactionRequest
 import io.winapps.voizy.data.model.posts.ReactionType
+import io.winapps.voizy.data.model.users.CreateFriendRequest
 import io.winapps.voizy.data.model.users.Friend
 import io.winapps.voizy.data.model.users.UserImage
 import io.winapps.voizy.data.repository.PostsRepository
@@ -606,6 +607,27 @@ class PersonFriendsViewModel @Inject constructor(
                     else -> {
                         FriendStatus.IDLE
                     }
+                }
+            } catch (e: Exception) {
+                //
+            }
+        }
+    }
+
+    fun onFriendRequest(userId: Long, friendId: Long, apiKey: String, token: String) {
+        viewModelScope.launch {
+            try {
+                val response = usersRepository.createFriendship(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    token = "Bearer $token",
+                    createFriendRequest = CreateFriendRequest(
+                        userID = userId,
+                        friendID = friendId
+                    )
+                )
+                if (response.success) {
+                    friendStatus = FriendStatus.PENDING
                 }
             } catch (e: Exception) {
                 //

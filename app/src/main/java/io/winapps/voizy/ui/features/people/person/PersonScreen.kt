@@ -228,7 +228,14 @@ fun PersonScreen() {
                 when(friendStatus) {
                     FriendStatus.IDLE -> {
                         Button(
-                            onClick = {},
+                            onClick = {
+                                personFriendsViewModel.onFriendRequest(
+                                    userId = userId,
+                                    friendId = personId,
+                                    apiKey = apiKey,
+                                    token = token
+                                )
+                            },
                             modifier = Modifier
                                 .padding(
                                     horizontal = 4.dp, vertical = 1.dp

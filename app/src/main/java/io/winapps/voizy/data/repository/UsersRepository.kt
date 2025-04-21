@@ -3,6 +3,8 @@ package io.winapps.voizy.data.repository
 import io.winapps.voizy.data.local.SecureStorage
 import io.winapps.voizy.data.model.users.CreateAccountRequest
 import io.winapps.voizy.data.model.users.CreateAccountResponse
+import io.winapps.voizy.data.model.users.CreateFriendRequest
+import io.winapps.voizy.data.model.users.CreateFriendResponse
 import io.winapps.voizy.data.model.users.GetBatchUserImagesPresignedPutUrlsRequest
 import io.winapps.voizy.data.model.users.GetBatchUserImagesPresignedPutUrlsResponse
 import io.winapps.voizy.data.model.users.GetCoverPicResponse
@@ -155,6 +157,15 @@ class UsersRepository @Inject constructor(
             userIdHeader = userIdHeader,
             userId = userId,
             friendId = friendId
+        )
+    }
+
+    suspend fun createFriendship(apiKey: String, userIdHeader: String, token: String, createFriendRequest: CreateFriendRequest): CreateFriendResponse {
+        return usersService.createFriendship(
+            apiKey = apiKey,
+            userIdHeader = userIdHeader,
+            token = token,
+            createFriendRequest = createFriendRequest
         )
     }
 }

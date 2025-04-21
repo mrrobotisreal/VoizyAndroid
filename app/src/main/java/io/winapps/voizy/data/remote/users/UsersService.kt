@@ -2,6 +2,8 @@ package io.winapps.voizy.data.remote.users
 
 import io.winapps.voizy.data.model.users.CreateAccountRequest
 import io.winapps.voizy.data.model.users.CreateAccountResponse
+import io.winapps.voizy.data.model.users.CreateFriendRequest
+import io.winapps.voizy.data.model.users.CreateFriendResponse
 import io.winapps.voizy.data.model.users.GetBatchUserImagesPresignedPutUrlsRequest
 import io.winapps.voizy.data.model.users.GetBatchUserImagesPresignedPutUrlsResponse
 import io.winapps.voizy.data.model.users.GetCoverPicResponse
@@ -131,4 +133,12 @@ interface UsersService {
         @Query("id") userId: Long,
         @Query("friend") friendId: Long
     ): GetFriendStatusResponse
+
+    @POST("/users/friends/create")
+    suspend fun createFriendship(
+        @Header("X-API-Key") apiKey: String,
+        @Header("X-User-ID") userIdHeader: String,
+        @Header("Authorization") token: String,
+        @Body createFriendRequest: CreateFriendRequest
+    ): CreateFriendResponse
 }
