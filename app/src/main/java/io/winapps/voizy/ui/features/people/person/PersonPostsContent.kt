@@ -131,7 +131,7 @@ fun PersonPostsContent(
             Spacer(modifier = Modifier.width(8.dp))
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.Send,
-                contentDescription = "Create post button",
+                contentDescription = "Post on $preferredName's page button",
             )
         }
 

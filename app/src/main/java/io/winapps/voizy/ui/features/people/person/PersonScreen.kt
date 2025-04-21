@@ -205,7 +205,7 @@ fun PersonScreen() {
                 } else {
                     Icon(
                         imageVector = Icons.Default.Person,
-                        contentDescription = "Empty poster profile pic",
+                        contentDescription = "Empty person profile pic",
                         modifier = Modifier
                             .size(100.dp)
                             .clip(CircleShape)
@@ -420,8 +420,15 @@ fun PersonScreen() {
                         contentDescription = null
                     )
                     Spacer(Modifier.width(4.dp))
+                    val totalFriendsText = if (personFriendsViewModel.totalFriends.toInt() == 0) {
+                        "No friends yet"
+                    } else if (personFriendsViewModel.totalFriends.toInt() == 1) {
+                        "1 Friend"
+                    } else {
+                        "${personFriendsViewModel.totalFriends} Friends"
+                    }
                     Text(
-                        text = "${personFriendsViewModel.totalFriends} Friends",
+                        text = totalFriendsText,
                         fontFamily = Ubuntu,
                         fontWeight = FontWeight.Normal
                     )
@@ -439,8 +446,15 @@ fun PersonScreen() {
                         contentDescription = null
                     )
                     Spacer(Modifier.width(4.dp))
+                    val totalPostsText = if (personPostsViewModel.totalPosts.toInt() == 0) {
+                        "No posts"
+                    } else if (personPostsViewModel.totalPosts.toInt() == 1) {
+                        "1 Post"
+                    } else {
+                        "${personPostsViewModel.totalPosts} Posts"
+                    }
                     Text(
-                        text = "${personPostsViewModel.totalPosts} Posts",
+                        text = totalPostsText,
                         fontFamily = Ubuntu,
                         fontWeight = FontWeight.Normal
                     )
@@ -458,8 +472,15 @@ fun PersonScreen() {
                         contentDescription = null
                     )
                     Spacer(Modifier.width(4.dp))
+                    val totalImagesText = if (personPhotosViewModel.totalImages.toInt() == 0) {
+                        "No photos"
+                    } else if (personPhotosViewModel.totalImages.toInt() == 1) {
+                        "1 Photo"
+                    } else {
+                        "${personPhotosViewModel.totalImages} Photos"
+                    }
                     Text(
-                        text = "${personPhotosViewModel.totalImages} Photos",
+                        text = totalImagesText,
                         fontFamily = Ubuntu,
                         fontWeight = FontWeight.Normal
                     )

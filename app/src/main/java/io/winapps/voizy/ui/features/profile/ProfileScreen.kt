@@ -352,8 +352,15 @@ fun ProfileScreen() {
                         contentDescription = null
                     )
                     Spacer(Modifier.width(4.dp))
+                    val totalFriendsText = if (friendsViewModel.totalFriends.toInt() == 0) {
+                        "No friends yet"
+                    } else if (friendsViewModel.totalFriends.toInt() == 1) {
+                        "1 Friend"
+                    } else {
+                        "${friendsViewModel.totalFriends} Friends"
+                    }
                     Text(
-                        text = "${friendsViewModel.totalFriends} Friends",
+                        text = totalFriendsText,
                         fontFamily = Ubuntu,
                         fontWeight = FontWeight.Normal
                     )
@@ -371,8 +378,15 @@ fun ProfileScreen() {
                         contentDescription = null
                     )
                     Spacer(Modifier.width(4.dp))
+                    val totalPostsText = if (postsViewModel.totalPosts.toInt() == 0) {
+                        "No posts"
+                    } else if (postsViewModel.totalPosts.toInt() == 1) {
+                        "1 Post"
+                    } else {
+                        "${postsViewModel.totalPosts} Posts"
+                    }
                     Text(
-                        text = "${postsViewModel.totalPosts} Posts",
+                        text = totalPostsText,
                         fontFamily = Ubuntu,
                         fontWeight = FontWeight.Normal
                     )
@@ -390,6 +404,13 @@ fun ProfileScreen() {
                         contentDescription = null
                     )
                     Spacer(Modifier.width(4.dp))
+                    val totalPhotosText = if (photosViewModel.totalImages.toInt() == 0) {
+                        "No photos"
+                    } else if (photosViewModel.totalImages.toInt() == 1) {
+                        "1 Photo"
+                    } else {
+                        "${photosViewModel.totalImages} Photos"
+                    }
                     Text(
                         text = "${photosViewModel.totalImages} Photos",
                         fontFamily = Ubuntu,
