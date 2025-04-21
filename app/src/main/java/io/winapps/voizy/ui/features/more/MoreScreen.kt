@@ -1,6 +1,7 @@
 package io.winapps.voizy.ui.features.more
 
 import android.app.Activity
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -35,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -193,6 +195,10 @@ fun MoreScreen() {
                     }
                 }
 
+                Box(
+                    modifier = Modifier.height(40.dp)
+                )
+
                 Button(
                     onClick = {
                         sessionViewModel.handleLogout()
@@ -242,6 +248,15 @@ fun MoreScreen() {
     }
 
     if (showProfilePrefs) {
-        //
+        ProfilePreferencesDialog(
+            onClose = {
+                moreViewModel.onCloseProfilePrefs()
+            }
+        )
+    }
+
+    if (moreViewModel.showUpdatePrefsSuccessToast) {
+        Toast.makeText(LocalContext.current, "Successfully updated your preferences!", Toast.LENGTH_SHORT).show()
+        moreViewModel.endShowUpdatePrefsSuccessToast()
     }
 }

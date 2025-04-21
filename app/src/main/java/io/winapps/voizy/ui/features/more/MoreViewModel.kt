@@ -85,32 +85,85 @@ class MoreViewModel @Inject constructor(
 
     fun onSelectAppTheme(newTheme: AppTheme) {
         selectedAppTheme = newTheme
+        var primaryColorStr = "yellow"
+        var primaryAccentStr = "pale-yellow"
+        var secondaryColorStr = "magenta"
+        var secondaryAccentStr = "pale-magenta"
         when(newTheme) {
             AppTheme.VOIZY -> {
                 appPrimaryColor = VoizyPrimaryColor
+                primaryColorStr = "yellow"
                 appPrimaryAccent = VoizyPrimaryAccent
+                primaryAccentStr = "pale-yellow"
                 appSecondaryColor = VoizySecondaryColor
+                secondaryColorStr = "magenta"
                 appSecondaryAccent = VoizySecondaryAccent
+                secondaryAccentStr = "pale-magenta"
             }
             AppTheme.OCEANIC -> {
                 appPrimaryColor = OceanicPrimaryColor
+                primaryColorStr = "oceanic-primary-color"
                 appPrimaryAccent = OceanicPrimaryAccent
+                primaryAccentStr = "oceanic-primary-accent"
                 appSecondaryColor = OceanicSecondaryColor
+                secondaryColorStr = "oceanic-secondary-color"
                 appSecondaryAccent = OceanicSecondaryAccent
+                secondaryAccentStr = "oceanic-secondary-accent"
             }
             AppTheme.ROYAL -> {
                 appPrimaryColor = RoyalPrimaryColor
+                primaryColorStr = "royal-primary-color"
                 appPrimaryAccent = RoyalPrimaryAccent
+                primaryAccentStr = "royal-primary-accent"
                 appSecondaryColor = RoyalSecondaryColor
+                secondaryColorStr = "royal-secondary-color"
                 appSecondaryAccent = RoyalSecondaryAccent
+                secondaryAccentStr = "royal-secondary-accent"
             }
             AppTheme.SUNSET -> {
                 appPrimaryColor = SunsetPrimaryColor
+                primaryColorStr = "sunset-primary-color"
                 appPrimaryAccent = SunsetPrimaryAccent
+                primaryAccentStr = "sunset-primary-accent"
                 appSecondaryColor = SunsetSecondaryColor
+                secondaryColorStr = "sunset-secondary-color"
                 appSecondaryAccent = SunsetSecondaryAccent
+                secondaryAccentStr = "sunset-secondary-accent"
             }
         }
+        val newPrefs = UserPreferences(
+            primaryColor = primaryColorStr,
+            primaryAccent = primaryAccentStr,
+            secondaryColor = secondaryColorStr,
+            secondaryAccent = secondaryAccentStr,
+            songAutoplay = userPreferences.songAutoplay,
+            profilePrimaryColor = userPreferences.profilePrimaryColor,
+            profilePrimaryAccent = userPreferences.profilePrimaryAccent,
+            profileSecondaryColor = userPreferences.profileSecondaryColor,
+            profileSecondaryAccent = userPreferences.profileSecondaryAccent,
+            profileSongAutoplay = userPreferences.profileSongAutoplay,
+        )
+        userPreferences = newPrefs
+    }
+
+    var songAutoplay by mutableStateOf(false)
+        private set
+
+    fun onToggleSongAutoplay(bool: Boolean) {
+        songAutoplay = bool
+        val newPrefs = UserPreferences(
+            primaryColor = userPreferences.primaryColor,
+            primaryAccent = userPreferences.primaryAccent,
+            secondaryColor = userPreferences.secondaryColor,
+            secondaryAccent = userPreferences.secondaryAccent,
+            songAutoplay = bool,
+            profilePrimaryColor = userPreferences.profilePrimaryColor,
+            profilePrimaryAccent = userPreferences.profilePrimaryAccent,
+            profileSecondaryColor = userPreferences.profileSecondaryColor,
+            profileSecondaryAccent = userPreferences.profileSecondaryAccent,
+            profileSongAutoplay = userPreferences.profileSongAutoplay,
+        )
+        userPreferences = newPrefs
     }
 
     var showAppThemes by mutableStateOf(false)
@@ -153,32 +206,85 @@ class MoreViewModel @Inject constructor(
 
     fun onSelectProfileTheme(newTheme: AppTheme) {
         selectedProfileTheme = newTheme
+        var primaryColorStr = "yellow"
+        var primaryAccentStr = "pale-yellow"
+        var secondaryColorStr = "magenta"
+        var secondaryAccentStr = "pale-magenta"
         when(newTheme) {
             AppTheme.VOIZY -> {
                 profilePrimaryColor = VoizyPrimaryColor
+                primaryColorStr = "yellow"
                 profilePrimaryAccent = VoizyPrimaryAccent
+                primaryAccentStr = "pale-yellow"
                 profileSecondaryColor = VoizySecondaryColor
+                secondaryColorStr = "magenta"
                 profileSecondaryAccent = VoizySecondaryAccent
+                secondaryAccentStr = "pale-magenta"
             }
             AppTheme.OCEANIC -> {
                 profilePrimaryColor = OceanicPrimaryColor
+                primaryColorStr = "oceanic-primary-color"
                 profilePrimaryAccent = OceanicPrimaryAccent
+                primaryAccentStr = "oceanic-primary-accent"
                 profileSecondaryColor = OceanicSecondaryColor
+                secondaryColorStr = "oceanic-secondary-color"
                 profileSecondaryAccent = OceanicSecondaryAccent
+                secondaryAccentStr = "oceanic-secondary-accent"
             }
             AppTheme.ROYAL -> {
                 profilePrimaryColor = RoyalPrimaryColor
+                primaryColorStr = "royal-primary-color"
                 profilePrimaryAccent = RoyalPrimaryAccent
+                primaryAccentStr = "royal-primary-accent"
                 profileSecondaryColor = RoyalSecondaryColor
+                secondaryColorStr = "royal-secondary-color"
                 profileSecondaryAccent = RoyalSecondaryAccent
+                secondaryAccentStr = "royal-secondary-accent"
             }
             AppTheme.SUNSET -> {
                 profilePrimaryColor = SunsetPrimaryColor
+                primaryColorStr = "sunset-primary-color"
                 profilePrimaryAccent = SunsetPrimaryAccent
+                primaryAccentStr = "sunset-primary-accent"
                 profileSecondaryColor = SunsetSecondaryColor
+                secondaryColorStr = "sunset-secondary-color"
                 profileSecondaryAccent = SunsetSecondaryAccent
+                secondaryAccentStr = "sunset-secondary-accent"
             }
         }
+        val newPrefs = UserPreferences(
+            primaryColor = userPreferences.primaryColor,
+            primaryAccent = userPreferences.primaryAccent,
+            secondaryColor = userPreferences.secondaryColor,
+            secondaryAccent = userPreferences.secondaryAccent,
+            songAutoplay = userPreferences.songAutoplay,
+            profilePrimaryColor = primaryColorStr,
+            profilePrimaryAccent = primaryAccentStr,
+            profileSecondaryColor = secondaryColorStr,
+            profileSecondaryAccent = secondaryAccentStr,
+            profileSongAutoplay = userPreferences.profileSongAutoplay,
+        )
+        userPreferences = newPrefs
+    }
+
+    var profileSongAutoplay by mutableStateOf(false)
+        private set
+
+    fun onToggleProfileSongAutoplay(bool: Boolean) {
+        profileSongAutoplay = bool
+        val newPrefs = UserPreferences(
+            primaryColor = userPreferences.primaryColor,
+            primaryAccent = userPreferences.primaryAccent,
+            secondaryColor = userPreferences.secondaryColor,
+            secondaryAccent = userPreferences.secondaryAccent,
+            songAutoplay = userPreferences.songAutoplay,
+            profilePrimaryColor = userPreferences.profilePrimaryColor,
+            profilePrimaryAccent = userPreferences.profilePrimaryAccent,
+            profileSecondaryColor = userPreferences.profileSecondaryColor,
+            profileSecondaryAccent = userPreferences.profileSecondaryAccent,
+            profileSongAutoplay = bool,
+        )
+        userPreferences = newPrefs
     }
 
     var showProfileThemes by mutableStateOf(false)
@@ -212,6 +318,7 @@ class MoreViewModel @Inject constructor(
                     userIdHeader = userId.toString(),
                     userId = userId,
                 )
+
                 userPreferences = UserPreferences(
                     primaryColor = response.primaryColor,
                     primaryAccent = response.primaryAccent,
@@ -224,6 +331,178 @@ class MoreViewModel @Inject constructor(
                     profileSecondaryAccent = response.profileSecondaryAccent,
                     profileSongAutoplay = response.profileSongAutoplay
                 )
+
+                when(response.primaryColor) {
+                    "yellow" -> {
+                        appPrimaryColor = VoizyPrimaryColor
+                    }
+                    "oceanic-primary-color" -> {
+                        appPrimaryColor = OceanicPrimaryColor
+                    }
+                    "royal-primary-color" -> {
+                        appPrimaryColor = RoyalPrimaryColor
+                    }
+                    "sunset-primary-color" -> {
+                        appPrimaryColor = SunsetPrimaryColor
+                    }
+                    else -> {
+                        appPrimaryColor = VoizyPrimaryColor
+                    }
+                }
+
+                when(response.primaryAccent) {
+                    "pale-yellow" -> {
+                        appPrimaryAccent = VoizyPrimaryAccent
+                    }
+                    "oceanic-primary-accent" -> {
+                        appPrimaryAccent = OceanicPrimaryAccent
+                    }
+                    "royal-primary-accent" -> {
+                        appPrimaryAccent = RoyalPrimaryAccent
+                    }
+                    "sunset-primary-accent" -> {
+                        appPrimaryAccent = SunsetPrimaryAccent
+                    }
+                    else -> {
+                        appPrimaryAccent = VoizyPrimaryAccent
+                    }
+                }
+
+                when(response.secondaryColor) {
+                    "magenta" -> {
+                        appSecondaryColor = VoizySecondaryColor
+                    }
+                    "oceanic-secondary-color" -> {
+                        appSecondaryColor = OceanicSecondaryColor
+                    }
+                    "royal-secondary-color" -> {
+                        appSecondaryColor = RoyalSecondaryColor
+                    }
+                    "sunset-secondary-color" -> {
+                        appSecondaryColor = SunsetSecondaryColor
+                    }
+                    else -> {
+                        appSecondaryColor = VoizySecondaryColor
+                    }
+                }
+
+                when(response.secondaryAccent) {
+                    "pale-magenta" -> {
+                        appSecondaryAccent = VoizySecondaryAccent
+                    }
+                    "oceanic-secondary-accent" -> {
+                        appSecondaryAccent = OceanicSecondaryAccent
+                    }
+                    "royal-secondary-accent" -> {
+                        appSecondaryAccent = RoyalSecondaryAccent
+                    }
+                    "sunset-secondary-accent" -> {
+                        appSecondaryAccent = SunsetSecondaryAccent
+                    }
+                    else -> {
+                        appSecondaryAccent = VoizySecondaryAccent
+                    }
+                }
+
+                songAutoplay = when(response.songAutoplay) {
+                    true -> {
+                        true
+                    }
+
+                    false -> {
+                        false
+                    }
+
+                    else -> {
+                        false
+                    }
+                }
+
+                when(response.profilePrimaryColor) {
+                    "yellow" -> {
+                        profilePrimaryColor = VoizyPrimaryColor
+                    }
+                    "oceanic-primary-color" -> {
+                        profilePrimaryColor = OceanicPrimaryColor
+                    }
+                    "royal-primary-color" -> {
+                        profilePrimaryColor = RoyalPrimaryColor
+                    }
+                    "sunset-primary-color" -> {
+                        profilePrimaryColor = SunsetPrimaryColor
+                    }
+                    else -> {
+                        profilePrimaryColor = VoizyPrimaryColor
+                    }
+                }
+
+                when(response.profilePrimaryAccent) {
+                    "pale-yellow" -> {
+                        profilePrimaryAccent = VoizyPrimaryAccent
+                    }
+                    "oceanic-primary-accent" -> {
+                        profilePrimaryAccent = OceanicPrimaryAccent
+                    }
+                    "royal-primary-accent" -> {
+                        profilePrimaryAccent = RoyalPrimaryAccent
+                    }
+                    "sunset-primary-accent" -> {
+                        profilePrimaryAccent = SunsetPrimaryAccent
+                    }
+                    else -> {
+                        profilePrimaryAccent = VoizyPrimaryAccent
+                    }
+                }
+
+                when(response.profileSecondaryColor) {
+                    "magenta" -> {
+                        profileSecondaryColor = VoizySecondaryColor
+                    }
+                    "oceanic-secondary-color" -> {
+                        profileSecondaryColor = OceanicSecondaryColor
+                    }
+                    "royal-secondary-color" -> {
+                        profileSecondaryColor = RoyalSecondaryColor
+                    }
+                    "sunset-secondary-color" -> {
+                        profileSecondaryColor = SunsetSecondaryColor
+                    }
+                    else -> {
+                        profileSecondaryColor = VoizySecondaryColor
+                    }
+                }
+
+                when(response.profileSecondaryAccent) {
+                    "pale-magenta" -> {
+                        profileSecondaryAccent = VoizySecondaryAccent
+                    }
+                    "oceanic-secondary-accent" -> {
+                        profileSecondaryAccent = OceanicSecondaryAccent
+                    }
+                    "royal-secondary-accent" -> {
+                        profileSecondaryAccent = RoyalSecondaryAccent
+                    }
+                    "sunset-secondary-accent" -> {
+                        profileSecondaryAccent = SunsetSecondaryAccent
+                    }
+                    else -> {
+                        profileSecondaryAccent = VoizySecondaryAccent
+                    }
+                }
+
+                profileSongAutoplay = when(response.profileSongAutoplay) {
+                    true -> {
+                        true
+                    }
+
+                    false -> {
+                        false
+                    }
+
+                    else -> {
+                        false
+                    }
+                }
             } catch (e: Exception) {
                 errorMessage = e.message
             } finally {
@@ -233,6 +512,9 @@ class MoreViewModel @Inject constructor(
     }
 
     var isUpdatingPrefs by mutableStateOf(false)
+        private set
+
+    var showUpdatePrefsSuccessToast by mutableStateOf(false)
         private set
 
     fun onUpdateAppPrefs(apiKey: String, userId: Long, token: String, onClose: () -> Unit) {
@@ -260,11 +542,54 @@ class MoreViewModel @Inject constructor(
                 )
 
                 if (response.success) {
-                    // Show toast
                     loadUserPreferences(
                         apiKey = apiKey,
                         userId = userId
                     )
+                    showUpdatePrefsSuccessToast = true
+                }
+            } catch (e: Exception) {
+                //
+            } finally {
+                onClose()
+            }
+        }
+    }
+
+    fun endShowUpdatePrefsSuccessToast() {
+        showUpdatePrefsSuccessToast = false
+    }
+
+    fun onUpdateProfilePrefs(apiKey: String, userId: Long, token: String, onClose: () -> Unit) {
+        viewModelScope.launch {
+            isUpdatingPrefs = true
+
+            try {
+                val response = usersRepository.putUserPreferences(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    token = "Bearer $token",
+                    putUserPreferencesRequest = PutUserPreferencesRequest(
+                        userID = userId,
+                        primaryColor = null,
+                        primaryAccent = null,
+                        secondaryColor = null,
+                        secondaryAccent = null,
+                        songAutoplay = null,
+                        profilePrimaryColor = userPreferences.profilePrimaryColor,
+                        profilePrimaryAccent = userPreferences.profilePrimaryAccent,
+                        profileSecondaryColor = userPreferences.profileSecondaryColor,
+                        profileSecondaryAccent = userPreferences.profileSecondaryAccent,
+                        profileSongAutoplay = userPreferences.profileSongAutoplay,
+                    )
+                )
+
+                if (response.success) {
+                    loadUserPreferences(
+                        apiKey = apiKey,
+                        userId = userId
+                    )
+                    showUpdatePrefsSuccessToast = true
                 }
             } catch (e: Exception) {
                 //

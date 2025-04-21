@@ -280,7 +280,9 @@ fun CreatePostDialog(
                             modifier = Modifier.weight(1f)
                         ) {
                             FlowRow(
-                                modifier = Modifier.fillMaxWidth().padding(2.dp)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(2.dp)
                             ) {
                                 hashtags.forEach { hashtag ->
                                     Box(
@@ -397,7 +399,7 @@ fun MainPostFormUI(
                             .clip(CircleShape)
                             .background(Color(0xFFFFD5ED))
                             .border(2.dp, Color(0xFFF10E91), CircleShape)
-                            .clickable {  }
+                            .clickable { }
                     ) {
                         if (!postsViewModel.profilePicURL.isNullOrEmpty()) {
                             val painter = rememberAsyncImagePainter(
@@ -538,7 +540,9 @@ fun MainPostFormUI(
                             fontWeight = FontWeight.Normal
                         ),
                         color = Color.DarkGray,
-                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(6.dp)
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(6.dp)
                     )
                 }
 

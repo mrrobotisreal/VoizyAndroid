@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.winapps.voizy.data.local.SecureStorage
+import io.winapps.voizy.ui.features.more.UserPreferences
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -38,6 +39,9 @@ class SessionViewModel @Inject constructor(
     var profilePicURL by mutableStateOf<String?>(null)
         private set
 
+    var userPrefs by mutableStateOf(UserPreferences())
+        private set
+
     var didFinishSplash by mutableStateOf(false)
         private set
 
@@ -52,13 +56,16 @@ class SessionViewModel @Inject constructor(
             val storedUserId = secureStorage.getUserId()
             val storedApiKey = secureStorage.getApiKey()
             val storedToken = secureStorage.getToken()
+            val storedUserPrefs = secureStorage.getUserPrefs()
 
             if (storedUserId != null && storedApiKey != null && storedToken != null) {
                 userId = storedUserId
                 didFinishSplash = true
                 isLoggedIn = true
+                userPrefs = storedUserPrefs
             } else {
                 delay(1000L)
+                userPrefs = storedUserPrefs
                 didFinishSplash = true
             }
         }
@@ -107,5 +114,10 @@ class SessionViewModel @Inject constructor(
 
     fun switchCurrentAppScreen(screen: AppScreen) {
         this.currentAppScreen = screen
+    }
+
+    fun updateUserPrefs(prefs: UserPreferences) {
+        this.userPrefs = prefs
+        secureStorage.saveUserPrefs(prefs)
     }
 }
