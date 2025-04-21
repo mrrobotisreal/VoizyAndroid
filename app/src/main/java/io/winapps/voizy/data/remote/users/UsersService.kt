@@ -12,11 +12,14 @@ import io.winapps.voizy.data.model.users.GetProfilePicResponse
 import io.winapps.voizy.data.model.users.GetProfileResponse
 import io.winapps.voizy.data.model.users.GetTotalFriendsResponse
 import io.winapps.voizy.data.model.users.GetTotalUserImagesResponse
+import io.winapps.voizy.data.model.users.GetUserPreferencesResponse
 import io.winapps.voizy.data.model.users.ListFriendshipsResponse
 import io.winapps.voizy.data.model.users.ListPeopleYouMayKnowResponse
 import io.winapps.voizy.data.model.users.ListUserImagesResponse
 import io.winapps.voizy.data.model.users.PutUserImagesRequest
 import io.winapps.voizy.data.model.users.PutUserImagesResponse
+import io.winapps.voizy.data.model.users.PutUserPreferencesRequest
+import io.winapps.voizy.data.model.users.PutUserPreferencesResponse
 import io.winapps.voizy.data.model.users.UpdateCoverPicRequest
 import io.winapps.voizy.data.model.users.UpdateCoverPicResponse
 import io.winapps.voizy.data.model.users.UpdateProfilePicRequest
@@ -141,4 +144,19 @@ interface UsersService {
         @Header("Authorization") token: String,
         @Body createFriendRequest: CreateFriendRequest
     ): CreateFriendResponse
+
+    @PUT("/users/preferences/put")
+    suspend fun putUserPreferences(
+        @Header("X-API-Key") apiKey: String,
+        @Header("X-User-ID") userIdHeader: String,
+        @Header("Authorization") token: String,
+        @Body putUserPreferencesRequest: PutUserPreferencesRequest
+    ): PutUserPreferencesResponse
+
+    @GET("/users/preferences/get")
+    suspend fun getUserPreferences(
+        @Header("X-API-Key") apiKey: String,
+        @Header("X-User-ID") userIdHeader: String,
+        @Query("id") userId: Long
+    ): GetUserPreferencesResponse
 }

@@ -13,11 +13,14 @@ import io.winapps.voizy.data.model.users.GetProfilePicResponse
 import io.winapps.voizy.data.model.users.GetProfileResponse
 import io.winapps.voizy.data.model.users.GetTotalFriendsResponse
 import io.winapps.voizy.data.model.users.GetTotalUserImagesResponse
+import io.winapps.voizy.data.model.users.GetUserPreferencesResponse
 import io.winapps.voizy.data.model.users.ListFriendshipsResponse
 import io.winapps.voizy.data.model.users.ListPeopleYouMayKnowResponse
 import io.winapps.voizy.data.model.users.ListUserImagesResponse
 import io.winapps.voizy.data.model.users.PutUserImagesRequest
 import io.winapps.voizy.data.model.users.PutUserImagesResponse
+import io.winapps.voizy.data.model.users.PutUserPreferencesRequest
+import io.winapps.voizy.data.model.users.PutUserPreferencesResponse
 import io.winapps.voizy.data.model.users.UpdateCoverPicRequest
 import io.winapps.voizy.data.model.users.UpdateCoverPicResponse
 import io.winapps.voizy.data.model.users.UpdateProfilePicRequest
@@ -166,6 +169,23 @@ class UsersRepository @Inject constructor(
             userIdHeader = userIdHeader,
             token = token,
             createFriendRequest = createFriendRequest
+        )
+    }
+
+    suspend fun putUserPreferences(apiKey: String, userIdHeader: String, token: String, putUserPreferencesRequest: PutUserPreferencesRequest): PutUserPreferencesResponse {
+        return usersService.putUserPreferences(
+            apiKey = apiKey,
+            userIdHeader = userIdHeader,
+            token = token,
+            putUserPreferencesRequest = putUserPreferencesRequest
+        )
+    }
+
+    suspend fun getUserPreferences(apiKey: String, userIdHeader: String, userId: Long): GetUserPreferencesResponse {
+        return usersService.getUserPreferences(
+            apiKey = apiKey,
+            userIdHeader = userIdHeader,
+            userId = userId
         )
     }
 }

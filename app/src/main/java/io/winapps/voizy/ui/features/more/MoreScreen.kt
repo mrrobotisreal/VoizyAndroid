@@ -1,7 +1,9 @@
 package io.winapps.voizy.ui.features.more
 
 import android.app.Activity
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,9 +16,11 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AppSettingsAlt
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
@@ -24,9 +28,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
@@ -43,11 +49,23 @@ import io.winapps.voizy.ui.theme.Ubuntu
 fun MoreScreen() {
     val view = LocalView.current
     val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val userId = sessionViewModel.userId ?: -1
+    val apiKey = sessionViewModel.getApiKey().orEmpty()
+    val moreViewModel = hiltViewModel<MoreViewModel>()
+    val showAppPrefs = moreViewModel.showAppPrefs
+    val showProfilePrefs = moreViewModel.showProfilePrefs
 
     SideEffect {
         val activity = view.context as Activity
         activity.window.statusBarColor = Color(0xFFF9D841).toArgb()
         WindowCompat.getInsetsController(activity.window, view).isAppearanceLightStatusBars = true
+    }
+
+    LaunchedEffect(Unit) {
+        moreViewModel.loadUserPreferences(
+            apiKey = apiKey,
+            userId = userId
+        )
     }
 
     Column(
@@ -97,42 +115,133 @@ fun MoreScreen() {
         Box(
             modifier = Modifier.weight(1f).padding(4.dp)
         ) {
-            Button(
-                onClick = {
-                    sessionViewModel.handleLogout()
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91)),
-                elevation = ButtonDefaults.buttonElevation(7.dp),
-                modifier = Modifier.fillMaxWidth()
+            Column(
+                modifier = Modifier
+                    .padding(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically
+                Button(
+                    onClick = {
+                        moreViewModel.onOpenAppPrefs()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD5ED)),
+                    elevation = ButtonDefaults.buttonElevation(7.dp),
+                    border = BorderStroke(1.dp, Color(0xFFF10E91)),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Box(
-                        modifier = Modifier
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                        )
 
-                    Text(
-                        text = "Logout",
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontFamily = Ubuntu,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = Color(0xFFFFD5ED)
-                    )
+                        Text(
+                            text = "App Preferences",
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontFamily = Ubuntu,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = Color(0xFFF10E91)
+                        )
 
-                    Icon(
-                        imageVector = Icons.Filled.Logout,
-                        contentDescription = "Logout",
-                        tint = Color(0xFFFFD5ED)
-                    )
+                        Icon(
+                            imageVector = Icons.Filled.AppSettingsAlt,
+                            contentDescription = "App Preferences",
+                            tint = Color(0xFFF10E91)
+                        )
+                    }
+                }
+
+                Button(
+                    onClick = {
+                        moreViewModel.onOpenProfilePrefs()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD5ED)),
+                    border = BorderStroke(1.dp, Color(0xFFF10E91)),
+                    elevation = ButtonDefaults.buttonElevation(7.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                        )
+
+                        Text(
+                            text = "Profile Preferences",
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontFamily = Ubuntu,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = Color(0xFFF10E91)
+                        )
+
+                        Icon(
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = "Profile Preferences",
+                            tint = Color(0xFFF10E91)
+                        )
+                    }
+                }
+
+                Button(
+                    onClick = {
+                        sessionViewModel.handleLogout()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91)),
+                    elevation = ButtonDefaults.buttonElevation(7.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                        )
+
+                        Text(
+                            text = "Logout",
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontFamily = Ubuntu,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = Color(0xFFFFD5ED)
+                        )
+
+                        Icon(
+                            imageVector = Icons.Filled.Logout,
+                            contentDescription = "Logout",
+                            tint = Color(0xFFFFD5ED)
+                        )
+                    }
                 }
             }
         }
 
         BottomNavBar()
+    }
+
+    if (showAppPrefs) {
+        AppPreferencesDialog(
+            onClose = {
+                moreViewModel.onCloseAppPrefs()
+            }
+        )
+    }
+
+    if (showProfilePrefs) {
+        //
     }
 }
