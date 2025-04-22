@@ -8,6 +8,10 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.winapps.voizy.data.local.SecureStorage
 import io.winapps.voizy.ui.features.more.UserPreferences
+import io.winapps.voizy.ui.theme.ColorMap
+import io.winapps.voizy.ui.theme.ColorResourceMap
+import io.winapps.voizy.ui.theme.getColorMap
+import io.winapps.voizy.ui.theme.getColorResourceMap
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -42,6 +46,24 @@ class SessionViewModel @Inject constructor(
     var userPrefs by mutableStateOf(UserPreferences())
         private set
 
+    var appColors by mutableStateOf<ColorMap>(getColorMap(
+        primaryColorString = userPrefs.primaryColor,
+        primaryAccentString = userPrefs.primaryAccent,
+        secondaryColorString = userPrefs.secondaryColor,
+        secondaryAccentString = userPrefs.secondaryAccent
+    ))
+        private set
+
+    var profileColors by mutableStateOf<ColorMap>(getColorMap(
+        primaryColorString = userPrefs.profilePrimaryColor,
+        primaryAccentString = userPrefs.profilePrimaryAccent,
+        secondaryColorString = userPrefs.profileSecondaryColor,
+        secondaryAccentString = userPrefs.profileSecondaryAccent
+    ))
+        private set
+
+    var profilePlayerColors by mutableStateOf<ColorResourceMap>(getColorResourceMap())
+
     var didFinishSplash by mutableStateOf(false)
         private set
 
@@ -57,6 +79,24 @@ class SessionViewModel @Inject constructor(
             val storedApiKey = secureStorage.getApiKey()
             val storedToken = secureStorage.getToken()
             val storedUserPrefs = secureStorage.getUserPrefs()
+            appColors = getColorMap(
+                primaryColorString = storedUserPrefs.primaryColor,
+                primaryAccentString = storedUserPrefs.primaryAccent,
+                secondaryColorString = storedUserPrefs.secondaryColor,
+                secondaryAccentString = storedUserPrefs.secondaryAccent,
+            )
+            profileColors = getColorMap(
+                primaryColorString = storedUserPrefs.profilePrimaryColor,
+                primaryAccentString = storedUserPrefs.profilePrimaryAccent,
+                secondaryColorString = storedUserPrefs.profileSecondaryColor,
+                secondaryAccentString = storedUserPrefs.profileSecondaryAccent,
+            )
+            profilePlayerColors = getColorResourceMap(
+                primaryColorString = storedUserPrefs.primaryColor,
+                primaryAccentString = storedUserPrefs.primaryAccent,
+                secondaryColorString = storedUserPrefs.secondaryColor,
+                secondaryAccentString = storedUserPrefs.secondaryAccent,
+            )
 
             if (storedUserId != null && storedApiKey != null && storedToken != null) {
                 userId = storedUserId
@@ -117,6 +157,24 @@ class SessionViewModel @Inject constructor(
     }
 
     fun updateUserPrefs(prefs: UserPreferences) {
+        this.appColors = getColorMap(
+            primaryColorString = prefs.primaryColor,
+            primaryAccentString = prefs.primaryAccent,
+            secondaryColorString = prefs.secondaryColor,
+            secondaryAccentString = prefs.secondaryAccent
+        )
+        this.profileColors = getColorMap(
+            primaryColorString = prefs.profilePrimaryColor,
+            primaryAccentString = prefs.profilePrimaryAccent,
+            secondaryColorString = prefs.profileSecondaryColor,
+            secondaryAccentString = prefs.profileSecondaryAccent
+        )
+        this.profilePlayerColors = getColorResourceMap(
+            primaryColorString = prefs.primaryColor,
+            primaryAccentString = prefs.primaryAccent,
+            secondaryColorString = prefs.secondaryColor,
+            secondaryAccentString = prefs.secondaryAccent
+        )
         this.userPrefs = prefs
         secureStorage.saveUserPrefs(prefs)
     }

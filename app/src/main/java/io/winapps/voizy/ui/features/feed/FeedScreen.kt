@@ -83,6 +83,10 @@ import io.winapps.voizy.ui.theme.Ubuntu
 @Composable
 fun FeedScreen() {
     val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val primaryColor = sessionViewModel.appColors.primaryColor
+    val primaryAccent = sessionViewModel.appColors.primaryAccent
+    val secondaryColor = sessionViewModel.appColors.secondaryColor
+    val secondaryAccent = sessionViewModel.appColors.secondaryAccent
     val userId = sessionViewModel.userId ?: -1
     val apiKey = sessionViewModel.getApiKey().orEmpty()
     val token = sessionViewModel.getToken().orEmpty()
@@ -104,21 +108,21 @@ fun FeedScreen() {
 
     SideEffect {
         val activity = view.context as Activity
-        activity.window.statusBarColor = Color(0xFFF9D841).toArgb()
+        activity.window.statusBarColor = primaryColor.toArgb()
         WindowCompat.getInsetsController(activity.window, view).isAppearanceLightStatusBars = true
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFDF4C9))
+            .background(primaryAccent)
             .statusBarsPadding()
             .imePadding()
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFF9D841))
+                .background(primaryColor)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -141,7 +145,7 @@ fun FeedScreen() {
                         Icon(
                             imageVector = Icons.Filled.Search,
                             contentDescription = "Search",
-                            tint = Color(0xFFF10E91)
+                            tint = secondaryColor
                         )
                     },
                     colors = TextFieldDefaults.colors(
@@ -157,20 +161,20 @@ fun FeedScreen() {
                 IconButton(
                     onClick = { feedViewModel.onOpenFiltersDialog() },
                     colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = Color(0xFFF10E91)
+                        containerColor = secondaryColor
                     )
                 ) {
                     Icon(
                         imageVector = Icons.Filled.FilterAlt,
                         contentDescription = "Filters",
-                        tint = Color(0xFFFFD5ED)
+                        tint = secondaryAccent
                     )
                 }
             }
         }
 
         Divider(
-            color = Color(0xFFF10E91),
+            color = secondaryColor,
             modifier = Modifier
                 .height(1.dp)
                 .fillMaxWidth()
@@ -241,7 +245,9 @@ fun FeedScreen() {
                     onSelectViewPostComments = { postID ->
                         selectedPostID = postID
                         isViewingComments = true
-                    }
+                    },
+                    secondaryColor = secondaryColor,
+                    secondaryAccent = secondaryAccent
                 )
 //                FeedTab.FRIENDS -> PostsContent(
 //                    onSelectViewPostComments = { postID ->
@@ -298,8 +304,8 @@ fun FeedScreen() {
                     .systemBarsPadding()
                     .imePadding()
                     .fillMaxWidth()
-                    .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFDF4C9))
+                    .border(2.dp, secondaryColor, RoundedCornerShape(12.dp)),
+                colors = CardDefaults.cardColors(containerColor = primaryAccent)
             ) {
                 Box(
                     modifier = Modifier
@@ -345,7 +351,7 @@ fun FeedScreen() {
                                 fontFamily = Ubuntu,
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = Color(0xFFF10E91)
+                            color = secondaryColor
                         )
                     }
 
@@ -353,7 +359,7 @@ fun FeedScreen() {
                         onClick = {
                             feedViewModel.onCloseFiltersDialog()
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                        colors = ButtonDefaults.buttonColors(containerColor = secondaryColor)
                     ) {
                         Text(
                             text = "Apply filter",
@@ -361,7 +367,7 @@ fun FeedScreen() {
                                 fontFamily = Ubuntu,
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = Color(0xFFFFD5ED)
+                            color = secondaryAccent
                         )
                     }
                 }
@@ -388,8 +394,8 @@ fun FeedScreen() {
                     .systemBarsPadding()
                     .imePadding()
                     .fillMaxWidth()
-                    .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFDF4C9))
+                    .border(2.dp, secondaryColor, RoundedCornerShape(12.dp)),
+                colors = CardDefaults.cardColors(containerColor = primaryAccent)
             ) {
                 Column(
                     modifier = Modifier
@@ -423,7 +429,9 @@ fun FeedScreen() {
                             onClose = {
                                 isViewingComments = false
                                 selectedPostID = 0
-                            }
+                            },
+                            secondaryColor = secondaryColor,
+                            secondaryAccent = secondaryAccent
                         )
                     }
 
@@ -459,13 +467,13 @@ fun FeedScreen() {
                                     fontFamily = Ubuntu,
                                     fontWeight = FontWeight.Bold
                                 ),
-                                color = Color(0xFFF10E91)
+                                color = secondaryColor
                             )
                         }
 
                         if (postsViewModel.isPuttingNewComment) {
                             CircularProgressIndicator(
-                                color = Color(0xFFF10E91)
+                                color = secondaryColor
                             )
                         } else {
                             Button(
@@ -477,7 +485,7 @@ fun FeedScreen() {
                                         postId = selectedPostID,
                                     )
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                                colors = ButtonDefaults.buttonColors(containerColor = secondaryColor)
                             ) {
                                 Text(
                                     text = "Comment",
@@ -485,7 +493,7 @@ fun FeedScreen() {
                                         fontFamily = Ubuntu,
                                         fontWeight = FontWeight.Bold
                                     ),
-                                    color = Color(0xFFFFD5ED)
+                                    color = secondaryAccent
                                 )
                             }
                         }
@@ -499,7 +507,10 @@ fun FeedScreen() {
         CreatePostDialog(
             onClose = { postsViewModel.onCloseCreatePost() },
             postsViewModel = postsViewModel,
-            sessionViewModel = sessionViewModel
+            sessionViewModel = sessionViewModel,
+            primaryAccent = primaryAccent,
+            secondaryColor = secondaryColor,
+            secondaryAccent = secondaryAccent
         )
     }
 
@@ -514,7 +525,9 @@ fun FeedScreen() {
                 startIndex = currentImageIndex,
                 onClose = {
                     setFullScreenImageOpen(false)
-                }
+                },
+                secondaryColor = secondaryColor,
+                secondaryAccent = secondaryAccent
             )
         }
     }
@@ -526,12 +539,14 @@ fun FiltersDropdown(
     onSelectFilter: (FeedTab) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val secondaryColor = sessionViewModel.appColors.secondaryColor
     var expanded by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp))
+            .border(1.dp, secondaryColor, RoundedCornerShape(12.dp))
             .background(Color.White, RoundedCornerShape(12.dp))
             .fillMaxWidth()
             .padding(2.dp)
@@ -553,7 +568,7 @@ fun FiltersDropdown(
             Icon(
                 imageVector = if (expanded) Icons.Filled.ArrowDropUp else Icons.Filled.ArrowDropDown,
                 contentDescription = "Dropdown Arrow",
-                tint = Color(0xFFF10E91)
+                tint = secondaryColor
             )
         }
 

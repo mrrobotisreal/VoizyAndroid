@@ -11,11 +11,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import io.winapps.voizy.SessionViewModel
 
 @Composable
 fun ProfileTabsRow(
     selectedTab: ProfileTab,
-    onTabSelected: (ProfileTab) -> Unit
+    onTabSelected: (ProfileTab) -> Unit,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     Row(
         modifier = Modifier
@@ -23,10 +27,38 @@ fun ProfileTabsRow(
             .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        TabButton(tab = ProfileTab.POSTS, selectedTab, onTabSelected, "Posts")
-        TabButton(tab = ProfileTab.PHOTOS, selectedTab, onTabSelected, "Photos")
-        TabButton(tab = ProfileTab.ABOUT, selectedTab, onTabSelected, "About")
-        TabButton(tab = ProfileTab.FRIENDS, selectedTab, onTabSelected, "Friends")
+        TabButton(
+            tab = ProfileTab.POSTS,
+            selectedTab,
+            onTabSelected,
+            "Posts",
+            secondaryColor,
+            secondaryAccent
+        )
+        TabButton(
+            tab = ProfileTab.PHOTOS,
+            selectedTab,
+            onTabSelected,
+            "Photos",
+            secondaryColor,
+            secondaryAccent
+        )
+        TabButton(
+            tab = ProfileTab.ABOUT,
+            selectedTab,
+            onTabSelected,
+            "About",
+            secondaryColor,
+            secondaryAccent
+        )
+        TabButton(
+            tab = ProfileTab.FRIENDS,
+            selectedTab,
+            onTabSelected,
+            "Friends",
+            secondaryColor,
+            secondaryAccent
+        )
     }
 }
 
@@ -35,11 +67,13 @@ fun TabButton(
     tab: ProfileTab,
     selectedTab: ProfileTab,
     onTabSelected: (ProfileTab) -> Unit,
-    label: String
+    label: String,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     val isSelected = (tab == selectedTab)
-    val backgroundColor = if (isSelected) Color(0xFFF10E91) else Color(0xFFFFD5ED)
-    val textColor = if (isSelected) Color(0xFFFFD5ED) else Color(0xFFF10E91)
+    val backgroundColor = if (isSelected) secondaryColor else secondaryAccent
+    val textColor = if (isSelected) secondaryAccent else secondaryColor
 
     TextButton(
         onClick = { onTabSelected(tab) },

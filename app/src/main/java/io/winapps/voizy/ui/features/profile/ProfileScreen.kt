@@ -1,8 +1,10 @@
 package io.winapps.voizy.ui.features.profile
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Build
 import android.view.LayoutInflater
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
@@ -88,8 +90,10 @@ import io.winapps.voizy.R
 import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.ui.navigation.BottomNavBar
 import io.winapps.voizy.ui.theme.Ubuntu
+import io.winapps.voizy.ui.theme.getColorResource
 import io.winapps.voizy.util.GetDisplayName
 
+@SuppressLint("ResourceType")
 @OptIn(UnstableApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -100,6 +104,12 @@ fun ProfileScreen() {
     val friendsViewModel = hiltViewModel<FriendsViewModel>()
     val photosViewModel = hiltViewModel<PhotosViewModel>()
     val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val primaryAccent = sessionViewModel.profileColors.primaryAccent
+    val secondaryColor = sessionViewModel.profileColors.secondaryColor
+    val secondaryAccent = sessionViewModel.profileColors.secondaryAccent
+    val playerPrimaryColor = sessionViewModel.profilePlayerColors.primaryColor
+    val playerPrimaryAccent = sessionViewModel.profilePlayerColors.primaryAccent
+    val playerSecondaryAccent = sessionViewModel.profilePlayerColors.secondaryAccent
     val playerViewModel = hiltViewModel<PlayerViewModel>()
     val userId = sessionViewModel.userId ?: 0
     val apiKey = sessionViewModel.getApiKey() ?: ""
@@ -159,7 +169,7 @@ fun ProfileScreen() {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().background(Color(0xFFFDF4C9)),
+        modifier = Modifier.fillMaxSize().background(primaryAccent),
     ) {
         Box(
             modifier = Modifier.fillMaxWidth().height(180.dp),
@@ -178,7 +188,7 @@ fun ProfileScreen() {
                 if (painter.state is AsyncImagePainter.State.Loading) {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = Color(0xFFF10E91)
+                        color = secondaryColor
                     )
                 }
             } else {
@@ -205,15 +215,15 @@ fun ProfileScreen() {
                         modifier = Modifier
                             .size(100.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFFFD5ED))
-                            .border(2.dp, Color(0xFFF10E91), CircleShape),
+                            .background(secondaryAccent)
+                            .border(2.dp, secondaryColor, CircleShape),
                         contentScale = ContentScale.Crop
                     )
 
                     if (painter.state is AsyncImagePainter.State.Loading) {
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center),
-                            color = Color(0xFFF10E91)
+                            color = secondaryColor
                         )
                     }
                 } else {
@@ -224,9 +234,9 @@ fun ProfileScreen() {
                             .size(100.dp)
                             .clip(CircleShape)
                             .align(Alignment.Center)
-                            .background(Color(0xFFFFD5ED))
-                            .border(2.dp, Color(0xFFF10E91), CircleShape),
-                        tint = Color(0xFFF10E91)
+                            .background(secondaryAccent)
+                            .border(2.dp, secondaryColor, CircleShape),
+                        tint = secondaryColor
                     )
                 }
             }
@@ -243,19 +253,19 @@ fun ProfileScreen() {
                         .padding(
                             horizontal = 4.dp, vertical = 1.dp
                         ).align(Alignment.End),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                    colors = ButtonDefaults.buttonColors(containerColor = secondaryColor)
                 ) {
                     Text(
                         text = "Edit",
                         fontFamily = Ubuntu,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFFFD5ED)
+                        color = secondaryAccent
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         imageVector = Icons.Filled.ModeEdit,
                         contentDescription = "Edit Profile",
-                        tint = Color(0xFFFFD5ED)
+                        tint = secondaryAccent
                     )
                 }
 
@@ -272,7 +282,7 @@ fun ProfileScreen() {
                             }
                         },
                         modifier = Modifier.size(40.dp).clip(CircleShape),
-                        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91))
+                        colors = IconButtonDefaults.iconButtonColors(containerColor = secondaryColor)
                     ) {
                         Icon(
                             imageVector = if (isPlaying) {
@@ -282,7 +292,7 @@ fun ProfileScreen() {
                             },
                             contentDescription = if (isPlaying) "Pause" else "Play",
                             modifier = Modifier.size(40.dp),
-                            tint = Color(0xFFFFD5ED)
+                            tint = secondaryAccent
                         )
                     }
                     AndroidView(
@@ -290,10 +300,10 @@ fun ProfileScreen() {
                             val view = LayoutInflater.from(ctx).inflate(R.layout.custom_media3_player_view, null) as PlayerView
                             val timeBar = view.findViewById<DefaultTimeBar>(R.id.exo_progress)
 
-                            timeBar.setPlayedColor(ContextCompat.getColor(ctx, R.color.pale_yellow))
-                            timeBar.setBufferedColor(ContextCompat.getColor(ctx, R.color.pale_magenta))
+                            timeBar.setPlayedColor(ContextCompat.getColor(ctx, playerPrimaryAccent))
+                            timeBar.setBufferedColor(ContextCompat.getColor(ctx, playerSecondaryAccent))
                             timeBar.setUnplayedColor(ContextCompat.getColor(ctx, R.color.dark_gray))
-                            timeBar.setScrubberColor(ContextCompat.getColor(ctx, R.color.vibrant_yellow))
+                            timeBar.setScrubberColor(ContextCompat.getColor(ctx, playerPrimaryColor))
 
                             view.player = exoPlayer
                             view.useController = true
@@ -302,6 +312,12 @@ fun ProfileScreen() {
                             view.controllerShowTimeoutMs = 0
                             view.showController()
                             view
+                        },
+                        update = { view ->
+                            val bg = secondaryColor.toArgb()
+                            val controllerFrame =
+                                view.findViewById<FrameLayout>(R.id.media3_controller)
+                            controllerFrame.setBackgroundColor(bg)
                         },
                         modifier = Modifier
                             .height(40.dp)
@@ -344,7 +360,7 @@ fun ProfileScreen() {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (friendsViewModel.isLoadingTotalFriends) {
                     CircularProgressIndicator(
-                        color = Color(0xFFF10E91)
+                        color = secondaryColor
                     )
                 } else {
                     Icon(
@@ -370,7 +386,7 @@ fun ProfileScreen() {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (postsViewModel.isLoadingTotalPosts) {
                     CircularProgressIndicator(
-                        color = Color(0xFFF10E91)
+                        color = secondaryColor
                     )
                 } else {
                     Icon(
@@ -396,7 +412,7 @@ fun ProfileScreen() {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (photosViewModel.isLoadingTotalImages) {
                     CircularProgressIndicator(
-                        color = Color(0xFFF10E91)
+                        color = secondaryColor
                     )
                 } else {
                     Icon(
@@ -412,7 +428,7 @@ fun ProfileScreen() {
                         "${photosViewModel.totalImages} Photos"
                     }
                     Text(
-                        text = "${photosViewModel.totalImages} Photos",
+                        text = totalPhotosText,
                         fontFamily = Ubuntu,
                         fontWeight = FontWeight.Normal
                     )
@@ -422,7 +438,9 @@ fun ProfileScreen() {
 
         ProfileTabsRow(
             selectedTab = selectedTab,
-            onTabSelected = { selectedTab = it }
+            onTabSelected = { selectedTab = it },
+            secondaryColor = secondaryColor,
+            secondaryAccent = secondaryAccent
         )
 
         Box(
@@ -433,15 +451,24 @@ fun ProfileScreen() {
                     onSelectViewPostComments = { postID ->
                         selectedPostIDForComments = postID
                         isViewingComments = true
-                    }
+                    },
+                    secondaryColor = secondaryColor,
+                    secondaryAccent = secondaryAccent
                 )
                 ProfileTab.PHOTOS -> PhotosContent(
                     images = images,
                     setFullScreenImageOpen = setFullScreenImageOpen,
-                    setCurrentImageIndex = setCurrentImageIndex
+                    setCurrentImageIndex = setCurrentImageIndex,
+                    secondaryColor = secondaryColor,
+                    secondaryAccent = secondaryAccent
                 )
-                ProfileTab.ABOUT -> AboutContent()
-                ProfileTab.FRIENDS -> FriendsContent()
+                ProfileTab.ABOUT -> AboutContent(
+                    secondaryColor = secondaryColor
+                )
+                ProfileTab.FRIENDS -> FriendsContent(
+                    secondaryColor = secondaryColor,
+                    secondaryAccent = secondaryAccent
+                )
             }
         }
 
@@ -459,7 +486,9 @@ fun ProfileScreen() {
                 startIndex = currentImageIndex,
                 onClose = {
                     setFullScreenImageOpen(false)
-                }
+                },
+                secondaryColor = secondaryColor,
+                secondaryAccent = secondaryAccent
             )
         }
     }
@@ -468,7 +497,10 @@ fun ProfileScreen() {
         CreatePostDialog(
             onClose = { postsViewModel.onCloseCreatePost() },
             postsViewModel = postsViewModel,
-            sessionViewModel = sessionViewModel
+            sessionViewModel = sessionViewModel,
+            primaryAccent = primaryAccent,
+            secondaryColor = secondaryColor,
+            secondaryAccent = secondaryAccent
         )
     }
 
@@ -488,11 +520,11 @@ fun ProfileScreen() {
                 modifier = Modifier
                     .align(Alignment.Center)
                     .padding(4.dp)
-                    .systemBarsPadding()
-                    .imePadding()
+//                    .systemBarsPadding()
+//                    .imePadding()
                     .fillMaxWidth()
-                    .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFDF4C9))
+                    .border(2.dp, secondaryColor, RoundedCornerShape(12.dp)),
+                colors = CardDefaults.cardColors(containerColor = primaryAccent)
             ) {
                 Column(
                     modifier = Modifier
@@ -526,7 +558,9 @@ fun ProfileScreen() {
                             onClose = {
                                 isViewingComments = false
                                 selectedPostIDForComments = 0
-                            }
+                            },
+                            secondaryColor = secondaryColor,
+                            secondaryAccent = secondaryAccent
                         )
                     }
 
@@ -562,13 +596,13 @@ fun ProfileScreen() {
                                     fontFamily = Ubuntu,
                                     fontWeight = FontWeight.Bold
                                 ),
-                                color = Color(0xFFF10E91)
+                                color = secondaryColor
                             )
                         }
 
                         if (postsViewModel.isPuttingNewComment) {
                             CircularProgressIndicator(
-                                color = Color(0xFFF10E91)
+                                color = secondaryColor
                             )
                         } else {
                             Button(
@@ -580,7 +614,7 @@ fun ProfileScreen() {
                                         postId = selectedPostIDForComments,
                                     )
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                                colors = ButtonDefaults.buttonColors(containerColor = secondaryColor)
                             ) {
                                 Text(
                                     text = "Comment",
@@ -588,7 +622,7 @@ fun ProfileScreen() {
                                         fontFamily = Ubuntu,
                                         fontWeight = FontWeight.Bold
                                     ),
-                                    color = Color(0xFFFFD5ED)
+                                    color = secondaryAccent
                                 )
                             }
                         }
@@ -617,8 +651,8 @@ fun ProfileScreen() {
                     .systemBarsPadding()
                     .imePadding()
                     .fillMaxWidth()
-                    .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFDF4C9))
+                    .border(2.dp, secondaryColor, RoundedCornerShape(12.dp)),
+                colors = CardDefaults.cardColors(containerColor = primaryAccent)
             ) {
                 Box(
                     modifier = Modifier
@@ -643,7 +677,7 @@ fun ProfileScreen() {
                     modifier = Modifier
                         .padding(8.dp)
                         .weight(1F)
-                        .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
+                        .border(2.dp, secondaryColor, RoundedCornerShape(12.dp)),
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
                     Column {
@@ -686,12 +720,16 @@ fun ProfileScreen() {
                         CameraButtonWithPermission(
                             onPhotoCaptured = { uri ->
                                 photosViewModel.addImage(uri)
-                            }
+                            },
+                            secondaryColor = secondaryColor,
+                            secondaryAccent = secondaryAccent
                         )
                         PhotosButtonWithPermission(
                             onPhotosSelected = { uris ->
                                 photosViewModel.addImages(uris)
-                            }
+                            },
+                            secondaryColor = secondaryColor,
+                            secondaryAccent = secondaryAccent
                         )
                     }
                 }
@@ -712,13 +750,13 @@ fun ProfileScreen() {
                                 fontFamily = Ubuntu,
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = Color(0xFFF10E91)
+                            color = secondaryColor
                         )
                     }
 
                     if (photosViewModel.isPuttingNewImages) {
                         CircularProgressIndicator(
-                            color = Color(0xFFF10E91)
+                            color = secondaryColor
                         )
                     } else {
                         Button(
@@ -733,7 +771,7 @@ fun ProfileScreen() {
                                     token = sessionViewModel.getToken() ?: ""
                                 )
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                            colors = ButtonDefaults.buttonColors(containerColor = secondaryColor)
                         ) {
                             Text(
                                 text = "Add Images",
@@ -741,7 +779,7 @@ fun ProfileScreen() {
                                     fontFamily = Ubuntu,
                                     fontWeight = FontWeight.Bold
                                 ),
-                                color = Color(0xFFFFD5ED)
+                                color = secondaryAccent
                             )
                         }
                     }

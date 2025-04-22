@@ -73,6 +73,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
@@ -113,7 +114,10 @@ fun isKeyboardVisible(): Boolean {
 fun CreatePostDialog(
     onClose: () -> Unit,
     postsViewModel: PostsViewModel,
-    sessionViewModel: SessionViewModel
+    sessionViewModel: SessionViewModel,
+    primaryAccent: Color,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     val context = LocalContext.current
     val userId = sessionViewModel.userId ?: -1
@@ -172,8 +176,8 @@ fun CreatePostDialog(
                 .systemBarsPadding()
                 .imePadding()
                 .fillMaxWidth()
-                .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFFDF4C9))
+                .border(2.dp, secondaryColor, RoundedCornerShape(12.dp)),
+            colors = CardDefaults.cardColors(containerColor = primaryAccent)
         ) {
             if (!isSelectingLocation && !isAddingHashtags) {
                 MainPostFormUI(
@@ -212,7 +216,9 @@ fun CreatePostDialog(
                     },
                     onPhotosAlbumClick = {
                         pickImagesLauncher.launch("image/*")
-                    }
+                    },
+                    secondaryColor = secondaryColor,
+                    secondaryAccent = secondaryAccent
                 )
             } else {
                 if (isSelectingLocation) {
@@ -228,7 +234,9 @@ fun CreatePostDialog(
                             locationLat = newLat
                             locationLong = newLong
                             isSelectingLocation = false
-                        }
+                        },
+                        secondaryColor = secondaryColor,
+                        secondaryAccent = secondaryAccent
                     )
                 } else if (isAddingHashtags) {
                     Column(
@@ -265,12 +273,12 @@ fun CreatePostDialog(
                                         hashtags = hashtags + hashtagText
                                         hashtagText = ""
                                     },
-                                    colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91))
+                                    colors = IconButtonDefaults.iconButtonColors(containerColor = secondaryColor)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.Tag,
                                         contentDescription = "Add hashtag",
-                                        tint = Color(0xFFFFD5ED)
+                                        tint = secondaryAccent
                                     )
                                 }
                             }
@@ -292,7 +300,9 @@ fun CreatePostDialog(
                                             hashtag = hashtag,
                                             onRemove = { tagToRemove ->
                                                 hashtags = hashtags - tagToRemove
-                                            }
+                                            },
+                                            secondaryColor = secondaryColor,
+                                            secondaryAccent = secondaryAccent
                                         )
                                     }
                                 }
@@ -314,7 +324,7 @@ fun CreatePostDialog(
                                         fontFamily = Ubuntu,
                                         fontWeight = FontWeight.Bold
                                     ),
-                                    color = Color(0xFFF10E91)
+                                    color = secondaryColor
                                 )
                             }
 
@@ -323,7 +333,7 @@ fun CreatePostDialog(
                                     hashtagText = ""
                                     isAddingHashtags = false
                                 },
-                                colors = buttonColors(containerColor = Color(0xFFF10E91))
+                                colors = buttonColors(containerColor = secondaryColor)
                             ) {
                                 Text(
                                     text = "Add",
@@ -331,7 +341,7 @@ fun CreatePostDialog(
                                         fontFamily = Ubuntu,
                                         fontWeight = FontWeight.Bold
                                     ),
-                                    color = Color(0xFFFFD5ED)
+                                    color = secondaryAccent
                                 )
                             }
                         }
@@ -363,7 +373,9 @@ fun MainPostFormUI(
     selectedImages: List<Uri>,
     onRemoveImage: (Uri) -> Unit,
     onPhotoCaptured: (Uri) -> Unit,
-    onPhotosAlbumClick: () -> Unit
+    onPhotosAlbumClick: () -> Unit,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     Column(
         modifier = Modifier.padding(16.dp),
@@ -384,7 +396,7 @@ fun MainPostFormUI(
             modifier = Modifier
                 .padding(8.dp)
                 .weight(1F)
-                .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
+                .border(2.dp, secondaryColor, RoundedCornerShape(12.dp)),
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
             Column(
@@ -397,8 +409,8 @@ fun MainPostFormUI(
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFFFD5ED))
-                            .border(2.dp, Color(0xFFF10E91), CircleShape)
+                            .background(secondaryAccent)
+                            .border(2.dp, secondaryColor, CircleShape)
                             .clickable { }
                     ) {
                         if (!postsViewModel.profilePicURL.isNullOrEmpty()) {
@@ -411,14 +423,14 @@ fun MainPostFormUI(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .border(2.dp, Color(0xFFF10E91), CircleShape),
+                                    .border(2.dp, secondaryColor, CircleShape),
                                 contentScale = ContentScale.Crop
                             )
 
                             if (painter.state is AsyncImagePainter.State.Loading) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.align(Alignment.Center),
-                                    color = Color(0xFFF10E91)
+                                    color = secondaryColor
                                 )
                             }
                         } else {
@@ -428,7 +440,7 @@ fun MainPostFormUI(
                                 modifier = Modifier
                                     .clip(CircleShape)
                                     .align(Alignment.Center),
-                                tint = Color(0xFFF10E91)
+                                tint = secondaryColor
                             )
                         }
                     }
@@ -464,7 +476,7 @@ fun MainPostFormUI(
                                 Icon(
                                     imageVector = Icons.Default.LocationOn,
                                     contentDescription = null,
-                                    tint = Color(0xFFF10E91),
+                                    tint = secondaryColor,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -474,14 +486,14 @@ fun MainPostFormUI(
                                         fontFamily = Ubuntu,
                                         fontWeight = FontWeight.Normal
                                     ),
-                                    color = Color(0xFFF10E91)
+                                    color = secondaryColor
                                 )
                             } else {
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Icon(
                                     imageVector = Icons.Filled.AddLocation,
                                     contentDescription = null,
-                                    tint = Color(0xFFF10E91),
+                                    tint = secondaryColor,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -491,7 +503,7 @@ fun MainPostFormUI(
                                         fontFamily = Ubuntu,
                                         fontWeight = FontWeight.Normal
                                     ),
-                                    color = Color(0xFFF10E91),
+                                    color = secondaryColor,
                                     modifier = Modifier
                                         .clickable { onAddLocationClick() }
                                 )
@@ -548,7 +560,9 @@ fun MainPostFormUI(
 
                 if (hashtags.isNotEmpty()) {
                     PostItemWithHashtags(
-                        hashtags = hashtags
+                        hashtags = hashtags,
+                        secondaryColor = secondaryColor,
+                        secondaryAccent = secondaryAccent
                     )
                 }
 
@@ -560,30 +574,32 @@ fun MainPostFormUI(
                     CameraIconWithPermission(
                         onPhotoCaptured = { uri ->
                             onPhotoCaptured(uri)
-                        }
+                        },
+                        secondaryColor = secondaryColor,
+                        secondaryAccent = secondaryAccent
                     )
 
                     IconButton(
                         onClick = { onPhotosAlbumClick() },
-                        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91)),
+                        colors = IconButtonDefaults.iconButtonColors(containerColor = secondaryColor),
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Filled.PhotoLibrary,
                             contentDescription = null,
-                            tint = Color(0xFFFFD5ED)
+                            tint = secondaryAccent
                         )
                     }
 
                     IconButton(
                         onClick = { onAddHashtagsClick() },
-                        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91)),
+                        colors = IconButtonDefaults.iconButtonColors(containerColor = secondaryColor),
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Tag,
                             contentDescription = null,
-                            tint = Color(0xFFFFD5ED)
+                            tint = secondaryAccent
                         )
                     }
 
@@ -596,7 +612,7 @@ fun MainPostFormUI(
                         Icon(
                             imageVector = Icons.Filled.Groups,
                             contentDescription = null,
-                            tint = Color(0xFFFFD5ED)
+                            tint = secondaryAccent
                         )
                     }
 
@@ -609,7 +625,7 @@ fun MainPostFormUI(
                         Icon(
                             imageVector = Icons.Filled.Poll,
                             contentDescription = null,
-                            tint = Color(0xFFFFD5ED)
+                            tint = secondaryAccent
                         )
                     }
                 }
@@ -624,7 +640,7 @@ fun MainPostFormUI(
             TextButton(onClick = { onClose() }) {
                 Text(
                     text = "Cancel",
-                    color = Color(0xFFF10E91),
+                    color = secondaryColor,
                     fontFamily = Ubuntu,
                     fontWeight = FontWeight.Bold
                 )
@@ -633,12 +649,12 @@ fun MainPostFormUI(
             if (postsViewModel.isSubmittingPost) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
-                    color = Color(0xFFF10E91)
+                    color = secondaryColor
                 )
             } else {
                 Button(
                     onClick = { onSubmitPost() },
-                    colors = buttonColors(containerColor = Color(0xFFF10E91))
+                    colors = buttonColors(containerColor = secondaryColor)
                 ) {
                     Text("Create", fontFamily = Ubuntu, fontWeight = FontWeight.Bold)
                 }
@@ -649,7 +665,9 @@ fun MainPostFormUI(
 
 @Composable
 fun CameraIconWithPermission(
-    onPhotoCaptured: (Uri) -> Unit
+    onPhotoCaptured: (Uri) -> Unit,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     val context = LocalContext.current
 
@@ -691,13 +709,13 @@ fun CameraIconWithPermission(
                 requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
             }
         },
-        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91)),
+        colors = IconButtonDefaults.iconButtonColors(containerColor = secondaryColor),
         modifier = Modifier.size(40.dp)
     ) {
         Icon(
             imageVector = Icons.Filled.CameraAlt,
             contentDescription = null,
-            tint = Color(0xFFFFD5ED)
+            tint = secondaryAccent
         )
     }
 }

@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.winapps.voizy.data.local.SecureStorage
 import io.winapps.voizy.data.model.users.PutUserPreferencesRequest
 import io.winapps.voizy.data.repository.UsersRepository
 import io.winapps.voizy.ui.theme.OceanicPrimaryAccent
@@ -54,7 +55,8 @@ data class UserPreferences(
 
 @HiltViewModel
 class MoreViewModel @Inject constructor(
-    private val usersRepository: UsersRepository
+    private val usersRepository: UsersRepository,
+    private val secureStorage: SecureStorage
 ) : ViewModel() {
     var showAppPrefs by mutableStateOf(false)
         private set
@@ -307,7 +309,7 @@ class MoreViewModel @Inject constructor(
     var userPreferences by mutableStateOf<UserPreferences>(UserPreferences())
         private set
 
-    fun loadUserPreferences(apiKey: String, userId: Long) {
+    fun loadUserPreferences(apiKey: String, userId: Long, updateStoredUserPrefs: (UserPreferences) -> Unit) {
         viewModelScope.launch {
             isLoading = true
             errorMessage = null
@@ -319,7 +321,7 @@ class MoreViewModel @Inject constructor(
                     userId = userId,
                 )
 
-                userPreferences = UserPreferences(
+                val loadedPrefs = UserPreferences(
                     primaryColor = response.primaryColor,
                     primaryAccent = response.primaryAccent,
                     secondaryColor = response.secondaryColor,
@@ -331,6 +333,7 @@ class MoreViewModel @Inject constructor(
                     profileSecondaryAccent = response.profileSecondaryAccent,
                     profileSongAutoplay = response.profileSongAutoplay
                 )
+                userPreferences = loadedPrefs
 
                 when(response.primaryColor) {
                     "yellow" -> {
@@ -503,6 +506,8 @@ class MoreViewModel @Inject constructor(
                         false
                     }
                 }
+
+                updateStoredUserPrefs(loadedPrefs)
             } catch (e: Exception) {
                 errorMessage = e.message
             } finally {
@@ -517,7 +522,7 @@ class MoreViewModel @Inject constructor(
     var showUpdatePrefsSuccessToast by mutableStateOf(false)
         private set
 
-    fun onUpdateAppPrefs(apiKey: String, userId: Long, token: String, onClose: () -> Unit) {
+    fun onUpdateAppPrefs(apiKey: String, userId: Long, token: String, onClose: () -> Unit, updateStoredUserPrefs: (UserPreferences) -> Unit) {
         viewModelScope.launch {
             isUpdatingPrefs = true
 
@@ -544,13 +549,15 @@ class MoreViewModel @Inject constructor(
                 if (response.success) {
                     loadUserPreferences(
                         apiKey = apiKey,
-                        userId = userId
+                        userId = userId,
+                        updateStoredUserPrefs = updateStoredUserPrefs
                     )
                     showUpdatePrefsSuccessToast = true
                 }
             } catch (e: Exception) {
                 //
             } finally {
+                isUpdatingPrefs = false
                 onClose()
             }
         }
@@ -560,7 +567,7 @@ class MoreViewModel @Inject constructor(
         showUpdatePrefsSuccessToast = false
     }
 
-    fun onUpdateProfilePrefs(apiKey: String, userId: Long, token: String, onClose: () -> Unit) {
+    fun onUpdateProfilePrefs(apiKey: String, userId: Long, token: String, onClose: () -> Unit, updateStoredUserPrefs: (UserPreferences) -> Unit) {
         viewModelScope.launch {
             isUpdatingPrefs = true
 
@@ -587,13 +594,15 @@ class MoreViewModel @Inject constructor(
                 if (response.success) {
                     loadUserPreferences(
                         apiKey = apiKey,
-                        userId = userId
+                        userId = userId,
+                        updateStoredUserPrefs = updateStoredUserPrefs
                     )
                     showUpdatePrefsSuccessToast = true
                 }
             } catch (e: Exception) {
                 //
             } finally {
+                isUpdatingPrefs = false
                 onClose()
             }
         }

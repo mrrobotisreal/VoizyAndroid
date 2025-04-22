@@ -52,33 +52,38 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import coil.size.Scale
 import coil.size.Size
+import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.data.model.users.Group
 import io.winapps.voizy.ui.navigation.BottomNavBar
 import io.winapps.voizy.ui.theme.Ubuntu
 
 @Composable
 fun GroupsScreen() {
+    val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val primaryColor = sessionViewModel.appColors.primaryColor
+    val primaryAccent = sessionViewModel.appColors.primaryAccent
+    val secondaryColor = sessionViewModel.appColors.secondaryColor
     val groupsViewModel = hiltViewModel<GroupsViewModel>()
     val view = LocalView.current
     val searchText = groupsViewModel.searchText
 
     SideEffect {
         val activity = view.context as Activity
-        activity.window.statusBarColor = Color(0xFFF9D841).toArgb()
+        activity.window.statusBarColor = primaryColor.toArgb()
         WindowCompat.getInsetsController(activity.window, view).isAppearanceLightStatusBars = true
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFDF4C9))
+            .background(primaryAccent)
             .statusBarsPadding()
             .imePadding()
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFF9D841))
+                .background(primaryColor)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -101,7 +106,7 @@ fun GroupsScreen() {
                         Icon(
                             imageVector = Icons.Filled.Search,
                             contentDescription = "Search",
-                            tint = Color(0xFFF10E91)
+                            tint = secondaryColor
                         )
                     },
                     colors = TextFieldDefaults.colors(
@@ -117,7 +122,7 @@ fun GroupsScreen() {
         }
 
         Divider(
-            color = Color(0xFFF10E91),
+            color = secondaryColor,
             modifier = Modifier
                 .height(1.dp)
                 .fillMaxWidth()
@@ -139,7 +144,7 @@ fun GroupsScreen() {
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
-                        color = Color(0xFFF10E91)
+                        color = secondaryColor
                     )
                 }
             } else if (groupsViewModel.groups.isEmpty()) {
@@ -152,7 +157,7 @@ fun GroupsScreen() {
                         imageVector = Icons.Filled.Groups,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
-                        tint = Color(0xFFF10E91)
+                        tint = secondaryColor
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -218,12 +223,16 @@ fun GroupCard(
     onClick: (Group) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val secondaryColor = sessionViewModel.appColors.secondaryColor
+    val secondaryAccent = sessionViewModel.appColors.secondaryAccent
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(Color.White)
-            .border(1.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp))
+            .border(1.dp, secondaryColor, RoundedCornerShape(12.dp))
             .aspectRatio(0.8f)
             .clickable { onClick(group) },
         elevation = CardDefaults.cardElevation(7.dp),
@@ -236,7 +245,7 @@ fun GroupCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .background(Color(0xFFFFD5ED)),
+                    .background(secondaryAccent),
                 contentAlignment = Alignment.Center
             ) {
                 if (group.imageURL != null) {
@@ -250,7 +259,7 @@ fun GroupCard(
                         contentDescription = "Image",
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color(0xFFFFD5ED)),
+                            .background(secondaryAccent),
                         contentScale = ContentScale.Crop
                     )
                 } else {
@@ -258,7 +267,7 @@ fun GroupCard(
                         imageVector = Icons.Filled.Groups,
                         contentDescription = "Group",
                         modifier = Modifier.size(48.dp),
-                        tint = Color(0xFFF10E91)
+                        tint = secondaryColor
                     )
                 }
             }

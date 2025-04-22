@@ -32,10 +32,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.data.model.users.UserImage
 import io.winapps.voizy.ui.features.profile.PhotoGridItem
 
@@ -44,6 +46,7 @@ fun PersonPhotosContent(
     images: List<UserImage>,
     setFullScreenImageOpen: (Boolean) -> Unit,
     setCurrentImageIndex: (Int) -> Unit,
+    secondaryColor: Color,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column {
@@ -67,7 +70,8 @@ fun PersonPhotosContent(
                             onClick = {
                                 setCurrentImageIndex(index)
                                 setFullScreenImageOpen(true)
-                            }
+                            },
+                            secondaryColor = secondaryColor,
                         )
                     }
                 }
@@ -80,7 +84,8 @@ fun PersonPhotosContent(
 fun FullScreenPersonImageViewer(
     images: List<UserImage>,
     startIndex: Int,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    secondaryColor: Color
 ) {
     var currentImageId by remember { mutableLongStateOf(0) }
     val pagerState = rememberPagerState(
@@ -130,7 +135,7 @@ fun FullScreenPersonImageViewer(
             if (painter.state is AsyncImagePainter.State.Loading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
-                    color = Color(0xFFF10E91)
+                    color = secondaryColor
                 )
             }
         }

@@ -31,7 +31,9 @@ import io.winapps.voizy.util.getFormattedDateString
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AboutContent() {
+fun AboutContent(
+    secondaryColor: Color
+) {
     val scrollState = rememberScrollState()
 
     Column(
@@ -39,7 +41,9 @@ fun AboutContent() {
             .verticalScroll(scrollState)
             .padding(8.dp)
     ) {
-        ProfileInfoCard()
+        ProfileInfoCard(
+            secondaryColor = secondaryColor,
+        )
         Spacer(modifier = Modifier.height(10.dp))
         InterestsCard()
         Spacer(modifier = Modifier.height(10.dp))
@@ -51,7 +55,9 @@ fun AboutContent() {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ProfileInfoCard() {
+fun ProfileInfoCard(
+    secondaryColor: Color
+) {
     val sessionViewModel = hiltViewModel<SessionViewModel>()
     val profileViewModel = hiltViewModel<ProfileViewModel>()
     val isLoading = profileViewModel.isLoadingProfileInfo
@@ -86,7 +92,7 @@ fun ProfileInfoCard() {
             ) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
-                    color = Color(0xFFF10E91)
+                    color = secondaryColor
                 )
             }
         } else {

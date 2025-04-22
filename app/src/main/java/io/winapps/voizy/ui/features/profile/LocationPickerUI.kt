@@ -43,6 +43,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.ui.theme.Ubuntu
 import kotlinx.coroutines.launch
 
@@ -130,7 +131,9 @@ import kotlinx.coroutines.launch
 fun LocationPickerUI(
     locationPickerViewModel: LocationPickerViewModel = hiltViewModel(),
     onBack: () -> Unit,
-    onAdd: (displayName: String, lat: Double, long: Double) -> Unit
+    onAdd: (displayName: String, lat: Double, long: Double) -> Unit,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     val scope = rememberCoroutineScope()
 
@@ -271,7 +274,7 @@ fun LocationPickerUI(
                         fontFamily = Ubuntu,
                         fontWeight = FontWeight.Bold
                     ),
-                    color = Color(0xFFF10E91)
+                    color = secondaryColor
                 )
             }
 
@@ -281,7 +284,7 @@ fun LocationPickerUI(
                     val finalLng = chosenLng ?: userLng
                     onAdd(chosenName, finalLat, finalLng)
                 },
-                colors = buttonColors(containerColor = Color(0xFFF10E91))
+                colors = buttonColors(containerColor = secondaryColor)
             ) {
                 Text(
                     text = "Add",
@@ -289,7 +292,7 @@ fun LocationPickerUI(
                         fontFamily = Ubuntu,
                         fontWeight = FontWeight.Bold
                     ),
-                    color = Color(0xFFFFD5ED)
+                    color = secondaryAccent
                 )
             }
         }

@@ -15,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import io.winapps.voizy.SessionViewModel
 
 @Composable
 fun TopicsRow(
@@ -65,14 +67,17 @@ fun TopicButton(
     onTopicSelected: (GroupTopic) -> Unit,
     label: String
 ) {
+    val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val secondaryColor = sessionViewModel.appColors.secondaryColor
+    val secondaryAccent = sessionViewModel.appColors.secondaryAccent
     val isSelected = (topic == selectedTopic)
-    val backgroundColor = if (isSelected) Color(0xFFF10E91) else Color(0xFFFFD5ED)
-    val textColor = if (isSelected) Color(0xFFFFD5ED) else Color(0xFFF10E91)
+    val backgroundColor = if (isSelected) secondaryColor else secondaryAccent
+    val textColor = if (isSelected) secondaryAccent else secondaryColor
 
     TextButton(
         onClick = { onTopicSelected(topic) },
         colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
-        border = BorderStroke(1.dp, Color(0xFFF10E91))
+        border = BorderStroke(1.dp, secondaryColor)
     ) {
         Text(
             text = label,

@@ -73,6 +73,10 @@ import io.winapps.voizy.ui.theme.Ubuntu
 fun PeopleScreen() {
     val view = LocalView.current
     val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val primaryColor = sessionViewModel.appColors.primaryColor
+    val primaryAccent = sessionViewModel.appColors.primaryAccent
+    val secondaryColor = sessionViewModel.appColors.secondaryColor
+    val secondaryAccent = sessionViewModel.appColors.secondaryAccent
     val peopleViewModel = hiltViewModel<PeopleViewModel>()
     val isLoading = peopleViewModel.isLoading
     val errorMessage = peopleViewModel.errorMessage
@@ -82,7 +86,7 @@ fun PeopleScreen() {
 
     SideEffect {
         val activity = view.context as Activity
-        activity.window.statusBarColor = Color(0xFFF9D841).toArgb()
+        activity.window.statusBarColor = primaryColor.toArgb()
         WindowCompat.getInsetsController(activity.window, view).isAppearanceLightStatusBars = true
     }
 
@@ -101,14 +105,14 @@ fun PeopleScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFDF4C9))
+            .background(primaryAccent)
             .statusBarsPadding()
             .imePadding()
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFF9D841))
+                .background(primaryColor)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -131,7 +135,7 @@ fun PeopleScreen() {
                         Icon(
                             imageVector = Icons.Filled.Search,
                             contentDescription = "Search",
-                            tint = Color(0xFFF10E91)
+                            tint = secondaryColor
                         )
                     },
                     colors = TextFieldDefaults.colors(
@@ -147,20 +151,20 @@ fun PeopleScreen() {
                 IconButton(
                     onClick = { peopleViewModel.onSearchPeople(searchText) },
                     colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = Color(0xFFF10E91)
+                        containerColor = secondaryColor
                     )
                 ) {
                     Icon(
                         imageVector = Icons.Filled.PersonSearch,
                         contentDescription = "Search People",
-                        tint = Color(0xFFFFD5ED)
+                        tint = secondaryAccent
                     )
                 }
             }
         }
 
         Divider(
-            color = Color(0xFFF10E91),
+            color = secondaryColor,
             modifier = Modifier
                 .height(1.dp)
                 .fillMaxWidth()
@@ -187,6 +191,7 @@ fun PeopleContent(
     errorMessage: String?
 ) {
     val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val secondaryColor = sessionViewModel.appColors.secondaryColor
     val personViewModel = hiltViewModel<PersonViewModel>()
 
     Column(
@@ -213,7 +218,7 @@ fun PeopleContent(
                 isLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = Color(0xFFF10E91)
+                        color = secondaryColor
                     )
                 }
                 errorMessage != null -> {
@@ -255,12 +260,16 @@ fun PersonCard(
     onClick: (CompletePerson) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val secondaryColor = sessionViewModel.appColors.secondaryColor
+    val secondaryAccent = sessionViewModel.appColors.secondaryAccent
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(Color.White)
-            .border(1.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp))
+            .border(1.dp, secondaryColor, RoundedCornerShape(12.dp))
             .clickable { onClick(person) },
         elevation = CardDefaults.cardElevation(7.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -276,8 +285,8 @@ fun PersonCard(
                     modifier = Modifier
                         .size(80.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFFFD5ED))
-                        .border(2.dp, Color(0xFFF10E91), CircleShape)
+                        .background(secondaryAccent)
+                        .border(2.dp, secondaryColor, CircleShape)
                 ) {
                     if (!person.profilePicURL.isNullOrEmpty()) {
                         val painter = rememberAsyncImagePainter(
@@ -289,14 +298,14 @@ fun PersonCard(
                             modifier = Modifier
                                 .size(80.dp)
                                 .clip(CircleShape)
-                                .border(2.dp, Color(0xFFF10E91), CircleShape),
+                                .border(2.dp, secondaryColor, CircleShape),
                             contentScale = ContentScale.Crop
                         )
 
                         if (painter.state is AsyncImagePainter.State.Loading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.align(Alignment.Center),
-                                color = Color(0xFFF10E91)
+                                color = secondaryColor
                             )
                         }
                     } else {
@@ -306,7 +315,7 @@ fun PersonCard(
                             modifier = Modifier
                                 .clip(CircleShape)
                                 .align(Alignment.Center),
-                            tint = Color(0xFFF10E91)
+                            tint = secondaryColor
                         )
                     }
                 }
@@ -332,7 +341,7 @@ fun PersonCard(
                             Icon(
                                 imageVector = Icons.Default.LocationOn,
                                 contentDescription = null,
-                                tint = Color(0xFFF10E91),
+                                tint = secondaryColor,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
@@ -342,7 +351,7 @@ fun PersonCard(
                                     fontFamily = Ubuntu,
                                     fontWeight = FontWeight.Normal
                                 ),
-                                color = Color(0xFFF10E91)
+                                color = secondaryColor
                             )
                         }
                     }
@@ -380,8 +389,8 @@ fun PersonCard(
                     ) {
                         TextButton(
                             onClick = {},
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD5ED)),
-                            border = BorderStroke(1.dp, Color(0xFFF10E91))
+                            colors = ButtonDefaults.buttonColors(containerColor = secondaryAccent),
+                            border = BorderStroke(1.dp, secondaryColor)
                         ) {
                             Row(
                                 horizontalArrangement = Arrangement.SpaceAround,
@@ -391,8 +400,8 @@ fun PersonCard(
                                     modifier = Modifier
                                         .size(40.dp)
                                         .clip(CircleShape)
-                                        .background(Color(0xFFFFD5ED))
-                                        .border(1.dp, Color(0xFFF10E91), CircleShape)
+                                        .background(secondaryAccent)
+                                        .border(1.dp, secondaryColor, CircleShape)
                                 ) {
                                     if (!friend.profilePicURL.isNullOrEmpty()) {
                                         val friendPainter = rememberAsyncImagePainter(
@@ -404,14 +413,14 @@ fun PersonCard(
                                             modifier = Modifier
                                                 .size(40.dp)
                                                 .clip(CircleShape)
-                                                .border(1.dp, Color(0xFFF10E91), CircleShape),
+                                                .border(1.dp, secondaryColor, CircleShape),
                                             contentScale = ContentScale.Crop
                                         )
 
                                         if (friendPainter.state is AsyncImagePainter.State.Loading) {
                                             CircularProgressIndicator(
                                                 modifier = Modifier.align(Alignment.Center),
-                                                color = Color(0xFFF10E91)
+                                                color = secondaryColor
                                             )
                                         }
                                     } else {
@@ -421,7 +430,7 @@ fun PersonCard(
                                             modifier = Modifier
                                                 .clip(CircleShape)
                                                 .align(Alignment.Center),
-                                            tint = Color(0xFFF10E91)
+                                            tint = secondaryColor
                                         )
                                     }
                                 }
@@ -434,7 +443,7 @@ fun PersonCard(
                                         fontFamily = Ubuntu,
                                         fontWeight = FontWeight.Bold
                                     ),
-                                    color = Color(0xFFF10E91)
+                                    color = secondaryColor
                                 )
                             }
                         }

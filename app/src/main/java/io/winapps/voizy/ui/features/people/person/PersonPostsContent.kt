@@ -66,6 +66,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImagePainter
@@ -85,6 +86,9 @@ import io.winapps.voizy.ui.theme.Ubuntu
 @Composable
 fun PersonPostsContent(
     onSelectViewPostComments: (Long) -> Unit,
+    primaryAccent: Color,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     val sessionViewModel = hiltViewModel<SessionViewModel>()
     val userId = sessionViewModel.userId ?: -1
@@ -120,13 +124,13 @@ fun PersonPostsContent(
                 .padding(
                     horizontal = 8.dp, vertical = 2.dp
                 ),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+            colors = ButtonDefaults.buttonColors(containerColor = secondaryColor)
         ) {
             Text(
                 text = "Post on $preferredName's page",
                 fontFamily = Ubuntu,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFFFD5ED)
+                color = secondaryAccent
             )
             Spacer(modifier = Modifier.width(8.dp))
             Icon(
@@ -142,7 +146,7 @@ fun PersonPostsContent(
                 isLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = Color(0xFFF10E91)
+                        color = secondaryColor
                     )
                 }
                 errorMessage != null -> {
@@ -154,23 +158,35 @@ fun PersonPostsContent(
                     )
                 }
                 else -> {
-                    LazyColumn {
-                        items(posts) { post ->
-                            PostItem(
-                                post = post,
-                                onReaction = { reactionType ->
-                                    postsViewModel.putPostReaction(
-                                        postId = post.post.postID,
-                                        userId = userId,
-                                        apiKey = apiKey,
-                                        token = token,
-                                        reactionType = reactionType,
-                                    )
-                                },
-                                onViewComments = {
-                                    onSelectViewPostComments(post.post.postID)
-                                }
-                            )
+                    if (posts.isNullOrEmpty()) {
+                        Text(
+                            text = "$preferredName hasn't posted anything yet",
+                            textAlign = TextAlign.Center,
+                            fontFamily = Ubuntu,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    } else {
+                        LazyColumn {
+                            items(posts) { post ->
+                                PostItem(
+                                    post = post,
+                                    onReaction = { reactionType ->
+                                        postsViewModel.putPostReaction(
+                                            postId = post.post.postID,
+                                            userId = userId,
+                                            apiKey = apiKey,
+                                            token = token,
+                                            reactionType = reactionType,
+                                        )
+                                    },
+                                    onViewComments = {
+                                        onSelectViewPostComments(post.post.postID)
+                                    },
+                                    secondaryColor = secondaryColor,
+                                    secondaryAccent = secondaryAccent
+                                )
+                            }
                         }
                     }
                 }
@@ -187,7 +203,10 @@ fun PostToPersonDialog(
     personPostsViewModel: PersonPostsViewModel,
     personViewModel: PersonViewModel,
     sessionViewModel: SessionViewModel,
-    personId: Long
+    personId: Long,
+    primaryAccent: Color,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     val context = LocalContext.current
     val userId = sessionViewModel.userId ?: -1
@@ -195,12 +214,13 @@ fun PostToPersonDialog(
     val token = sessionViewModel.getToken().orEmpty()
     val username = sessionViewModel.username.orEmpty()
     val preferredName = sessionViewModel.preferredName.orEmpty()
-    val selectedImages = postsViewModel.selectedImages
+    val selectedImages = personPostsViewModel.selectedImages
     var isSelectingLocation by remember { mutableStateOf(false) }
     var isAddingHashtags by remember { mutableStateOf(false) }
     var locationName by remember { mutableStateOf("") }
     var locationLat by remember { mutableStateOf<Double?>(null) }
     var locationLong by remember { mutableStateOf<Double?>(null) }
+    var selectedHashtags by remember { mutableStateOf<List<String>>(emptyList<String>()) }
     var hashtags by remember { mutableStateOf<List<String>>(emptyList<String>()) }
     var hashtagText by remember { mutableStateOf("") }
 
@@ -208,7 +228,7 @@ fun PostToPersonDialog(
         contract = ActivityResultContracts.GetMultipleContents(),
         onResult = { uris ->
             val newList = if (uris.size > 10) uris.take(10) else uris
-            postsViewModel.addImages(
+            personPostsViewModel.addImages(
                 uris = newList
             )
         }
@@ -246,8 +266,8 @@ fun PostToPersonDialog(
                 .systemBarsPadding()
                 .imePadding()
                 .fillMaxWidth()
-                .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFFDF4C9))
+                .border(2.dp, secondaryColor, RoundedCornerShape(12.dp)),
+            colors = CardDefaults.cardColors(containerColor = primaryAccent)
         ) {
             if (!isSelectingLocation && !isAddingHashtags) {
                 PostToPersonMainUI(
@@ -278,17 +298,19 @@ fun PostToPersonDialog(
                         isSelectingLocation = false
                         isAddingHashtags = true
                     },
-                    hashtags = hashtags,
+                    hashtags = selectedHashtags,
                     selectedImages = selectedImages,
                     onRemoveImage = { uri ->
                         personPostsViewModel.removeImage(uri)
                     },
                     onPhotoCaptured = { uri ->
-                        postsViewModel.addImage(uri)
+                        personPostsViewModel.addImage(uri)
                     },
                     onPhotosAlbumClick = {
                         pickImagesLauncher.launch("image/*")
-                    }
+                    },
+                    secondaryColor = secondaryColor,
+                    secondaryAccent = secondaryAccent
                 )
             } else {
                 if (isSelectingLocation) {
@@ -304,7 +326,9 @@ fun PostToPersonDialog(
                             locationLat = newLat
                             locationLong = newLong
                             isSelectingLocation = false
-                        }
+                        },
+                        secondaryColor = secondaryColor,
+                        secondaryAccent = secondaryAccent
                     )
                 } else if (isAddingHashtags) {
                     Column(
@@ -341,12 +365,12 @@ fun PostToPersonDialog(
                                         hashtags = hashtags + hashtagText
                                         hashtagText = ""
                                     },
-                                    colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91))
+                                    colors = IconButtonDefaults.iconButtonColors(containerColor = secondaryColor)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.Tag,
                                         contentDescription = "Add hashtag",
-                                        tint = Color(0xFFFFD5ED)
+                                        tint = secondaryAccent
                                     )
                                 }
                             }
@@ -366,7 +390,27 @@ fun PostToPersonDialog(
                                             hashtag = hashtag,
                                             onRemove = { tagToRemove ->
                                                 hashtags = hashtags - tagToRemove
-                                            }
+                                            },
+                                            secondaryColor = secondaryColor,
+                                            secondaryAccent = secondaryAccent
+                                        )
+                                    }
+                                }
+                            }
+                            FlowRow(
+                                modifier = Modifier.fillMaxWidth().padding(2.dp)
+                            ) {
+                                selectedHashtags.forEach { selectedHashtag ->
+                                    Box(
+                                        modifier = Modifier.padding(horizontal = 2.dp)
+                                    ) {
+                                        HashtagButtonRemoveable(
+                                            hashtag = selectedHashtag,
+                                            onRemove = { tagToRemove ->
+                                                selectedHashtags = selectedHashtags - tagToRemove
+                                            },
+                                            secondaryColor = secondaryColor,
+                                            secondaryAccent = secondaryAccent
                                         )
                                     }
                                 }
@@ -388,16 +432,21 @@ fun PostToPersonDialog(
                                         fontFamily = Ubuntu,
                                         fontWeight = FontWeight.Bold
                                     ),
-                                    color = Color(0xFFF10E91)
+                                    color = secondaryColor
                                 )
                             }
 
                             Button(
                                 onClick = {
+                                    if (hashtags.isNotEmpty()) {
+                                        hashtags.forEach { newTag ->
+                                            selectedHashtags = selectedHashtags + newTag
+                                        }
+                                    }
                                     hashtagText = ""
                                     isAddingHashtags = false
                                 },
-                                colors = buttonColors(containerColor = Color(0xFFF10E91))
+                                colors = buttonColors(containerColor = secondaryColor)
                             ) {
                                 Text(
                                     text = "Add",
@@ -405,7 +454,7 @@ fun PostToPersonDialog(
                                         fontFamily = Ubuntu,
                                         fontWeight = FontWeight.Bold
                                     ),
-                                    color = Color(0xFFFFD5ED)
+                                    color = secondaryAccent
                                 )
                             }
                         }
@@ -438,7 +487,9 @@ fun PostToPersonMainUI(
     selectedImages: List<Uri>,
     onRemoveImage: (Uri) -> Unit,
     onPhotoCaptured: (Uri) -> Unit,
-    onPhotosAlbumClick: () -> Unit
+    onPhotosAlbumClick: () -> Unit,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     Column(
         modifier = Modifier.padding(16.dp),
@@ -459,7 +510,7 @@ fun PostToPersonMainUI(
             modifier = Modifier
                 .padding(8.dp)
                 .weight(1F)
-                .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
+                .border(2.dp, secondaryColor, RoundedCornerShape(12.dp)),
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
             Column(
@@ -472,8 +523,8 @@ fun PostToPersonMainUI(
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFFFD5ED))
-                            .border(2.dp, Color(0xFFF10E91), CircleShape)
+                            .background(secondaryAccent)
+                            .border(2.dp, secondaryColor, CircleShape)
                             .clickable {  }
                     ) {
                         if (!postsViewModel.profilePicURL.isNullOrEmpty()) {
@@ -486,14 +537,14 @@ fun PostToPersonMainUI(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .border(2.dp, Color(0xFFF10E91), CircleShape),
+                                    .border(2.dp, secondaryColor, CircleShape),
                                 contentScale = ContentScale.Crop
                             )
 
                             if (painter.state is AsyncImagePainter.State.Loading) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.align(Alignment.Center),
-                                    color = Color(0xFFF10E91)
+                                    color = secondaryColor
                                 )
                             }
                         } else {
@@ -503,7 +554,7 @@ fun PostToPersonMainUI(
                                 modifier = Modifier
                                     .clip(CircleShape)
                                     .align(Alignment.Center),
-                                tint = Color(0xFFF10E91)
+                                tint = secondaryColor
                             )
                         }
                     }
@@ -539,7 +590,7 @@ fun PostToPersonMainUI(
                                 Icon(
                                     imageVector = Icons.Default.LocationOn,
                                     contentDescription = null,
-                                    tint = Color(0xFFF10E91),
+                                    tint = secondaryColor,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -549,14 +600,14 @@ fun PostToPersonMainUI(
                                         fontFamily = Ubuntu,
                                         fontWeight = FontWeight.Normal
                                     ),
-                                    color = Color(0xFFF10E91)
+                                    color = secondaryColor
                                 )
                             } else {
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Icon(
                                     imageVector = Icons.Filled.AddLocation,
                                     contentDescription = null,
-                                    tint = Color(0xFFF10E91),
+                                    tint = secondaryColor,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -566,7 +617,7 @@ fun PostToPersonMainUI(
                                         fontFamily = Ubuntu,
                                         fontWeight = FontWeight.Normal
                                     ),
-                                    color = Color(0xFFF10E91),
+                                    color = secondaryColor,
                                     modifier = Modifier
                                         .clickable { onAddLocationClick() }
                                 )
@@ -621,7 +672,9 @@ fun PostToPersonMainUI(
 
                 if (hashtags.isNotEmpty()) {
                     PostItemWithHashtags(
-                        hashtags = hashtags
+                        hashtags = hashtags,
+                        secondaryColor = secondaryColor,
+                        secondaryAccent = secondaryAccent
                     )
                 }
 
@@ -633,30 +686,32 @@ fun PostToPersonMainUI(
                     CameraIconWithPermission(
                         onPhotoCaptured = { uri ->
                             onPhotoCaptured(uri)
-                        }
+                        },
+                        secondaryColor = secondaryColor,
+                        secondaryAccent = secondaryAccent
                     )
 
                     IconButton(
                         onClick = { onPhotosAlbumClick() },
-                        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91)),
+                        colors = IconButtonDefaults.iconButtonColors(containerColor = secondaryColor),
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Filled.PhotoLibrary,
                             contentDescription = null,
-                            tint = Color(0xFFFFD5ED)
+                            tint = secondaryAccent
                         )
                     }
 
                     IconButton(
                         onClick = { onAddHashtagsClick() },
-                        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91)),
+                        colors = IconButtonDefaults.iconButtonColors(containerColor = secondaryColor),
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Tag,
                             contentDescription = null,
-                            tint = Color(0xFFFFD5ED)
+                            tint = secondaryAccent
                         )
                     }
 
@@ -669,7 +724,7 @@ fun PostToPersonMainUI(
                         Icon(
                             imageVector = Icons.Filled.Groups,
                             contentDescription = null,
-                            tint = Color(0xFFFFD5ED)
+                            tint = secondaryAccent
                         )
                     }
 
@@ -682,7 +737,7 @@ fun PostToPersonMainUI(
                         Icon(
                             imageVector = Icons.Filled.Poll,
                             contentDescription = null,
-                            tint = Color(0xFFFFD5ED)
+                            tint = secondaryAccent
                         )
                     }
                 }
@@ -697,7 +752,7 @@ fun PostToPersonMainUI(
             TextButton(onClick = { onClose() }) {
                 Text(
                     text = "Cancel",
-                    color = Color(0xFFF10E91),
+                    color = secondaryColor,
                     fontFamily = Ubuntu,
                     fontWeight = FontWeight.Bold
                 )
@@ -706,12 +761,12 @@ fun PostToPersonMainUI(
             if (personPostsViewModel.isSubmittingPost) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
-                    color = Color(0xFFF10E91)
+                    color = secondaryColor
                 )
             } else {
                 Button(
                     onClick = { onSubmitPost() },
-                    colors = buttonColors(containerColor = Color(0xFFF10E91))
+                    colors = buttonColors(containerColor = secondaryColor)
                 ) {
                     Text("Create", fontFamily = Ubuntu, fontWeight = FontWeight.Bold)
                 }

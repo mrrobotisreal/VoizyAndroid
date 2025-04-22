@@ -353,7 +353,10 @@ fun AppPreferencesDialog(
                                     apiKey = apiKey,
                                     userId = userId,
                                     token = token,
-                                    onClose = { onClose() }
+                                    onClose = { onClose() },
+                                    updateStoredUserPrefs = { loadedPrefs ->
+                                        sessionViewModel.updateUserPrefs(loadedPrefs)
+                                    }
                                 ) },
                                 colors = buttonColors(containerColor = moreViewModel.appSecondaryColor)
                             ) {

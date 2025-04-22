@@ -95,6 +95,7 @@ import io.winapps.voizy.ui.features.profile.ProfileTab
 import io.winapps.voizy.ui.features.profile.ProfileTabsRow
 import io.winapps.voizy.ui.navigation.BottomNavBar
 import io.winapps.voizy.ui.theme.Ubuntu
+import io.winapps.voizy.ui.theme.getColorResource
 import io.winapps.voizy.util.GetDisplayName
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -107,6 +108,9 @@ fun PersonScreen() {
     val apiKey = sessionViewModel.getApiKey() ?: ""
     val token = sessionViewModel.getToken() ?: ""
     val personViewModel = hiltViewModel<PersonViewModel>()
+    val colors = personViewModel.personProfileColors
+    val personPrefs = personViewModel.personPrefs
+    val autoplay = personViewModel.personProfileSongAutoplay
     val personId = personViewModel.selectedPersonId
     val personPostsViewModel = hiltViewModel<PersonPostsViewModel>()
     val personFriendsViewModel = hiltViewModel<PersonFriendsViewModel>()
@@ -134,6 +138,7 @@ fun PersonScreen() {
     }
 
     LaunchedEffect(Unit) {
+        personViewModel.loadPersonPrefs(personId = personId, userId = userId, apiKey = apiKey)
         personViewModel.loadCoverPic(personId = personId, userId = userId, apiKey = apiKey)
         personViewModel.loadProfilePic(personId = personId, userId = userId, apiKey = apiKey)
         personViewModel.loadProfileInfo(personId = personId, userId = userId, apiKey = apiKey)
@@ -145,7 +150,7 @@ fun PersonScreen() {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().background(Color(0xFFFDF4C9)),
+        modifier = Modifier.fillMaxSize().background(colors.primaryAccent),
     ) {
         Box(
             modifier = Modifier.fillMaxWidth().height(180.dp)
@@ -164,7 +169,7 @@ fun PersonScreen() {
                 if (painter.state is AsyncImagePainter.State.Loading) {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = Color(0xFFF10E91)
+                        color = colors.secondaryColor
                     )
                 }
             } else {
@@ -191,15 +196,15 @@ fun PersonScreen() {
                         modifier = Modifier
                             .size(100.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFFFD5ED))
-                            .border(2.dp, Color(0xFFF10E91), CircleShape),
+                            .background(colors.secondaryAccent)
+                            .border(2.dp, colors.secondaryColor, CircleShape),
                         contentScale = ContentScale.Crop
                     )
 
                     if (painter.state is AsyncImagePainter.State.Loading) {
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center),
-                            color = Color(0xFFF10E91)
+                            color = colors.secondaryColor
                         )
                     }
                 } else {
@@ -210,9 +215,9 @@ fun PersonScreen() {
                             .size(100.dp)
                             .clip(CircleShape)
                             .align(Alignment.Center)
-                            .background(Color(0xFFFFD5ED))
-                            .border(2.dp, Color(0xFFF10E91), CircleShape),
-                        tint = Color(0xFFF10E91)
+                            .background(colors.secondaryAccent)
+                            .border(2.dp, colors.secondaryColor, CircleShape),
+                        tint = colors.secondaryColor
                     )
                 }
             }
@@ -240,19 +245,19 @@ fun PersonScreen() {
                                 .padding(
                                     horizontal = 4.dp, vertical = 1.dp
                                 ).align(Alignment.End),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                            colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryColor)
                         ) {
                             Text(
                                 text = "Request",
                                 fontFamily = Ubuntu,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFFD5ED)
+                                color = colors.secondaryAccent
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Icon(
                                 imageVector = Icons.Filled.PersonAdd,
                                 contentDescription = "Add friend",
-                                tint = Color(0xFFFFD5ED)
+                                tint = colors.secondaryAccent
                             )
                         }
                     }
@@ -263,19 +268,19 @@ fun PersonScreen() {
                                 .padding(
                                     horizontal = 4.dp, vertical = 1.dp
                                 ).align(Alignment.End),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                            colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryColor)
                         ) {
                             Text(
                                 text = "Cancel",
                                 fontFamily = Ubuntu,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFFD5ED)
+                                color = colors.secondaryAccent
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Icon(
                                 imageVector = Icons.Filled.PersonAddDisabled,
                                 contentDescription = "Cancel friend request",
-                                tint = Color(0xFFFFD5ED)
+                                tint = colors.secondaryAccent
                             )
                         }
                     }
@@ -286,19 +291,19 @@ fun PersonScreen() {
                                 .padding(
                                     horizontal = 4.dp, vertical = 1.dp
                                 ).align(Alignment.End),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                            colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryColor)
                         ) {
                             Text(
                                 text = "Unfriend",
                                 fontFamily = Ubuntu,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFFD5ED)
+                                color = colors.secondaryAccent
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Icon(
                                 imageVector = Icons.Filled.PersonRemove,
                                 contentDescription = "Remove friend (unfriend)",
-                                tint = Color(0xFFFFD5ED)
+                                tint = colors.secondaryAccent
                             )
                         }
                     }
@@ -340,7 +345,7 @@ fun PersonScreen() {
                             }
                         },
                         modifier = Modifier.size(40.dp).clip(CircleShape),
-                        colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91))
+                        colors = IconButtonDefaults.iconButtonColors(containerColor = colors.secondaryColor)
                     ) {
                         Icon(
                             imageVector = if (isPlaying) {
@@ -350,7 +355,7 @@ fun PersonScreen() {
                             },
                             contentDescription = if (isPlaying) "Pause" else "Play",
                             modifier = Modifier.size(40.dp),
-                            tint = Color(0xFFFFD5ED)
+                            tint = colors.secondaryAccent
                         )
                     }
                     AndroidView(
@@ -358,10 +363,10 @@ fun PersonScreen() {
                             val view = LayoutInflater.from(ctx).inflate(R.layout.custom_media3_player_view, null) as PlayerView
                             val timeBar = view.findViewById<DefaultTimeBar>(R.id.exo_progress)
 
-                            timeBar.setPlayedColor(ContextCompat.getColor(ctx, R.color.pale_yellow))
-                            timeBar.setBufferedColor(ContextCompat.getColor(ctx, R.color.pale_magenta))
+                            timeBar.setPlayedColor(ContextCompat.getColor(ctx, getColorResource(personPrefs.primaryAccent)))
+                            timeBar.setBufferedColor(ContextCompat.getColor(ctx, getColorResource(personPrefs.secondaryAccent)))
                             timeBar.setUnplayedColor(ContextCompat.getColor(ctx, R.color.dark_gray))
-                            timeBar.setScrubberColor(ContextCompat.getColor(ctx, R.color.vibrant_yellow))
+                            timeBar.setScrubberColor(ContextCompat.getColor(ctx, getColorResource(personPrefs.primaryColor)))
 
                             view.player = exoPlayer
                             view.useController = true
@@ -412,7 +417,7 @@ fun PersonScreen() {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (personFriendsViewModel.isLoadingTotalFriends) {
                     CircularProgressIndicator(
-                        color = Color(0xFFF10E91)
+                        color = colors.secondaryColor
                     )
                 } else {
                     Icon(
@@ -438,7 +443,7 @@ fun PersonScreen() {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (personPostsViewModel.isLoadingTotalPosts) {
                     CircularProgressIndicator(
-                        color = Color(0xFFF10E91)
+                        color = colors.secondaryColor
                     )
                 } else {
                     Icon(
@@ -464,7 +469,7 @@ fun PersonScreen() {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (personPhotosViewModel.isLoadingTotalImages) {
                     CircularProgressIndicator(
-                        color = Color(0xFFF10E91)
+                        color = colors.secondaryColor
                     )
                 } else {
                     Icon(
@@ -490,7 +495,9 @@ fun PersonScreen() {
 
         ProfileTabsRow(
             selectedTab = selectedTab,
-            onTabSelected = { selectedTab = it }
+            onTabSelected = { selectedTab = it },
+            secondaryColor = colors.secondaryColor,
+            secondaryAccent = colors.secondaryAccent
         )
 
         Box(
@@ -501,15 +508,24 @@ fun PersonScreen() {
                     onSelectViewPostComments = { postID ->
                         selectedPostIDForComments = postID
                         isViewingComments = true
-                    }
+                    },
+                    primaryAccent = colors.primaryAccent,
+                    secondaryColor = colors.secondaryColor,
+                    secondaryAccent = colors.secondaryAccent
                 )
                 ProfileTab.PHOTOS -> PersonPhotosContent(
                     images = images,
                     setFullScreenImageOpen = setFullScreenImageOpen,
-                    setCurrentImageIndex = setCurrentImageIndex
+                    setCurrentImageIndex = setCurrentImageIndex,
+                    secondaryColor = colors.secondaryColor,
                 )
-                ProfileTab.ABOUT -> PersonAboutContent()
-                ProfileTab.FRIENDS -> PersonFriendsContent()
+                ProfileTab.ABOUT -> PersonAboutContent(
+                    secondaryColor = colors.secondaryColor
+                )
+                ProfileTab.FRIENDS -> PersonFriendsContent(
+                    secondaryColor = colors.secondaryColor,
+                    secondaryAccent = colors.secondaryAccent
+                )
             }
         }
 
@@ -527,7 +543,8 @@ fun PersonScreen() {
                 startIndex = currentImageIndex,
                 onClose = {
                     setFullScreenImageOpen(false)
-                }
+                },
+                secondaryColor = colors.secondaryColor
             )
         }
     }
@@ -539,7 +556,10 @@ fun PersonScreen() {
             personPostsViewModel = personPostsViewModel,
             personViewModel = personViewModel,
             sessionViewModel = sessionViewModel,
-            personId = personId
+            personId = personId,
+            primaryAccent = colors.primaryAccent,
+            secondaryColor = colors.secondaryColor,
+            secondaryAccent = colors.secondaryAccent
         )
     }
 
@@ -559,11 +579,11 @@ fun PersonScreen() {
                 modifier = Modifier
                     .align(Alignment.Center)
                     .padding(4.dp)
-                    .systemBarsPadding()
-                    .imePadding()
+//                    .systemBarsPadding()
+//                    .imePadding()
                     .fillMaxWidth()
-                    .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFDF4C9))
+                    .border(2.dp, colors.secondaryColor, RoundedCornerShape(12.dp)),
+                colors = CardDefaults.cardColors(containerColor = colors.primaryAccent)
             ) {
                 Column(
                     modifier = Modifier
@@ -597,7 +617,9 @@ fun PersonScreen() {
                             onClose = {
                                 isViewingComments = false
                                 selectedPostIDForComments = 0
-                            }
+                            },
+                            secondaryColor = colors.secondaryColor,
+                            secondaryAccent = colors.secondaryAccent
                         )
                     }
 
@@ -633,13 +655,13 @@ fun PersonScreen() {
                                     fontFamily = Ubuntu,
                                     fontWeight = FontWeight.Bold
                                 ),
-                                color = Color(0xFFF10E91)
+                                color = colors.secondaryColor
                             )
                         }
 
                         if (personPostsViewModel.isPuttingNewComment) {
                             CircularProgressIndicator(
-                                color = Color(0xFFF10E91)
+                                color = colors.secondaryColor
                             )
                         } else {
                             Button(
@@ -651,7 +673,7 @@ fun PersonScreen() {
                                         postId = selectedPostIDForComments,
                                     )
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                                colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryColor)
                             ) {
                                 Text(
                                     text = "Comment",
@@ -659,7 +681,7 @@ fun PersonScreen() {
                                         fontFamily = Ubuntu,
                                         fontWeight = FontWeight.Bold
                                     ),
-                                    color = Color(0xFFFFD5ED)
+                                    color = colors.secondaryAccent
                                 )
                             }
                         }

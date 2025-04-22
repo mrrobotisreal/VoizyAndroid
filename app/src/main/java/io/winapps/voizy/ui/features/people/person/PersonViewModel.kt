@@ -29,6 +29,25 @@ import io.winapps.voizy.data.model.users.Friend
 import io.winapps.voizy.data.model.users.UserImage
 import io.winapps.voizy.data.repository.PostsRepository
 import io.winapps.voizy.data.repository.UsersRepository
+import io.winapps.voizy.ui.features.more.UserPreferences
+import io.winapps.voizy.ui.theme.ColorMap
+import io.winapps.voizy.ui.theme.OceanicPrimaryAccent
+import io.winapps.voizy.ui.theme.OceanicPrimaryColor
+import io.winapps.voizy.ui.theme.OceanicSecondaryAccent
+import io.winapps.voizy.ui.theme.OceanicSecondaryColor
+import io.winapps.voizy.ui.theme.RoyalPrimaryAccent
+import io.winapps.voizy.ui.theme.RoyalPrimaryColor
+import io.winapps.voizy.ui.theme.RoyalSecondaryAccent
+import io.winapps.voizy.ui.theme.RoyalSecondaryColor
+import io.winapps.voizy.ui.theme.SunsetPrimaryAccent
+import io.winapps.voizy.ui.theme.SunsetPrimaryColor
+import io.winapps.voizy.ui.theme.SunsetSecondaryAccent
+import io.winapps.voizy.ui.theme.SunsetSecondaryColor
+import io.winapps.voizy.ui.theme.VoizyPrimaryAccent
+import io.winapps.voizy.ui.theme.VoizyPrimaryColor
+import io.winapps.voizy.ui.theme.VoizySecondaryAccent
+import io.winapps.voizy.ui.theme.VoizySecondaryColor
+import io.winapps.voizy.ui.theme.getColorMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -154,6 +173,65 @@ class PersonViewModel @Inject constructor(
             }
         }
     }
+
+    var personPrefs by mutableStateOf(UserPreferences())
+        private set
+
+    var personProfileColors by mutableStateOf<ColorMap>(getColorMap(
+        primaryColorString = "yellow",
+        primaryAccentString = "pale-yellow",
+        secondaryColorString = "magenta",
+        secondaryAccentString = "pale-magenta"
+    ))
+        private set
+
+    var personProfileSongAutoplay by mutableStateOf(false)
+        private set
+
+    var isLoadingPersonPrefs by mutableStateOf(false)
+        private set
+
+    var personPrefsErrorMessage by mutableStateOf<String?>(null)
+        private set
+
+    fun loadPersonPrefs(personId: Long, userId: Long, apiKey: String) {
+        viewModelScope.launch {
+            isLoadingPersonPrefs = true
+            personPrefsErrorMessage = null
+
+            try {
+                val response = usersRepository.getUserPreferences(
+                    apiKey = apiKey,
+                    userIdHeader = userId.toString(),
+                    userId = personId
+                )
+
+                personPrefs = UserPreferences(
+                    primaryColor = response.primaryColor,
+                    primaryAccent = response.primaryAccent,
+                    secondaryColor = response.secondaryColor,
+                    secondaryAccent = response.secondaryAccent,
+                    songAutoplay = response.songAutoplay,
+                    profilePrimaryColor = response.profilePrimaryColor,
+                    profilePrimaryAccent = response.profilePrimaryAccent,
+                    profileSecondaryColor = response.profileSecondaryColor,
+                    profileSecondaryAccent = response.profileSecondaryAccent,
+                    profileSongAutoplay = response.profileSongAutoplay
+                )
+                personProfileSongAutoplay = response.profileSongAutoplay
+                personProfileColors = getColorMap(
+                    primaryColorString = response.profilePrimaryColor,
+                    primaryAccentString = response.profilePrimaryAccent,
+                    secondaryColorString = response.profileSecondaryColor,
+                    secondaryAccentString = response.profileSecondaryAccent
+                )
+            } catch (e: Exception) {
+                personPrefsErrorMessage = e.message
+            } finally {
+                isLoadingPersonPrefs = false
+            }
+        }
+    }
 }
 
 @HiltViewModel
@@ -249,49 +327,53 @@ class PersonPostsViewModel @Inject constructor(
                         limit = limit,
                         page = page
                     )
-                    val rawPosts = listResponse.posts
+                    val rawPosts = listResponse.posts ?: emptyList()
 
-                    val finalList = mutableListOf<CompletePost>()
-                    for (post in rawPosts) {
-                        val detailDeferred = async {
-                            postsRepository.getPostDetails(
-                                apiKey = apiKey,
-                                userIdHeader = userId.toString(),
-                                postId = post.postID
-                            )
-                        }
-                        val mediaDeferred = async {
-                            postsRepository.getPostMedia(
-                                apiKey = apiKey,
-                                userIdHeader = userId.toString(),
-                                postId = post.postID
-                            )
-                        }
-                        val profilePicDeferred = async {
-                            usersRepository.getProfilePic(
-                                apiKey = apiKey,
-                                userIdHeader = userId.toString(),
-                                userId = post.userID
-                            )
-                        }
-                        val details = detailDeferred.await()
-                        val media = mediaDeferred.await()
-                        val profilePicResponse = profilePicDeferred.await()
-                        val profilePicURL = profilePicResponse.profilePicURL
+                    if (rawPosts.isNotEmpty()) {
+                        val finalList = mutableListOf<CompletePost>()
+                        for (post in rawPosts) {
+                            val detailDeferred = async {
+                                postsRepository.getPostDetails(
+                                    apiKey = apiKey,
+                                    userIdHeader = userId.toString(),
+                                    postId = post.postID
+                                )
+                            }
+                            val mediaDeferred = async {
+                                postsRepository.getPostMedia(
+                                    apiKey = apiKey,
+                                    userIdHeader = userId.toString(),
+                                    postId = post.postID
+                                )
+                            }
+                            val profilePicDeferred = async {
+                                usersRepository.getProfilePic(
+                                    apiKey = apiKey,
+                                    userIdHeader = userId.toString(),
+                                    userId = post.userID
+                                )
+                            }
+                            val details = detailDeferred.await()
+                            val media = mediaDeferred.await()
+                            val profilePicResponse = profilePicDeferred.await()
+                            val profilePicURL = profilePicResponse.profilePicURL
 
-                        val complete = CompletePost(
-                            post = post,
-                            profilePicURL = profilePicURL,
-                            totalComments = post.totalComments,
-                            reactions = details.reactions,
-                            hashtags = details.hashtags,
-                            images = media.images.orEmpty(),
-                            videos = media.videos.orEmpty()
-                        )
-                        finalList.add(complete)
+                            val complete = CompletePost(
+                                post = post,
+                                profilePicURL = profilePicURL,
+                                totalComments = post.totalComments,
+                                reactions = details.reactions,
+                                hashtags = details.hashtags,
+                                images = media.images.orEmpty(),
+                                videos = media.videos.orEmpty()
+                            )
+                            finalList.add(complete)
+                        }
+
+                        completePosts = finalList
+                    } else {
+                        completePosts = emptyList()
                     }
-
-                    completePosts = finalList
 
 //                    postsCache.cachePosts(userId, limit, page, finalList)
                 }

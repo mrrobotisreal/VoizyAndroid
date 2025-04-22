@@ -47,7 +47,10 @@ import io.winapps.voizy.data.model.users.Friend
 import io.winapps.voizy.ui.theme.Ubuntu
 
 @Composable
-fun FriendsContent() {
+fun FriendsContent(
+    secondaryColor: Color,
+    secondaryAccent: Color
+) {
     val friendsViewModel = hiltViewModel<FriendsViewModel>()
     val sessionViewModel = hiltViewModel<SessionViewModel>()
     val friends = friendsViewModel.friends
@@ -97,7 +100,7 @@ fun FriendsContent() {
                     Icon(
                         imageVector = Icons.Filled.Search,
                         contentDescription = "Search",
-                        tint = Color(0xFFF10E91)
+                        tint = secondaryColor
                     )
                 }
             }
@@ -109,7 +112,9 @@ fun FriendsContent() {
             items(filteredFriends) { friend ->
                 FriendRow(
                     friend = friend,
-                    onClick = {}
+                    onClick = {},
+                    secondaryColor = secondaryColor,
+                    secondaryAccent = secondaryAccent
                 )
             }
         }
@@ -119,7 +124,9 @@ fun FriendsContent() {
 @Composable
 fun FriendRow(
     friend: Friend,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     val displayName = if (!friend.firstName.isNullOrBlank() && !friend.lastName.isNullOrBlank()) {
         "${friend.firstName} ${friend.lastName}"
@@ -148,8 +155,8 @@ fun FriendRow(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFFFD5ED))
-                    .border(2.dp, Color(0xFFF10E91), CircleShape)
+                    .background(secondaryAccent)
+                    .border(2.dp, secondaryColor, CircleShape)
             ) {
                 if (!friend.profilePicURL.isNullOrEmpty()) {
                     val painter = rememberAsyncImagePainter(
@@ -161,14 +168,14 @@ fun FriendRow(
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .border(2.dp, Color(0xFFF10E91), CircleShape),
+                            .border(2.dp, secondaryColor, CircleShape),
                         contentScale = ContentScale.Crop
                     )
 
                     if (painter.state is AsyncImagePainter.State.Loading) {
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center),
-                            color = Color(0xFFF10E91)
+                            color = secondaryColor
                         )
                     }
 //                AsyncImage(
@@ -184,7 +191,7 @@ fun FriendRow(
                         modifier = Modifier
                             .clip(CircleShape)
                             .align(Alignment.Center),
-                        tint = Color(0xFFF10E91)
+                        tint = secondaryColor
                     )
                 }
             }

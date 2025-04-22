@@ -4,6 +4,22 @@
     <color name="pale_yellow">#FFFDF4C9</color>
     <color name="vibrant_magenta">#FFF10E91</color>
     <color name="pale_magenta">#FFFFD5ED</color>
+
+    <color name="oceanic_primary_color">#FF00796B</color>
+    <color name="oceanic_primary_accent">#FF4DB6AC</color>
+    <color name="oceanic_secondary_color">#FFE64A19</color>
+    <color name="oceanic_secondary_accent">#FFFFAB91</color>
+
+    <color name="royal_primary_color">#FF303F9F</color>
+    <color name="royal_primary_accent">#FF7986CB</color>
+    <color name="royal_secondary_color">#FFFFC107</color>
+    <color name="royal_secondary_accent">#FFFFECB3</color>
+
+    <color name="sunset_primary_color">#FFF57C00</color>
+    <color name="sunset_primary_accent">#FFFFB74D</color>
+    <color name="sunset_secondary_color">#FF7B1FA2</color>
+    <color name="sunset_secondary_accent">#FFCE93D8</color>
+
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>

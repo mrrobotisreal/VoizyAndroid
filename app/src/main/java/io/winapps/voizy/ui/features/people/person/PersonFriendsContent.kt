@@ -27,7 +27,10 @@ import io.winapps.voizy.ui.features.profile.FriendRow
 import io.winapps.voizy.ui.theme.Ubuntu
 
 @Composable
-fun PersonFriendsContent() {
+fun PersonFriendsContent(
+    secondaryColor: Color,
+    secondaryAccent: Color
+) {
     val sessionViewModel = hiltViewModel<SessionViewModel>()
     val personViewModel = hiltViewModel<PersonViewModel>()
     val friendsViewModel = hiltViewModel<PersonFriendsViewModel>()
@@ -79,7 +82,7 @@ fun PersonFriendsContent() {
                     Icon(
                         imageVector = Icons.Filled.Search,
                         contentDescription = "Search",
-                        tint = Color(0xFFF10E91)
+                        tint = secondaryColor
                     )
                 }
             }
@@ -91,7 +94,9 @@ fun PersonFriendsContent() {
             items(filteredFriends) { friend ->
                 FriendRow(
                     friend = friend,
-                    onClick = {}
+                    onClick = {},
+                    secondaryColor = secondaryColor,
+                    secondaryAccent = secondaryAccent
                 )
             }
         }

@@ -48,11 +48,14 @@ import io.winapps.voizy.ui.features.profile.ProfileViewModel
 fun BottomNavBar(
     sessionViewModel: SessionViewModel = hiltViewModel(),
 ) {
+    val primaryColor = sessionViewModel.appColors.primaryColor
+    val secondaryColor = sessionViewModel.appColors.secondaryColor
+
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
         Divider(
-            color = Color(0xFFF10E91),
+            color = secondaryColor,
             modifier = Modifier
                 .height(1.dp)
                 .fillMaxWidth()
@@ -62,7 +65,7 @@ fun BottomNavBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(100.dp)
-                .background(Color(0xFFF9D841))
+                .background(primaryColor)
 //            .background(Color.Transparent)
                 .navigationBarsPadding(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -130,8 +133,11 @@ fun NavIconButton(
     isSelected: Boolean = false,
     onClick: () -> Unit
     ) {
-    val backgroundColor = if (isSelected) Color(0xFFF10E91) else Color(0xFFFFD5ED)
-    val iconTint = if (isSelected) Color(0xFFFFD5ED) else Color(0xFFF10E91)
+    val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val secondaryColor = sessionViewModel.appColors.secondaryColor
+    val secondaryAccent = sessionViewModel.appColors.secondaryAccent
+    val backgroundColor = if (isSelected) secondaryColor else secondaryAccent
+    val iconTint = if (isSelected) secondaryAccent else secondaryColor
 
     if (screen == AppScreen.PROFILE) {
         val sessionViewModel = hiltViewModel<SessionViewModel>()
@@ -152,7 +158,7 @@ fun NavIconButton(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .border(1.dp, Color(0xFFF10E91), CircleShape),
+                .border(1.dp, secondaryColor, CircleShape),
             colors = IconButtonDefaults.iconButtonColors(containerColor = backgroundColor)
         ) {
             if (!profilePicURL.isNullOrEmpty()) {
@@ -165,13 +171,13 @@ fun NavIconButton(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .border(1.dp, Color(0xFFF10E91), CircleShape),
+                        .border(1.dp, secondaryColor, CircleShape),
                     contentScale = ContentScale.Crop,
                 )
 
                 if (painter.state is AsyncImagePainter.State.Loading) {
                     CircularProgressIndicator(
-                        color = Color(0xFFF10E91)
+                        color = secondaryColor
                     )
                 }
             } else {
@@ -180,7 +186,7 @@ fun NavIconButton(
                     contentDescription = "Empty poster profile pic",
                     modifier = Modifier
                         .clip(CircleShape),
-                    tint = Color(0xFFF10E91)
+                    tint = secondaryColor
                 )
             }
         }
@@ -190,7 +196,7 @@ fun NavIconButton(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .border(1.dp, Color(0xFFF10E91), CircleShape),
+                .border(1.dp, secondaryColor, CircleShape),
             colors = IconButtonDefaults.iconButtonColors(containerColor = backgroundColor)
         ) {
             Icon(

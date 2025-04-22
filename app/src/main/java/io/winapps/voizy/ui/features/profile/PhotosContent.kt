@@ -74,6 +74,8 @@ fun PhotosContent(
     images: List<UserImage>,
     setFullScreenImageOpen: (Boolean) -> Unit,
     setCurrentImageIndex: (Int) -> Unit,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     val photosViewModel = hiltViewModel<PhotosViewModel>()
 
@@ -86,13 +88,13 @@ fun PhotosContent(
                     .padding(
                         horizontal = 8.dp, vertical = 2.dp
                     ),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                colors = ButtonDefaults.buttonColors(containerColor = secondaryColor)
             ) {
                 Text(
                     text = "Add images",
                     fontFamily = Ubuntu,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFFFD5ED)
+                    color = secondaryAccent
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
@@ -121,7 +123,8 @@ fun PhotosContent(
                             onClick = {
                                 setCurrentImageIndex(index)
                                 setFullScreenImageOpen(true)
-                            }
+                            },
+                            secondaryColor = secondaryColor
                         )
                     }
                 }
@@ -133,7 +136,8 @@ fun PhotosContent(
 @Composable
 fun PhotoGridItem(
     imageUrl: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    secondaryColor: Color
 ) {
     Box(
         modifier = Modifier
@@ -155,7 +159,7 @@ fun PhotoGridItem(
         if (painter.state is AsyncImagePainter.State.Loading) {
             CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center),
-                color = Color(0xFFF10E91)
+                color = secondaryColor
             )
         }
     }
@@ -166,7 +170,9 @@ fun PhotoGridItem(
 fun FullScreenImageViewer(
     images: List<UserImage>,
     startIndex: Int,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     val context = LocalContext.current
     val photosViewModel = hiltViewModel<PhotosViewModel>()
@@ -223,7 +229,7 @@ fun FullScreenImageViewer(
             if (painter.state is AsyncImagePainter.State.Loading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
-                    color = Color(0xFFF10E91)
+                    color = secondaryColor
                 )
             }
         }
@@ -255,7 +261,7 @@ fun FullScreenImageViewer(
                     if (photosViewModel.isUpdatingProfilePic) {
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.CenterHorizontally),
-                            color = Color(0xFFF10E91)
+                            color = secondaryColor
                         )
                     } else {
                         Button(
@@ -272,13 +278,13 @@ fun FullScreenImageViewer(
                                 .padding(
                                     horizontal = 8.dp, vertical = 2.dp
                                 ),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                            colors = ButtonDefaults.buttonColors(containerColor = secondaryColor)
                         ) {
                             Text(
                                 text = "Set as Profile Pic",
                                 fontFamily = Ubuntu,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFFD5ED)
+                                color = secondaryAccent
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Icon(
@@ -291,7 +297,7 @@ fun FullScreenImageViewer(
                     if (photosViewModel.isUpdatingCoverPic) {
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.CenterHorizontally),
-                            color = Color(0xFFF10E91)
+                            color = secondaryColor
                         )
                     } else {
                         Button(
@@ -308,13 +314,13 @@ fun FullScreenImageViewer(
                                 .padding(
                                     horizontal = 8.dp, vertical = 2.dp
                                 ),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                            colors = ButtonDefaults.buttonColors(containerColor = secondaryColor)
                         ) {
                             Text(
                                 text = "Set as Cover Pic",
                                 fontFamily = Ubuntu,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFFD5ED)
+                                color = secondaryAccent
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Icon(
@@ -343,7 +349,9 @@ fun FullScreenImageViewer(
 
 @Composable
 fun CameraButtonWithPermission(
-    onPhotoCaptured: (Uri) -> Unit
+    onPhotoCaptured: (Uri) -> Unit,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     val context = LocalContext.current
 
@@ -390,13 +398,13 @@ fun CameraButtonWithPermission(
             .padding(
                 horizontal = 8.dp, vertical = 2.dp
             ),
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+        colors = ButtonDefaults.buttonColors(containerColor = secondaryColor)
     ) {
         Text(
             text = "Take A New Photo",
             fontFamily = Ubuntu,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFFFFD5ED)
+            color = secondaryAccent
         )
         Spacer(modifier = Modifier.width(8.dp))
         Icon(
@@ -408,7 +416,9 @@ fun CameraButtonWithPermission(
 
 @Composable
 fun PhotosButtonWithPermission(
-    onPhotosSelected: (List<Uri>) -> Unit
+    onPhotosSelected: (List<Uri>) -> Unit,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     val pickImagesLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents(),
@@ -427,13 +437,13 @@ fun PhotosButtonWithPermission(
             .padding(
                 horizontal = 8.dp, vertical = 2.dp
             ),
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+        colors = ButtonDefaults.buttonColors(containerColor = secondaryColor)
     ) {
         Text(
             text = "Choose From Photos",
             fontFamily = Ubuntu,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFFFFD5ED)
+            color = secondaryAccent
         )
         Spacer(modifier = Modifier.width(8.dp))
         Icon(

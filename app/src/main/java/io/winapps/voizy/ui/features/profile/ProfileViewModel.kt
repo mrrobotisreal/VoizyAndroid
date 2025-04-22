@@ -268,49 +268,53 @@ class PostsViewModel @Inject constructor(
                         limit = limit,
                         page = page
                     )
-                    val rawPosts = listResponse.posts
+                    val rawPosts = listResponse.posts ?: emptyList()
 
-                    val finalList = mutableListOf<CompletePost>()
-                    for (post in rawPosts) {
-                        val detailDeferred = async {
-                            postsRepository.getPostDetails(
-                                apiKey = apiKey,
-                                userIdHeader = userId.toString(),
-                                postId = post.postID
-                            )
-                        }
-                        val mediaDeferred = async {
-                            postsRepository.getPostMedia(
-                                apiKey = apiKey,
-                                userIdHeader = userId.toString(),
-                                postId = post.postID
-                            )
-                        }
-                        val profilePicDeferred = async {
-                            usersRepository.getProfilePic(
-                                apiKey = apiKey,
-                                userIdHeader = userId.toString(),
-                                userId = post.userID
-                            )
-                        }
-                        val details = detailDeferred.await()
-                        val media = mediaDeferred.await()
-                        val profilePicResponse = profilePicDeferred.await()
-                        val profilePicURL = profilePicResponse.profilePicURL
+                    if (rawPosts.isNotEmpty()) {
+                        val finalList = mutableListOf<CompletePost>()
+                        for (post in rawPosts) {
+                            val detailDeferred = async {
+                                postsRepository.getPostDetails(
+                                    apiKey = apiKey,
+                                    userIdHeader = userId.toString(),
+                                    postId = post.postID
+                                )
+                            }
+                            val mediaDeferred = async {
+                                postsRepository.getPostMedia(
+                                    apiKey = apiKey,
+                                    userIdHeader = userId.toString(),
+                                    postId = post.postID
+                                )
+                            }
+                            val profilePicDeferred = async {
+                                usersRepository.getProfilePic(
+                                    apiKey = apiKey,
+                                    userIdHeader = userId.toString(),
+                                    userId = post.userID
+                                )
+                            }
+                            val details = detailDeferred.await()
+                            val media = mediaDeferred.await()
+                            val profilePicResponse = profilePicDeferred.await()
+                            val profilePicURL = profilePicResponse.profilePicURL
 
-                        val complete = CompletePost(
-                            post = post,
-                            profilePicURL = profilePicURL,
-                            totalComments = post.totalComments,
-                            reactions = details.reactions,
-                            hashtags = details.hashtags,
-                            images = media.images.orEmpty(),
-                            videos = media.videos.orEmpty()
-                        )
-                        finalList.add(complete)
+                            val complete = CompletePost(
+                                post = post,
+                                profilePicURL = profilePicURL,
+                                totalComments = post.totalComments,
+                                reactions = details.reactions,
+                                hashtags = details.hashtags,
+                                images = media.images.orEmpty(),
+                                videos = media.videos.orEmpty()
+                            )
+                            finalList.add(complete)
+                        }
+
+                        completePosts = finalList
+                    } else {
+                        completePosts = emptyList()
                     }
-
-                    completePosts = finalList
 
 //                    postsCache.cachePosts(userId, limit, page, finalList)
                 }

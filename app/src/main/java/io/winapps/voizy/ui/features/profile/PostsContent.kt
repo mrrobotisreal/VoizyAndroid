@@ -9,8 +9,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,32 +18,23 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Comment
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Repeat
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -55,14 +44,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -74,6 +60,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -92,13 +79,14 @@ import coil.size.Scale
 import coil.size.Size
 import io.winapps.voizy.data.model.posts.Comment
 import io.winapps.voizy.data.model.posts.ReactionType
-import io.winapps.voizy.ui.features.groups.GroupTopic
 import io.winapps.voizy.util.getTimeAgo
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun PostsContent(
     onSelectViewPostComments: (Long) -> Unit,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     val postsViewModel = hiltViewModel<PostsViewModel>()
     val sessionViewModel = hiltViewModel<SessionViewModel>()
@@ -129,13 +117,13 @@ fun PostsContent(
                 .padding(
                     horizontal = 8.dp, vertical = 2.dp
                 ),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+            colors = ButtonDefaults.buttonColors(containerColor = secondaryColor)
         ) {
             Text(
                 text = "Create a new post",
                 fontFamily = Ubuntu,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFFFD5ED)
+                color = secondaryAccent
             )
             Spacer(modifier = Modifier.width(8.dp))
             Icon(
@@ -151,7 +139,7 @@ fun PostsContent(
                 isLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = Color(0xFFF10E91)
+                        color = secondaryColor
                     )
                 }
                 errorMessage != null -> {
@@ -163,23 +151,35 @@ fun PostsContent(
                     )
                 }
                 else -> {
-                    LazyColumn {
-                        items(posts) { post ->
-                            PostItem(
-                                post = post,
-                                onReaction = { reactionType ->
-                                    postsViewModel.putPostReaction(
-                                        postId = post.post.postID,
-                                        userId = userId,
-                                        apiKey = apiKey,
-                                        token = token,
-                                        reactionType = reactionType,
-                                    )
-                                },
-                                onViewComments = {
-                                    onSelectViewPostComments(post.post.postID)
-                                }
-                            )
+                    if (posts.isNullOrEmpty()) {
+                        Text(
+                            text = "You haven't posted anything yet.",
+                            textAlign = TextAlign.Center,
+                            fontFamily = Ubuntu,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    } else {
+                        LazyColumn {
+                            items(posts) { post ->
+                                PostItem(
+                                    post = post,
+                                    onReaction = { reactionType ->
+                                        postsViewModel.putPostReaction(
+                                            postId = post.post.postID,
+                                            userId = userId,
+                                            apiKey = apiKey,
+                                            token = token,
+                                            reactionType = reactionType,
+                                        )
+                                    },
+                                    onViewComments = {
+                                        onSelectViewPostComments(post.post.postID)
+                                    },
+                                    secondaryColor = secondaryColor,
+                                    secondaryAccent = secondaryAccent
+                                )
+                            }
                         }
                     }
                 }
@@ -194,7 +194,9 @@ fun PostItem(
     post: CompletePost,
     onProfileClick: () -> Unit = {},
     onReaction: (ReactionType) -> Unit,
-    onViewComments: () -> Unit
+    onViewComments: () -> Unit,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     val displayName = if (!post.post.firstName.isNullOrBlank() && !post.post.lastName.isNullOrBlank()) {
         "${post.post.firstName} ${post.post.lastName} (${post.post.username})"
@@ -227,8 +229,8 @@ fun PostItem(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFFFD5ED))
-                        .border(2.dp, Color(0xFFF10E91), CircleShape)
+                        .background(secondaryAccent)
+                        .border(2.dp, secondaryColor, CircleShape)
                         .clickable { onProfileClick() }
                 ) {
                     if (!post.profilePicURL.isNullOrEmpty()) {
@@ -241,14 +243,14 @@ fun PostItem(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(CircleShape)
-                                .border(2.dp, Color(0xFFF10E91), CircleShape),
+                                .border(2.dp, secondaryColor, CircleShape),
                             contentScale = ContentScale.Crop
                         )
 
                         if (painter.state is AsyncImagePainter.State.Loading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.align(Alignment.Center),
-                                color = Color(0xFFF10E91)
+                                color = secondaryColor
                             )
                         }
                     } else {
@@ -258,7 +260,7 @@ fun PostItem(
                             modifier = Modifier
                                 .clip(CircleShape)
                                 .align(Alignment.Center),
-                            tint = Color(0xFFF10E91)
+                            tint = secondaryColor
                         )
                     }
                 }
@@ -294,7 +296,7 @@ fun PostItem(
                             Icon(
                                 imageVector = Icons.Default.LocationOn,
                                 contentDescription = null,
-                                tint = Color(0xFFF10E91),
+                                tint = secondaryColor,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
@@ -304,7 +306,7 @@ fun PostItem(
                                     fontFamily = Ubuntu,
                                     fontWeight = FontWeight.Normal
                                 ),
-                                color = Color(0xFFF10E91)
+                                color = secondaryColor
                             )
                         }
                     }
@@ -336,7 +338,9 @@ fun PostItem(
             val hashtags = post.hashtags ?: emptyList()
             if (hashtags.isNotEmpty()) {
                 PostItemWithHashtags(
-                    hashtags = hashtags
+                    hashtags = hashtags,
+                    secondaryColor = secondaryColor,
+                    secondaryAccent = secondaryAccent
                 )
             }
 
@@ -347,7 +351,9 @@ fun PostItem(
                 postSharesCount = postSharesCount,
                 viewsCount = post.post.views,
                 onReaction = onReaction,
-                onViewComments = onViewComments
+                onViewComments = onViewComments,
+                secondaryColor = secondaryColor,
+                 secondaryAccent = secondaryAccent
             )
         }
     }
@@ -356,7 +362,9 @@ fun PostItem(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PostItemWithHashtags(
-    hashtags: List<String>
+    hashtags: List<String>,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     LazyRow(
         modifier = Modifier.padding(2.dp),
@@ -369,7 +377,9 @@ fun PostItemWithHashtags(
                 modifier = Modifier.padding(horizontal = 2.dp)
             ) {
                 HashtagButton(
-                    hashtag = hashtag
+                    hashtag = hashtag,
+                    secondaryColor = secondaryColor,
+                    secondaryAccent = secondaryAccent
                 )
             }
         }
@@ -379,18 +389,17 @@ fun PostItemWithHashtags(
 @Composable
 fun HashtagButton(
     hashtag: String,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
-    val backgroundColor = Color(0xFFFFD5ED)
-    val textColor = Color(0xFFF10E91)
-
     TextButton(
         onClick = {  },
-        colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
-        border = BorderStroke(1.dp, Color(0xFFF10E91)),
+        colors = ButtonDefaults.buttonColors(containerColor = secondaryAccent),
+        border = BorderStroke(1.dp, secondaryColor),
     ) {
         Text(
             text = "#$hashtag",
-            color = textColor
+            color = secondaryColor
         )
     }
 }
@@ -398,21 +407,20 @@ fun HashtagButton(
 @Composable
 fun HashtagButtonRemoveable(
     hashtag: String,
-    onRemove: (String) -> Unit
+    onRemove: (String) -> Unit,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
-    val backgroundColor = Color(0xFFFFD5ED)
-    val textColor = Color(0xFFF10E91)
-
     TextButton(
         onClick = {
             onRemove(hashtag)
         },
-        colors = ButtonDefaults.buttonColors(containerColor = backgroundColor),
-        border = BorderStroke(1.dp, Color(0xFFF10E91)),
+        colors = ButtonDefaults.buttonColors(containerColor = secondaryAccent),
+        border = BorderStroke(1.dp, secondaryColor),
     ) {
         Text(
             text = "#$hashtag",
-            color = textColor
+            color = secondaryColor
         )
 
         Icon(
@@ -489,7 +497,9 @@ fun PostItemWithReactions(
     postSharesCount: Long,
     viewsCount: Long,
     onReaction: (ReactionType) -> Unit,
-    onViewComments: () -> Unit
+    onViewComments: () -> Unit,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     var currentReaction by remember { mutableStateOf<ReactionType?>(null) }
     currentReaction = when(userReaction) {
@@ -522,7 +532,9 @@ fun PostItemWithReactions(
                     },
                     onLongPress = {
                         isReactionMenuVisible = true
-                    }
+                    },
+                    secondaryColor = secondaryColor,
+                    secondaryAccent = secondaryAccent
                 )
 
                 if (isReactionMenuVisible) {
@@ -534,7 +546,8 @@ fun PostItemWithReactions(
                         },
                         onOutsideClick = {
                             isReactionMenuVisible = false
-                        }
+                        },
+                        secondaryColor = secondaryColor
                     )
                 }
             }
@@ -556,13 +569,13 @@ fun PostItemWithReactions(
         ) {
             IconButton(
                 onClick = { onViewComments() },
-                colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91)),
+                colors = IconButtonDefaults.iconButtonColors(containerColor = secondaryColor),
                 modifier = Modifier.size(40.dp)
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Comment,
                     contentDescription = null,
-                    tint = Color(0xFFFFD5ED)
+                    tint = secondaryAccent
                 )
             }
             if (commentCount > 0) {
@@ -583,13 +596,13 @@ fun PostItemWithReactions(
         ) {
             IconButton(
                 onClick = {},
-                colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91)),
+                colors = IconButtonDefaults.iconButtonColors(containerColor = secondaryColor),
                 modifier = Modifier.size(40.dp)
             ) {
                 Icon(
                     imageVector = Icons.Filled.Repeat,
                     contentDescription = null,
-                    tint = Color(0xFFFFD5ED)
+                    tint = secondaryAccent
                 )
             }
             if (postSharesCount > 0) {
@@ -610,13 +623,13 @@ fun PostItemWithReactions(
         ) {
             IconButton(
                 onClick = {},
-                colors = IconButtonDefaults.iconButtonColors(containerColor = Color(0xFFF10E91)),
+                colors = IconButtonDefaults.iconButtonColors(containerColor = secondaryColor),
                 modifier = Modifier.size(40.dp)
             ) {
                 Icon(
                     imageVector = Icons.Filled.BarChart,
                     contentDescription = null,
-                    tint = Color(0xFFFFD5ED)
+                    tint = secondaryAccent
                 )
             }
             if (viewsCount > 0) {
@@ -638,7 +651,9 @@ fun PostItemWithReactions(
 fun ReactionIconButton(
     currentReaction: ReactionType?,
     onShortPress: () -> Unit,
-    onLongPress: () -> Unit
+    onLongPress: () -> Unit,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     val displayEmoji = currentReaction?.emoji() ?: "❤️"
 
@@ -646,7 +661,7 @@ fun ReactionIconButton(
         Box(
             modifier = Modifier
                 .clip(CircleShape)
-                .background(Color(0xFFF10E91))
+                .background(secondaryColor)
                 .size(40.dp)
                 .pointerInput(Unit) {
                     detectTapGestures(
@@ -662,7 +677,7 @@ fun ReactionIconButton(
             Icon(
                 imageVector = Icons.Filled.Favorite,
                 contentDescription = null,
-                tint = Color(0xFFFFD5ED),
+                tint = secondaryAccent,
                 modifier = Modifier.align(Alignment.Center)
             )
         }
@@ -670,7 +685,7 @@ fun ReactionIconButton(
         Box(
             modifier = Modifier
                 .clip(CircleShape)
-                .background(Color(0xFFF10E91))
+                .background(secondaryColor)
                 .size(40.dp)
                 .pointerInput(Unit) {
                     detectTapGestures(
@@ -696,7 +711,8 @@ fun ReactionIconButton(
 @Composable
 fun ReactionPopUpRow(
     onSelectReaction: (ReactionType) -> Unit,
-    onOutsideClick: () -> Unit
+    onOutsideClick: () -> Unit,
+    secondaryColor: Color
 ) {
     Box(
         modifier = Modifier
@@ -727,7 +743,7 @@ fun ReactionPopUpRow(
                 Icon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = "Close",
-                    tint = Color(0xFFF10E91),
+                    tint = secondaryColor,
                     modifier = Modifier
                         .size(24.dp)
                         .clickable { onOutsideClick() }
@@ -760,7 +776,9 @@ fun ReactionPopUpRow(
 @Composable
 fun Comments(
     postID: Long,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     val postsViewModel = hiltViewModel<PostsViewModel>()
     val sessionViewModel = hiltViewModel<SessionViewModel>()
@@ -781,7 +799,9 @@ fun Comments(
     LazyColumn {
         items(comments) { comment ->
             CommentRow(
-                comment = comment
+                comment = comment,
+                secondaryColor = secondaryColor,
+                secondaryAccent = secondaryAccent
             )
         }
     }
@@ -790,7 +810,9 @@ fun Comments(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun CommentRow(
-    comment: Comment
+    comment: Comment,
+    secondaryColor: Color,
+    secondaryAccent: Color
 ) {
     val displayName = if (!comment.firstName.isNullOrBlank() && !comment.lastName.isNullOrBlank()) {
         "${comment.firstName} ${comment.lastName} (${comment.username})"
@@ -817,8 +839,8 @@ fun CommentRow(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFFFD5ED))
-                        .border(2.dp, Color(0xFFF10E91), CircleShape)
+                        .background(secondaryAccent)
+                        .border(2.dp, secondaryColor, CircleShape)
                         .clickable {  }
                 ) {
                     if (!comment.profilePicURL.isNullOrEmpty()) {
@@ -831,14 +853,14 @@ fun CommentRow(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(CircleShape)
-                                .border(2.dp, Color(0xFFF10E91), CircleShape),
+                                .border(2.dp, secondaryColor, CircleShape),
                             contentScale = ContentScale.Crop
                         )
 
                         if (painter.state is AsyncImagePainter.State.Loading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.align(Alignment.Center),
-                                color = Color(0xFFF10E91)
+                                color = secondaryColor
                             )
                         }
                     } else {
@@ -848,7 +870,7 @@ fun CommentRow(
                             modifier = Modifier
                                 .clip(CircleShape)
                                 .align(Alignment.Center),
-                            tint = Color(0xFFF10E91)
+                            tint = secondaryColor
                         )
                     }
                 }

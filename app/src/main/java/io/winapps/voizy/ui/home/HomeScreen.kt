@@ -18,16 +18,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Search
@@ -35,7 +32,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,8 +50,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
@@ -72,7 +66,6 @@ import io.winapps.voizy.data.model.posts.CompletePost
 import io.winapps.voizy.ui.features.profile.Comments
 import io.winapps.voizy.ui.features.profile.CreatePostDialog
 import io.winapps.voizy.ui.features.profile.PostItem
-import io.winapps.voizy.ui.features.profile.PostsContent
 import io.winapps.voizy.ui.features.profile.PostsViewModel
 import io.winapps.voizy.ui.navigation.BottomNavBar
 import io.winapps.voizy.ui.theme.Ubuntu
@@ -84,6 +77,10 @@ fun HomeScreen() {
     val userId = sessionViewModel.userId ?: -1
     val apiKey = sessionViewModel.getApiKey().orEmpty()
     val token = sessionViewModel.getToken().orEmpty()
+    val primaryColor = sessionViewModel.appColors.primaryColor
+    val primaryAccent = sessionViewModel.appColors.primaryAccent
+    val secondaryColor = sessionViewModel.appColors.secondaryColor
+    val secondaryAccent = sessionViewModel.appColors.secondaryAccent
     val configuration = LocalConfiguration.current
     val horizontalPadding = if (configuration.screenWidthDp >= 600) 200.dp else 10.dp
     val homeViewModel = hiltViewModel<HomeViewModel>()
@@ -99,21 +96,21 @@ fun HomeScreen() {
 
     SideEffect {
         val activity = view.context as Activity
-        activity.window.statusBarColor = Color(0xFFF9D841).toArgb()
+        activity.window.statusBarColor = primaryColor.toArgb()
         WindowCompat.getInsetsController(activity.window, view).isAppearanceLightStatusBars = true
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFDF4C9))
+            .background(primaryAccent)
             .statusBarsPadding()
             .imePadding()
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFF9D841))
+                .background(primaryColor)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -127,7 +124,7 @@ fun HomeScreen() {
                         elevation = CardDefaults.cardElevation(12.dp),
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
-                            .border(1.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp))
+                            .border(1.dp, secondaryColor, RoundedCornerShape(12.dp))
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.voizy_full_square),
@@ -154,7 +151,7 @@ fun HomeScreen() {
                             Icon(
                                 Icons.Filled.Search,
                                 contentDescription = "Search",
-                                tint = Color(0xFFF10E91)
+                                tint = secondaryColor
                             )
                         }
                     },
@@ -171,7 +168,7 @@ fun HomeScreen() {
         }
 
         Divider(
-            color = Color(0xFFF10E91),
+            color = secondaryColor,
             modifier = Modifier
                 .height(1.dp)
                 .fillMaxWidth()
@@ -214,7 +211,10 @@ fun HomeScreen() {
         CreatePostDialog(
             onClose = { postsViewModel.onCloseCreatePost() },
             postsViewModel = postsViewModel,
-            sessionViewModel = sessionViewModel
+            sessionViewModel = sessionViewModel,
+            primaryAccent = primaryAccent,
+            secondaryColor = secondaryColor,
+            secondaryAccent = secondaryAccent
         )
     }
 
@@ -237,8 +237,8 @@ fun HomeScreen() {
                     .systemBarsPadding()
                     .imePadding()
                     .fillMaxWidth()
-                    .border(2.dp, Color(0xFFF10E91), RoundedCornerShape(12.dp)),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFFDF4C9))
+                    .border(2.dp, secondaryColor, RoundedCornerShape(12.dp)),
+                colors = CardDefaults.cardColors(containerColor = primaryAccent)
             ) {
                 Column(
                     modifier = Modifier
@@ -272,7 +272,9 @@ fun HomeScreen() {
                             onClose = {
                                 isViewingComments = false
                                 selectedPostID = 0
-                            }
+                            },
+                            secondaryColor = secondaryColor,
+                            secondaryAccent = secondaryAccent
                         )
                     }
 
@@ -308,13 +310,13 @@ fun HomeScreen() {
                                     fontFamily = Ubuntu,
                                     fontWeight = FontWeight.Bold
                                 ),
-                                color = Color(0xFFF10E91)
+                                color = secondaryColor
                             )
                         }
 
                         if (postsViewModel.isPuttingNewComment) {
                             CircularProgressIndicator(
-                                color = Color(0xFFF10E91)
+                                color = secondaryColor
                             )
                         } else {
                             Button(
@@ -326,7 +328,7 @@ fun HomeScreen() {
                                         postId = selectedPostID,
                                     )
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+                                colors = ButtonDefaults.buttonColors(containerColor = secondaryColor)
                             ) {
                                 Text(
                                     text = "Comment",
@@ -334,7 +336,7 @@ fun HomeScreen() {
                                         fontFamily = Ubuntu,
                                         fontWeight = FontWeight.Bold
                                     ),
-                                    color = Color(0xFFFFD5ED)
+                                    color = secondaryAccent
                                 )
                             }
                         }
@@ -358,6 +360,9 @@ fun RecommendedFeed(
     apiKey: String,
     token: String
 ) {
+    val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val secondaryColor = sessionViewModel.appColors.secondaryColor
+    val secondaryAccent = sessionViewModel.appColors.secondaryAccent
     val postsViewModel = hiltViewModel<PostsViewModel>()
 
     LaunchedEffect(Unit) {
@@ -374,13 +379,13 @@ fun RecommendedFeed(
                 .padding(
                     horizontal = 8.dp, vertical = 2.dp
                 ),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91))
+            colors = ButtonDefaults.buttonColors(containerColor = secondaryColor)
         ) {
             Text(
                 text = "Create a new post",
                 fontFamily = Ubuntu,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFFFD5ED)
+                color = secondaryAccent
             )
             Spacer(modifier = Modifier.width(8.dp))
             Icon(
@@ -396,7 +401,7 @@ fun RecommendedFeed(
                 isLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = Color(0xFFF10E91)
+                        color = secondaryColor
                     )
                 }
                 errorMessage != null -> {
@@ -423,7 +428,9 @@ fun RecommendedFeed(
                                 },
                                 onViewComments = {
                                     onSelectViewPostComments(post.post.postID)
-                                }
+                                },
+                                secondaryColor = secondaryColor,
+                                secondaryAccent = secondaryAccent
                             )
                         }
                     }

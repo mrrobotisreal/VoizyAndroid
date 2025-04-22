@@ -51,6 +51,10 @@ import io.winapps.voizy.ui.theme.Ubuntu
 fun MoreScreen() {
     val view = LocalView.current
     val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val primaryColor = sessionViewModel.appColors.primaryColor
+    val primaryAccent = sessionViewModel.appColors.primaryAccent
+    val secondaryColor = sessionViewModel.appColors.secondaryColor
+    val secondaryAccent = sessionViewModel.appColors.secondaryAccent
     val userId = sessionViewModel.userId ?: -1
     val apiKey = sessionViewModel.getApiKey().orEmpty()
     val moreViewModel = hiltViewModel<MoreViewModel>()
@@ -59,28 +63,31 @@ fun MoreScreen() {
 
     SideEffect {
         val activity = view.context as Activity
-        activity.window.statusBarColor = Color(0xFFF9D841).toArgb()
+        activity.window.statusBarColor = primaryColor.toArgb()
         WindowCompat.getInsetsController(activity.window, view).isAppearanceLightStatusBars = true
     }
 
     LaunchedEffect(Unit) {
         moreViewModel.loadUserPreferences(
             apiKey = apiKey,
-            userId = userId
+            userId = userId,
+            updateStoredUserPrefs = { loadedPrefs ->
+                sessionViewModel.updateUserPrefs(loadedPrefs)
+            }
         )
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFDF4C9))
+            .background(primaryAccent)
             .statusBarsPadding()
             .imePadding()
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFF9D841))
+                .background(primaryColor)
                 .align(Alignment.CenterHorizontally)
                 .padding(6.dp)
         ) {
@@ -108,7 +115,7 @@ fun MoreScreen() {
         }
 
         Divider(
-            color = Color(0xFFF10E91),
+            color = secondaryColor,
             modifier = Modifier
                 .height(1.dp)
                 .fillMaxWidth()
@@ -127,9 +134,9 @@ fun MoreScreen() {
                     onClick = {
                         moreViewModel.onOpenAppPrefs()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD5ED)),
+                    colors = ButtonDefaults.buttonColors(containerColor = secondaryAccent),
                     elevation = ButtonDefaults.buttonElevation(7.dp),
-                    border = BorderStroke(1.dp, Color(0xFFF10E91)),
+                    border = BorderStroke(1.dp, secondaryColor),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -148,13 +155,13 @@ fun MoreScreen() {
                                 fontFamily = Ubuntu,
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = Color(0xFFF10E91)
+                            color = secondaryColor
                         )
 
                         Icon(
                             imageVector = Icons.Filled.AppSettingsAlt,
                             contentDescription = "App Preferences",
-                            tint = Color(0xFFF10E91)
+                            tint = secondaryColor
                         )
                     }
                 }
@@ -163,8 +170,8 @@ fun MoreScreen() {
                     onClick = {
                         moreViewModel.onOpenProfilePrefs()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFD5ED)),
-                    border = BorderStroke(1.dp, Color(0xFFF10E91)),
+                    colors = ButtonDefaults.buttonColors(containerColor = secondaryAccent),
+                    border = BorderStroke(1.dp, secondaryColor),
                     elevation = ButtonDefaults.buttonElevation(7.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -184,13 +191,13 @@ fun MoreScreen() {
                                 fontFamily = Ubuntu,
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = Color(0xFFF10E91)
+                            color = secondaryColor
                         )
 
                         Icon(
                             imageVector = Icons.Filled.Settings,
                             contentDescription = "Profile Preferences",
-                            tint = Color(0xFFF10E91)
+                            tint = secondaryColor
                         )
                     }
                 }
@@ -203,7 +210,7 @@ fun MoreScreen() {
                     onClick = {
                         sessionViewModel.handleLogout()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF10E91)),
+                    colors = ButtonDefaults.buttonColors(containerColor = secondaryColor),
                     elevation = ButtonDefaults.buttonElevation(7.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -223,13 +230,13 @@ fun MoreScreen() {
                                 fontFamily = Ubuntu,
                                 fontWeight = FontWeight.Bold
                             ),
-                            color = Color(0xFFFFD5ED)
+                            color = secondaryAccent
                         )
 
                         Icon(
                             imageVector = Icons.Filled.Logout,
                             contentDescription = "Logout",
-                            tint = Color(0xFFFFD5ED)
+                            tint = secondaryAccent
                         )
                     }
                 }
