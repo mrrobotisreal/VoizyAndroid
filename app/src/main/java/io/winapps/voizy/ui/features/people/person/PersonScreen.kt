@@ -3,6 +3,7 @@ package io.winapps.voizy.ui.features.people.person
 import android.app.Activity
 import android.os.Build
 import android.view.LayoutInflater
+import android.widget.FrameLayout
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -108,20 +109,27 @@ fun PersonScreen() {
     val apiKey = sessionViewModel.getApiKey() ?: ""
     val token = sessionViewModel.getToken() ?: ""
     val personViewModel = hiltViewModel<PersonViewModel>()
-    val colors = personViewModel.personProfileColors
-    val personPrefs = personViewModel.personPrefs
+//    val colors = personViewModel.personProfileColors
+    var colors by remember { mutableStateOf(personViewModel.personProfileColors) }
+//    val playerPrimaryColor = personViewModel.personProfileColorResources.primaryColor
+//    val playerPrimaryAccent = personViewModel.personProfileColorResources.primaryAccent
+//    val playerSecondaryAccent = personViewModel.personProfileColorResources.secondaryAccent
+    var playerPrimaryColor by remember { mutableIntStateOf(personViewModel.personProfileColorResources.primaryColor) }
+    var playerPrimaryAccent by remember { mutableIntStateOf(personViewModel.personProfileColorResources.primaryAccent) }
+    var playerSecondaryAccent by remember { mutableIntStateOf(personViewModel.personProfileColorResources.secondaryAccent) }
+    var personPrefs = personViewModel.personPrefs
     val autoplay = personViewModel.personProfileSongAutoplay
-    val personId = personViewModel.selectedPersonId
-    val personPostsViewModel = hiltViewModel<PersonPostsViewModel>()
-    val personFriendsViewModel = hiltViewModel<PersonFriendsViewModel>()
-    val personPhotosViewModel = hiltViewModel<PersonPhotosViewModel>()
+//    val personId = personViewModel.selectedPersonId
+    var personId by remember { mutableLongStateOf(personViewModel.selectedPersonId) }
+//    val selectedTab = personViewModel.selectedTab
+    var selectedTab by remember { mutableStateOf(personViewModel.selectedTab) }
     val personPlayerViewModel = hiltViewModel<PersonPlayerViewModel>()
     val postsViewModel = hiltViewModel<PostsViewModel>()
-    var selectedTab by remember { mutableStateOf(ProfileTab.POSTS) }
     val (isFullScreenImageOpen, setFullScreenImageOpen) = rememberSaveable { mutableStateOf(false) }
     val (currentImageIndex, setCurrentImageIndex) = rememberSaveable { mutableIntStateOf(0) }
-    val isCreatingNewPost = personPostsViewModel.isCreatingNewPost
-    val images = personPhotosViewModel.userImages
+    val isCreatingNewPost = personViewModel.isCreatingNewPost
+//    val images = personViewModel.userImages
+    var images by remember { mutableStateOf(personViewModel.userImages) }
     var isViewingComments by remember { mutableStateOf(false) }
     var selectedPostIDForComments by remember { mutableLongStateOf(0) }
     val exoPlayer = remember { personPlayerViewModel.getExoPlayer(context) }
@@ -129,7 +137,20 @@ fun PersonScreen() {
     val currentPosition = personPlayerViewModel.currentPosition
     val duration = personPlayerViewModel.duration
     val view = LocalView.current
-    val friendStatus = personFriendsViewModel.friendStatus
+//    val friendStatus = personViewModel.friendStatus
+    var friendStatus by remember { mutableStateOf(personViewModel.friendStatus) }
+    var coverPicURL by remember { mutableStateOf(personViewModel.coverPicURL) }
+    var profilePicURL by remember { mutableStateOf(personViewModel.profilePicURL) }
+    var username by remember { mutableStateOf(personViewModel.username) }
+    var firstName by remember { mutableStateOf(personViewModel.firstName) }
+    var lastName by remember { mutableStateOf(personViewModel.lastName) }
+    var preferredName by remember { mutableStateOf(personViewModel.preferredName) }
+    var isLoadingTotalFriends by remember { mutableStateOf(personViewModel.isLoadingTotalFriends) }
+    var isLoadingTotalPosts by remember { mutableStateOf(personViewModel.isLoadingTotalPosts) }
+    var isLoadingTotalImages by remember { mutableStateOf(personViewModel.isLoadingTotalImages) }
+    var totalFriends by remember { mutableLongStateOf(personViewModel.totalFriends) }
+    var totalPosts by remember { mutableLongStateOf(personViewModel.totalPosts) }
+    var totalImages by remember { mutableLongStateOf(personViewModel.totalImages) }
 
     SideEffect {
         val activity = view.context as Activity
@@ -142,11 +163,63 @@ fun PersonScreen() {
         personViewModel.loadCoverPic(personId = personId, userId = userId, apiKey = apiKey)
         personViewModel.loadProfilePic(personId = personId, userId = userId, apiKey = apiKey)
         personViewModel.loadProfileInfo(personId = personId, userId = userId, apiKey = apiKey)
-        personFriendsViewModel.loadFriendStatus(personId = personId, userId = userId, apiKey = apiKey)
-        personFriendsViewModel.loadTotalFriends(personId = personId, userId = userId, apiKey = apiKey)
-        personPostsViewModel.loadTotalPosts(personId = personId, userId = userId, apiKey = apiKey)
-        personPhotosViewModel.loadTotalImages(personId = personId, userId = userId, apiKey = apiKey)
-        personPhotosViewModel.loadUserImages(personId = personId, userId = userId, apiKey = apiKey, limit = 40, page = 1)
+        personViewModel.loadFriendStatus(personId = personId, userId = userId, apiKey = apiKey)
+        personViewModel.loadTotalFriends(personId = personId, userId = userId, apiKey = apiKey)
+        personViewModel.loadTotalPosts(personId = personId, userId = userId, apiKey = apiKey)
+        personViewModel.loadTotalImages(personId = personId, userId = userId, apiKey = apiKey)
+        personViewModel.loadUserImages(personId = personId, userId = userId, apiKey = apiKey, limit = 40, page = 1)
+    }
+
+    LaunchedEffect(
+        personViewModel.selectedPersonId,
+        personViewModel.username,
+        personViewModel.personPrefs,
+        personViewModel.profilePicURL,
+        personViewModel.coverPicURL,
+        personViewModel.friendStatus,
+        personViewModel.isLoadingTotalFriends,
+        personViewModel.totalFriends,
+        personViewModel.isLoadingTotalPosts,
+        personViewModel.totalPosts,
+        personViewModel.isLoadingTotalImages,
+        personViewModel.totalImages,
+        personViewModel.firstName,
+        personViewModel.lastName,
+        personViewModel.preferredName,
+        personViewModel.birthDate,
+        personViewModel.cityOfResidence,
+        personViewModel.placeOfWork,
+        personViewModel.dateJoined,
+        personViewModel.isLoadingImages,
+        personViewModel.userImages,
+        personViewModel.isLoadingFriends,
+        personViewModel.friends,
+        personViewModel.personProfileColors,
+        personViewModel.personProfileColorResources,
+        personViewModel.personProfileSongAutoplay,
+        personViewModel.selectedTab,
+    ) {
+        personId = personViewModel.selectedPersonId
+        username = personViewModel.username
+        personPrefs = personViewModel.personPrefs
+        colors = personViewModel.personProfileColors
+        playerPrimaryColor = personViewModel.personProfileColorResources.primaryColor
+        playerPrimaryAccent = personViewModel.personProfileColorResources.primaryAccent
+        playerSecondaryAccent = personViewModel.personProfileColorResources.secondaryAccent
+        profilePicURL = personViewModel.profilePicURL
+        coverPicURL = personViewModel.coverPicURL
+        friendStatus = personViewModel.friendStatus
+        isLoadingTotalFriends = personViewModel.isLoadingTotalFriends
+        totalFriends = personViewModel.totalFriends
+        isLoadingTotalPosts = personViewModel.isLoadingTotalPosts
+        totalPosts = personViewModel.totalPosts
+        isLoadingTotalImages = personViewModel.isLoadingTotalImages
+        totalImages = personViewModel.totalImages
+        firstName = personViewModel.firstName
+        lastName = personViewModel.lastName
+        preferredName = personViewModel.preferredName
+        selectedTab = personViewModel.selectedTab
+        images = personViewModel.userImages
     }
 
     Column(
@@ -155,9 +228,9 @@ fun PersonScreen() {
         Box(
             modifier = Modifier.fillMaxWidth().height(180.dp)
         ) {
-            if (!personViewModel.coverPicURL.isNullOrEmpty()) {
+            if (!coverPicURL.isNullOrEmpty()) {
                 val painter = rememberAsyncImagePainter(
-                    model = personViewModel.coverPicURL
+                    model = coverPicURL
                 )
                 Image(
                     painter = painter,
@@ -186,9 +259,9 @@ fun PersonScreen() {
                     .align(Alignment.BottomStart)
                     .offset(x = 16.dp, y = 40.dp)
             ) {
-                if (!personViewModel.profilePicURL.isNullOrEmpty()) {
+                if (!profilePicURL.isNullOrEmpty()) {
                     val painter = rememberAsyncImagePainter(
-                        model = personViewModel.profilePicURL
+                        model = profilePicURL
                     )
                     Image(
                         painter = painter,
@@ -234,7 +307,7 @@ fun PersonScreen() {
                     FriendStatus.IDLE -> {
                         Button(
                             onClick = {
-                                personFriendsViewModel.onFriendRequest(
+                                personViewModel.onFriendRequest(
                                     userId = userId,
                                     friendId = personId,
                                     apiKey = apiKey,
@@ -363,10 +436,10 @@ fun PersonScreen() {
                             val view = LayoutInflater.from(ctx).inflate(R.layout.custom_media3_player_view, null) as PlayerView
                             val timeBar = view.findViewById<DefaultTimeBar>(R.id.exo_progress)
 
-                            timeBar.setPlayedColor(ContextCompat.getColor(ctx, getColorResource(personPrefs.primaryAccent)))
-                            timeBar.setBufferedColor(ContextCompat.getColor(ctx, getColorResource(personPrefs.secondaryAccent)))
+                            timeBar.setPlayedColor(ContextCompat.getColor(ctx, playerPrimaryAccent))
+                            timeBar.setBufferedColor(ContextCompat.getColor(ctx, playerSecondaryAccent))
                             timeBar.setUnplayedColor(ContextCompat.getColor(ctx, R.color.dark_gray))
-                            timeBar.setScrubberColor(ContextCompat.getColor(ctx, getColorResource(personPrefs.primaryColor)))
+                            timeBar.setScrubberColor(ContextCompat.getColor(ctx, playerPrimaryColor))
 
                             view.player = exoPlayer
                             view.useController = true
@@ -375,6 +448,12 @@ fun PersonScreen() {
                             view.controllerShowTimeoutMs = 0
                             view.showController()
                             view
+                        },
+                        update = { view ->
+                            val bg = colors.secondaryColor.toArgb()
+                            val controllerFrame =
+                                view.findViewById<FrameLayout>(R.id.media3_controller)
+                            controllerFrame.setBackgroundColor(bg)
                         },
                         modifier = Modifier
                             .height(40.dp)
@@ -393,10 +472,10 @@ fun PersonScreen() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             val displayName = GetDisplayName(
-                username = personViewModel.username,
-                preferredName = personViewModel.preferredName,
-                firstName = personViewModel.firstName,
-                lastName = personViewModel.lastName
+                username = username,
+                preferredName = preferredName,
+                firstName = firstName,
+                lastName = lastName
             )
             Text(
                 text = displayName,
@@ -415,7 +494,7 @@ fun PersonScreen() {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (personFriendsViewModel.isLoadingTotalFriends) {
+                if (isLoadingTotalFriends) {
                     CircularProgressIndicator(
                         color = colors.secondaryColor
                     )
@@ -425,12 +504,12 @@ fun PersonScreen() {
                         contentDescription = null
                     )
                     Spacer(Modifier.width(4.dp))
-                    val totalFriendsText = if (personFriendsViewModel.totalFriends.toInt() == 0) {
+                    val totalFriendsText = if (totalFriends.toInt() == 0) {
                         "No friends yet"
-                    } else if (personFriendsViewModel.totalFriends.toInt() == 1) {
+                    } else if (totalFriends.toInt() == 1) {
                         "1 Friend"
                     } else {
-                        "${personFriendsViewModel.totalFriends} Friends"
+                        "$totalFriends Friends"
                     }
                     Text(
                         text = totalFriendsText,
@@ -441,7 +520,7 @@ fun PersonScreen() {
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (personPostsViewModel.isLoadingTotalPosts) {
+                if (isLoadingTotalPosts) {
                     CircularProgressIndicator(
                         color = colors.secondaryColor
                     )
@@ -451,12 +530,12 @@ fun PersonScreen() {
                         contentDescription = null
                     )
                     Spacer(Modifier.width(4.dp))
-                    val totalPostsText = if (personPostsViewModel.totalPosts.toInt() == 0) {
+                    val totalPostsText = if (totalPosts.toInt() == 0) {
                         "No posts"
-                    } else if (personPostsViewModel.totalPosts.toInt() == 1) {
+                    } else if (totalPosts.toInt() == 1) {
                         "1 Post"
                     } else {
-                        "${personPostsViewModel.totalPosts} Posts"
+                        "$totalPosts Posts"
                     }
                     Text(
                         text = totalPostsText,
@@ -467,7 +546,7 @@ fun PersonScreen() {
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (personPhotosViewModel.isLoadingTotalImages) {
+                if (isLoadingTotalImages) {
                     CircularProgressIndicator(
                         color = colors.secondaryColor
                     )
@@ -477,12 +556,12 @@ fun PersonScreen() {
                         contentDescription = null
                     )
                     Spacer(Modifier.width(4.dp))
-                    val totalImagesText = if (personPhotosViewModel.totalImages.toInt() == 0) {
+                    val totalImagesText = if (totalImages.toInt() == 0) {
                         "No photos"
-                    } else if (personPhotosViewModel.totalImages.toInt() == 1) {
+                    } else if (totalImages.toInt() == 1) {
                         "1 Photo"
                     } else {
-                        "${personPhotosViewModel.totalImages} Photos"
+                        "$totalImages Photos"
                     }
                     Text(
                         text = totalImagesText,
@@ -495,7 +574,7 @@ fun PersonScreen() {
 
         ProfileTabsRow(
             selectedTab = selectedTab,
-            onTabSelected = { selectedTab = it },
+            onTabSelected = { personViewModel.onSelectTab(it) },
             secondaryColor = colors.secondaryColor,
             secondaryAccent = colors.secondaryAccent
         )
@@ -551,9 +630,9 @@ fun PersonScreen() {
 
     if (isCreatingNewPost) {
         PostToPersonDialog(
-            onClose = { personPostsViewModel.onCloseCreatePost() },
+            onClose = { personViewModel.onCloseCreatePost() },
             postsViewModel = postsViewModel,
-            personPostsViewModel = personPostsViewModel,
+//            personPostsViewModel = personViewModel,
             personViewModel = personViewModel,
             sessionViewModel = sessionViewModel,
             personId = personId,
@@ -624,8 +703,8 @@ fun PersonScreen() {
                     }
 
                     OutlinedTextField(
-                        value = personPostsViewModel.commentText,
-                        onValueChange = { personPostsViewModel.onChangeCommentText(it) },
+                        value = personViewModel.commentText,
+                        onValueChange = { personViewModel.onChangeCommentText(it) },
                         label = { Text("What are your thoughts?", fontFamily = Ubuntu, fontWeight = FontWeight.Normal) },
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                         colors = TextFieldDefaults.colors(
@@ -659,17 +738,17 @@ fun PersonScreen() {
                             )
                         }
 
-                        if (personPostsViewModel.isPuttingNewComment) {
+                        if (personViewModel.isPuttingNewComment) {
                             CircularProgressIndicator(
                                 color = colors.secondaryColor
                             )
                         } else {
                             Button(
                                 onClick = {
-                                    personPostsViewModel.putPostComment(
-                                        userId = sessionViewModel.userId ?: 0,
-                                        apiKey = sessionViewModel.getApiKey() ?: "",
-                                        token = sessionViewModel.getToken() ?: "",
+                                    personViewModel.putPostComment(
+                                        userId = userId,
+                                        apiKey = apiKey,
+                                        token = token,
                                         postId = selectedPostIDForComments,
                                     )
                                 },

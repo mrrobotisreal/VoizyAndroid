@@ -338,18 +338,23 @@ class MoreViewModel @Inject constructor(
                 when(response.primaryColor) {
                     "yellow" -> {
                         appPrimaryColor = VoizyPrimaryColor
+                        selectedAppTheme = AppTheme.VOIZY
                     }
                     "oceanic-primary-color" -> {
                         appPrimaryColor = OceanicPrimaryColor
+                        selectedAppTheme = AppTheme.OCEANIC
                     }
                     "royal-primary-color" -> {
                         appPrimaryColor = RoyalPrimaryColor
+                        selectedAppTheme = AppTheme.ROYAL
                     }
                     "sunset-primary-color" -> {
                         appPrimaryColor = SunsetPrimaryColor
+                        selectedAppTheme = AppTheme.SUNSET
                     }
                     else -> {
                         appPrimaryColor = VoizyPrimaryColor
+                        selectedAppTheme = AppTheme.VOIZY
                     }
                 }
 
@@ -424,18 +429,23 @@ class MoreViewModel @Inject constructor(
                 when(response.profilePrimaryColor) {
                     "yellow" -> {
                         profilePrimaryColor = VoizyPrimaryColor
+                        selectedProfileTheme = AppTheme.VOIZY
                     }
                     "oceanic-primary-color" -> {
                         profilePrimaryColor = OceanicPrimaryColor
+                        selectedProfileTheme = AppTheme.OCEANIC
                     }
                     "royal-primary-color" -> {
                         profilePrimaryColor = RoyalPrimaryColor
+                        selectedProfileTheme = AppTheme.ROYAL
                     }
                     "sunset-primary-color" -> {
                         profilePrimaryColor = SunsetPrimaryColor
+                        selectedProfileTheme = AppTheme.SUNSET
                     }
                     else -> {
                         profilePrimaryColor = VoizyPrimaryColor
+                        selectedProfileTheme = AppTheme.VOIZY
                     }
                 }
 

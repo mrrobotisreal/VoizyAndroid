@@ -57,6 +57,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -112,20 +113,30 @@ fun PhotosContent(
                 elevation = CardDefaults.cardElevation(4.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(3),
-                    modifier = Modifier.fillMaxSize().padding(4.dp)
-                ) {
-                    items(images.size) { index ->
-                        val image = images[index]
-                        PhotoGridItem(
-                            imageUrl = image.imageURL,
-                            onClick = {
-                                setCurrentImageIndex(index)
-                                setFullScreenImageOpen(true)
-                            },
-                            secondaryColor = secondaryColor
-                        )
+                if (images.isNullOrEmpty()) {
+                    Text(
+                        text = "No photos added yet",
+                        textAlign = TextAlign.Center,
+                        fontFamily = Ubuntu,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        modifier = Modifier.fillMaxSize().padding(4.dp)
+                    ) {
+                        items(images.size) { index ->
+                            val image = images[index]
+                            PhotoGridItem(
+                                imageUrl = image.imageURL,
+                                onClick = {
+                                    setCurrentImageIndex(index)
+                                    setFullScreenImageOpen(true)
+                                },
+                                secondaryColor = secondaryColor
+                            )
+                        }
                     }
                 }
             }

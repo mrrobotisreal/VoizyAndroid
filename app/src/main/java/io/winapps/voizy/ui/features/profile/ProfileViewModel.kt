@@ -760,7 +760,7 @@ class PhotosViewModel @Inject constructor(
                     limit = limit,
                     page = page,
                 )
-                userImages = response.images
+                userImages = response.images ?: emptyList()
             } catch (e: Exception) {
                 errorMessage = e.message
             } finally {

@@ -200,7 +200,7 @@ fun PersonPostsContent(
 fun PostToPersonDialog(
     onClose: () -> Unit,
     postsViewModel: PostsViewModel,
-    personPostsViewModel: PersonPostsViewModel,
+//    personPostsViewModel: PersonPostsViewModel,
     personViewModel: PersonViewModel,
     sessionViewModel: SessionViewModel,
     personId: Long,
@@ -214,7 +214,7 @@ fun PostToPersonDialog(
     val token = sessionViewModel.getToken().orEmpty()
     val username = sessionViewModel.username.orEmpty()
     val preferredName = sessionViewModel.preferredName.orEmpty()
-    val selectedImages = personPostsViewModel.selectedImages
+    val selectedImages = personViewModel.selectedImages
     var isSelectingLocation by remember { mutableStateOf(false) }
     var isAddingHashtags by remember { mutableStateOf(false) }
     var locationName by remember { mutableStateOf("") }
@@ -228,7 +228,7 @@ fun PostToPersonDialog(
         contract = ActivityResultContracts.GetMultipleContents(),
         onResult = { uris ->
             val newList = if (uris.size > 10) uris.take(10) else uris
-            personPostsViewModel.addImages(
+            personViewModel.addImages(
                 uris = newList
             )
         }
@@ -274,7 +274,7 @@ fun PostToPersonDialog(
                     onClose = { onClose() },
                     onSubmitPost = {
                         val locName = if (locationName.isBlank() || locationName.isEmpty()) null else locationName
-                        personPostsViewModel.submitPost(
+                        personViewModel.submitPost(
                             personId = personId,
                             context = context,
                             apiKey = apiKey,
@@ -287,7 +287,7 @@ fun PostToPersonDialog(
                         )
                     },
                     personViewModel = personViewModel,
-                    personPostsViewModel = personPostsViewModel,
+//                    personPostsViewModel = personPostsViewModel,
                     postsViewModel = postsViewModel,
                     locationName = locationName,
                     onAddLocationClick = {
@@ -301,10 +301,10 @@ fun PostToPersonDialog(
                     hashtags = selectedHashtags,
                     selectedImages = selectedImages,
                     onRemoveImage = { uri ->
-                        personPostsViewModel.removeImage(uri)
+                        personViewModel.removeImage(uri)
                     },
                     onPhotoCaptured = { uri ->
-                        personPostsViewModel.addImage(uri)
+                        personViewModel.addImage(uri)
                     },
                     onPhotosAlbumClick = {
                         pickImagesLauncher.launch("image/*")
@@ -464,11 +464,11 @@ fun PostToPersonDialog(
         }
     }
 
-    if (personPostsViewModel.showCreatePostSuccessToast) {
+    if (personViewModel.showCreatePostSuccessToast) {
         Toast.makeText(LocalContext.current, "Successfully posted to $preferredName's page!", Toast.LENGTH_SHORT).show()
-        personPostsViewModel.loadTotalPosts(personId, userId, apiKey)
-        personPostsViewModel.loadCompletePosts(personId, userId, apiKey, 30, 1)
-        personPostsViewModel.endShowCreatePostSuccessToast()
+        personViewModel.loadTotalPosts(personId, userId, apiKey)
+        personViewModel.loadCompletePosts(personId, userId, apiKey, 30, 1)
+        personViewModel.endShowCreatePostSuccessToast()
         onClose()
     }
 }
@@ -478,7 +478,7 @@ fun PostToPersonMainUI(
     onClose: () -> Unit,
     onSubmitPost: () -> Unit,
     personViewModel: PersonViewModel,
-    personPostsViewModel: PersonPostsViewModel,
+//    personPostsViewModel: PersonPostsViewModel,
     postsViewModel: PostsViewModel,
     locationName: String,
     onAddLocationClick: () -> Unit,
@@ -632,8 +632,8 @@ fun PostToPersonMainUI(
                     modifier = Modifier.weight(1f)
                 ) {
                     OutlinedTextField(
-                        value = personPostsViewModel.postText,
-                        onValueChange = { personPostsViewModel.onPostTextChanged(it) },
+                        value = personViewModel.postText,
+                        onValueChange = { personViewModel.onPostTextChanged(it) },
                         label = { Text("What's on your mind?", fontFamily = Ubuntu, fontWeight = FontWeight.Normal) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
@@ -758,7 +758,7 @@ fun PostToPersonMainUI(
                 )
             }
 
-            if (personPostsViewModel.isSubmittingPost) {
+            if (personViewModel.isSubmittingPost) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
                     color = secondaryColor

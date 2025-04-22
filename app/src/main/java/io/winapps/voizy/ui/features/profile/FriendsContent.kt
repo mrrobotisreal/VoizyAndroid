@@ -42,8 +42,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
+import io.winapps.voizy.AppScreen
 import io.winapps.voizy.SessionViewModel
 import io.winapps.voizy.data.model.users.Friend
+import io.winapps.voizy.ui.features.people.person.PersonViewModel
 import io.winapps.voizy.ui.theme.Ubuntu
 
 @Composable
@@ -53,11 +55,12 @@ fun FriendsContent(
 ) {
     val friendsViewModel = hiltViewModel<FriendsViewModel>()
     val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val apiKey = sessionViewModel.getApiKey().orEmpty()
+    val userId = sessionViewModel.userId ?: -1
+    val personViewModel = hiltViewModel<PersonViewModel>()
     val friends = friendsViewModel.friends
 
     LaunchedEffect(Unit) {
-        val userId = sessionViewModel.userId ?: 0
-        val apiKey = sessionViewModel.getApiKey().orEmpty()
         friendsViewModel.loadFriends(
             userId = userId,
             apiKey = apiKey,
@@ -112,7 +115,15 @@ fun FriendsContent(
             items(filteredFriends) { friend ->
                 FriendRow(
                     friend = friend,
-                    onClick = {},
+                    onClick = { friendToView ->
+                        personViewModel.selectPerson(
+                            personId = friendToView.userID,
+                            username = friendToView.friendUsername ?: "",
+                            userId = userId,
+                            apiKey = apiKey
+                            )
+                        sessionViewModel.switchCurrentAppScreen(AppScreen.PERSON)
+                    },
                     secondaryColor = secondaryColor,
                     secondaryAccent = secondaryAccent
                 )
@@ -124,7 +135,7 @@ fun FriendsContent(
 @Composable
 fun FriendRow(
     friend: Friend,
-    onClick: () -> Unit,
+    onClick: (Friend) -> Unit,
     secondaryColor: Color,
     secondaryAccent: Color
 ) {
@@ -148,7 +159,7 @@ fun FriendRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onClick() }
+                .clickable { onClick(friend) }
                 .padding(8.dp)
         ) {
             Box(

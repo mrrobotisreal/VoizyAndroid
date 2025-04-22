@@ -191,6 +191,8 @@ fun PeopleContent(
     errorMessage: String?
 ) {
     val sessionViewModel = hiltViewModel<SessionViewModel>()
+    val apiKey = sessionViewModel.getApiKey().orEmpty()
+    val userId = sessionViewModel.userId ?: -1
     val secondaryColor = sessionViewModel.appColors.secondaryColor
     val personViewModel = hiltViewModel<PersonViewModel>()
 
@@ -241,7 +243,12 @@ fun PeopleContent(
                                 PersonCard(
                                     person = person,
                                     onClick = { personToView ->
-                                        personViewModel.selectPerson(personToView.userID, personToView.username)
+                                        personViewModel.selectPerson(
+                                            personId = personToView.userID,
+                                            username = personToView.username,
+                                            userId = userId,
+                                            apiKey = apiKey
+                                            )
                                         sessionViewModel.switchCurrentAppScreen(AppScreen.PERSON)
                                     }
                                 )
